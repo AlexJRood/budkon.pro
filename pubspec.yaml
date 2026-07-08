@@ -1,0 +1,58 @@
+name: budkon_flutter
+description: "Platforma dla firm budowlanych — budkon.pro"
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  core:
+    path: core
+  flutter:
+    sdk: flutter
+
+  # Core deps (mirrored from superbee.core requirements)
+  beamer: ^1.7.0
+  flutter_riverpod: ^2.6.1
+  flutter_screenutil: ^5.9.3
+  pointycastle: ^3.9.1
+  shared_preferences: ^2.3.3
+  url_launcher: 6.2.5
+  path_provider: ^2.1.4
+  image_picker: ^1.2.1
+  file_picker: ^9.2.0
+  file_saver: ^0.3.1
+  sentry_flutter: ^9.16.1
+  flutter_cache_manager: ^3.4.1
+  visibility_detector: ^0.4.0+2
+  dotted_border: ^2.1.0
+  country_code_picker: any
+
+  firebase_analytics: ^11.3.0
+  firebase_core: ^3.15.1
+  firebase_messaging: ^15.2.5
+
+  # Budkon modules
+  budowa:
+    path: modules/budowa
+  kosztorysy:
+    path: modules/kosztorysy
+  oferty:
+    path: modules/oferty
+  harmonogram:
+    path: modules/harmonogram
+  materialy:
+    path: modules/materialy
+  podwykonawcy:
+    path: modules/podwykonawcy
+  dziennik:
+    path: modules/dziennik
+  portal_klienta:
+    path: modules/portal_klienta
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
