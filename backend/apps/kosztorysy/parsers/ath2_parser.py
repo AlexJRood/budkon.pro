@@ -146,6 +146,35 @@ class Ath2Parser:
                 )
         return db_k.pk
 
+    def import_into(self, kosztorys_pk: int, parsed: "Ath2Kosztorys") -> None:
+        """Import parsed ATH2 dzialy+pozycje into an existing Kosztorys."""
+        from ..models import Kosztorys, KosztorysdzDzial, KosztorysPozycja, KnrPozycja
+
+        db_k = Kosztorys.objects.get(pk=kosztorys_pk)
+        db_k.dzialy.all().delete()
+
+        for i, dzial in enumerate(parsed.dzialy):
+            db_d = KosztorysdzDzial.objects.create(
+                kosztorys=db_k, nazwa=dzial.nazwa, kolejnosc=i
+            )
+            for j, poz in enumerate(dzial.pozycje):
+                knr = (
+                    KnrPozycja.objects.filter(
+                        numer__icontains=poz.knr_ref.split()[-1]
+                    ).first()
+                    if poz.knr_ref
+                    else None
+                )
+                KosztorysPozycja.objects.create(
+                    dzial=db_d,
+                    knr_pozycja=knr,
+                    opis=poz.opis,
+                    jednostka=poz.jednostka,
+                    ilosc=poz.ilosc,
+                    cena_jednostkowa=poz.cena_r + poz.cena_m + poz.cena_s,
+                    kolejnosc=j,
+                )
+
     @staticmethod
     def _text(node: ET.Element, tag: str, default: str) -> str:
         child = node.find(tag)
