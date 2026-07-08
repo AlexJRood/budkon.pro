@@ -1,18 +1,16 @@
 import 'package:core/kernel/kernel.dart';
-import 'package:flutter/material.dart';
+import '../screens/list/budowa_list_screen.dart';
+import '../screens/detail/budowa_detail_screen.dart';
 
 List<RouteSpec> budowaRoutes() => [
   RouteSpec(
     '/budowa',
-    (context, params, data) => const _BudowaPlaceholder(),
+    (context, params, data) => const BudowaListScreen(),
+  ),
+  RouteSpec(
+    '/budowa/:id',
+    (context, params, data) => BudowaDetailScreen(
+      budowaId: int.tryParse(params['id'] ?? '') ?? 0,
+    ),
   ),
 ];
-
-// TODO: replace with real screen
-class _BudowaPlaceholder extends StatelessWidget {
-  const _BudowaPlaceholder();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Budowa — w budowie')),
-  );
-}
