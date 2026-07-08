@@ -3,7 +3,8 @@ from django.db import models
 
 class Budowa(models.Model):
     """Projekt budowlany — odpowiednik 'transakcji' w hously.pro."""
-    company_id = models.IntegerField(db_index=True)   # multi-tenancy
+
+    company_id = models.IntegerField(db_index=True)  # multi-tenancy
     nazwa = models.CharField(max_length=255)
     adres = models.CharField(max_length=500, blank=True)
     zamawiajacy_id = models.IntegerField(null=True, blank=True)  # UserContact z CRM
@@ -34,6 +35,7 @@ class Budowa(models.Model):
 
 class EtapBudowy(models.Model):
     """Etap/faza projektu budowlanego."""
+
     ETAPY = [
         ("projekt", "Projekt"),
         ("pozwolenie", "Pozwolenie na budowę"),
@@ -51,7 +53,11 @@ class EtapBudowy(models.Model):
     kolejnosc = models.PositiveIntegerField(default=0)
     status = models.CharField(
         max_length=20,
-        choices=[("planowany", "Planowany"), ("w_toku", "W toku"), ("zakończony", "Zakończony")],
+        choices=[
+            ("planowany", "Planowany"),
+            ("w_toku", "W toku"),
+            ("zakończony", "Zakończony"),
+        ],
         default="planowany",
     )
     data_start = models.DateField(null=True, blank=True)

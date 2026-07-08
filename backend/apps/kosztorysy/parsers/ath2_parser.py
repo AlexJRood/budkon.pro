@@ -22,13 +22,13 @@ from typing import Optional
 
 @dataclass
 class Ath2Pozycja:
-    knr_ref: str           # np. "KNR 2-02 0201-01"
+    knr_ref: str  # np. "KNR 2-02 0201-01"
     opis: str
     jednostka: str
     ilosc: Decimal
-    cena_r: Decimal        # robocizna
-    cena_m: Decimal        # materiały
-    cena_s: Decimal        # sprzęt
+    cena_r: Decimal  # robocizna
+    cena_m: Decimal  # materiały
+    cena_s: Decimal  # sprzęt
 
 
 @dataclass
@@ -61,12 +61,18 @@ class Ath2Parser:
 
         # ATH2 XML structure varies by NormaPro version; handle both
         # common root tags: <Kosztorys>, <ATH2>, <Norma>
-        kosztorys_node = root if root.tag in ("Kosztorys", "ATH2") else root.find("Kosztorys")
+        kosztorys_node = (
+            root if root.tag in ("Kosztorys", "ATH2") else root.find("Kosztorys")
+        )
         if kosztorys_node is None:
             kosztorys_node = root
 
-        nazwa = kosztorys_node.get("Nazwa", "") or self._text(kosztorys_node, "Nazwa", "Kosztorys")
-        obiekt = kosztorys_node.get("Obiekt", "") or self._text(kosztorys_node, "Obiekt", "")
+        nazwa = kosztorys_node.get("Nazwa", "") or self._text(
+            kosztorys_node, "Nazwa", "Kosztorys"
+        )
+        obiekt = kosztorys_node.get("Obiekt", "") or self._text(
+            kosztorys_node, "Obiekt", ""
+        )
 
         dzialy = []
         for dzial_node in kosztorys_node.iter("Dzial"):
@@ -91,13 +97,20 @@ class Ath2Parser:
             cena_m = self._dec(node.get("CenaM") or self._text(node, "CenaM", "0"))
             cena_s = self._dec(node.get("CenaS") or self._text(node, "CenaS", "0"))
             return Ath2Pozycja(
-                knr_ref=knr_ref, opis=opis, jednostka=jm,
-                ilosc=ilosc, cena_r=cena_r, cena_m=cena_m, cena_s=cena_s,
+                knr_ref=knr_ref,
+                opis=opis,
+                jednostka=jm,
+                ilosc=ilosc,
+                cena_r=cena_r,
+                cena_m=cena_m,
+                cena_s=cena_s,
             )
         except Exception:
             return None
 
-    def save_to_db(self, kosztorys: Ath2Kosztorys, company_id: int, created_by: int) -> int:
+    def save_to_db(
+        self, kosztorys: Ath2Kosztorys, company_id: int, created_by: int
+    ) -> int:
         """Persist parsed kosztorys to Django models. Returns Kosztorys.pk."""
         from ..models import Kosztorys, KosztorysdzDzial, KosztorysPozycja, KnrPozycja
 
@@ -114,9 +127,13 @@ class Ath2Parser:
                 kosztorys=db_k, nazwa=dzial.nazwa, kolejnosc=i
             )
             for j, poz in enumerate(dzial.pozycje):
-                knr = KnrPozycja.objects.filter(
-                    numer__icontains=poz.knr_ref.split()[-1]
-                ).first() if poz.knr_ref else None
+                knr = (
+                    KnrPozycja.objects.filter(
+                        numer__icontains=poz.knr_ref.split()[-1]
+                    ).first()
+                    if poz.knr_ref
+                    else None
+                )
 
                 KosztorysPozycja.objects.create(
                     dzial=db_d,

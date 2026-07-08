@@ -42,11 +42,7 @@ class KosztorysDTO:
 
     @property
     def suma(self) -> Decimal:
-        return sum(
-            p.ilosc * p.cena_jednostkowa
-            for d in self.dzialy
-            for p in d.pozycje
-        )
+        return sum(p.ilosc * p.cena_jednostkowa for d in self.dzialy for p in d.pozycje)
 
 
 class KosztorysPipeline:
@@ -94,7 +90,10 @@ class KosztorysPipeline:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(
                 f"{self.superbee_url}/v1/chat",
-                json={"messages": [{"role": "user", "content": prompt}], "json_mode": True},
+                json={
+                    "messages": [{"role": "user", "content": prompt}],
+                    "json_mode": True,
+                },
                 headers={"Authorization": f"Bearer {self.superbee_token}"},
             )
             resp.raise_for_status()
@@ -112,15 +111,17 @@ class KosztorysPipeline:
         for knr in qs:
             ilosc = Decimal(str(rodzaj.get("szacowana_ilosc", 1)))
             cena = await self._get_price(knr, company_id=0)
-            pozycje.append(PozycjaDTO(
-                knr_pozycja_id=knr.pk,
-                opis=knr.opis,
-                jednostka=knr.jednostka,
-                ilosc=ilosc,
-                cena_jednostkowa=cena,
-                ai_suggested_price=cena,
-                ai_suggested_qty=ilosc,
-            ))
+            pozycje.append(
+                PozycjaDTO(
+                    knr_pozycja_id=knr.pk,
+                    opis=knr.opis,
+                    jednostka=knr.jednostka,
+                    ilosc=ilosc,
+                    cena_jednostkowa=cena,
+                    ai_suggested_price=cena,
+                    ai_suggested_qty=ilosc,
+                )
+            )
         return pozycje
 
     async def _get_price(self, knr, company_id: int) -> Decimal:
