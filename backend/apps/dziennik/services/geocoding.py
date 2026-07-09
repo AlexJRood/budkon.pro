@@ -9,8 +9,8 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-_NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-_HEADERS = {"User-Agent": "budkon.pro/1.0 (kontakt@budkon.pro)"}
+_NOMINATIM_URL = "https://nominatim.superbee.cloud/search"
+_HEADERS = {"User-Agent": "budkon.pro/1.0"}
 _last_call = 0.0
 
 

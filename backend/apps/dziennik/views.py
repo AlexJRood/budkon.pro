@@ -14,6 +14,7 @@ from .serializers import (
     ZdjecieSerializer,
 )
 from .services.geocoding import geocode_budowa
+from .services.markety import szukaj_marketow
 from .services.weather import auto_uzupelnij_pogode, pobierz_pogode, pobierz_pogode_historyczna
 
 logger = logging.getLogger(__name__)
@@ -204,6 +205,59 @@ class WpisDziennikViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ZdjecieDziennika.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=["get"], url_path="markety-budowlane")
+    def markety_budowlane(self, request):
+        """
+        Sklepy budowlane w pobliżu budowy.
+        GET /dziennik/markety-budowlane/?budowa=<id>&radius=15000
+        """
+        budowa_id = request.query_params.get("budowa")
+        if not budowa_id:
+            return Response({"error": "Wymagany ?budowa="}, status=400)
+
+        try:
+            radius = int(request.query_params.get("radius", 15_000))
+            radius = min(radius, 50_000)  # max 50 km
+        except ValueError:
+            radius = 15_000
+
+        try:
+            from apps.budowa.models import Budowa
+            budowa = Budowa.objects.get(
+                pk=budowa_id, company_id=_company_id(request)
+            )
+        except Exception:
+            return Response({"error": "Budowa nie znaleziona"}, status=404)
+
+        # Geocoding jeśli brak
+        if not (budowa.lat and budowa.lon):
+            geocode_budowa(budowa)
+
+        if not (budowa.lat and budowa.lon):
+            return Response(
+                {"error": "Brak współrzędnych GPS dla tej budowy."},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        markety = szukaj_marketow(budowa.lat, budowa.lon, radius_m=radius)
+
+        return Response({
+            "budowa_lat": budowa.lat,
+            "budowa_lon": budowa.lon,
+            "radius_m": radius,
+            "wyniki": [
+                {
+                    "osm_id": m.osm_id,
+                    "nazwa": m.nazwa,
+                    "adres": m.adres,
+                    "lat": m.lat,
+                    "lon": m.lon,
+                    "marka": m.marka,
+                }
+                for m in markety
+            ],
+        })
 
     @action(detail=False, methods=["get"], url_path="statystyki")
     def statystyki(self, request):
