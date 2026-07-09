@@ -1,0 +1,1 @@
+﻿export 'package:crm/contact_panel/mobile/mobile_all_transaction.dart';

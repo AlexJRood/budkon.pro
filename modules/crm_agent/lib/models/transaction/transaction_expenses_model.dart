@@ -1,0 +1,1 @@
+﻿export 'package:crm/shared/models/transaction/transaction_expenses_model.dart';

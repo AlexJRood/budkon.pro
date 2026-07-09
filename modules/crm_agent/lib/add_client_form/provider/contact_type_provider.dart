@@ -1,0 +1,1 @@
+﻿export 'package:crm/data/clients/contact_type_provider.dart';

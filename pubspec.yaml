@@ -64,6 +64,54 @@ dependencies:
   automation:
     path: modules/automation
 
+  # Batch 2 — przeniesione z Hously.pro
+  crm:
+    path: modules/crm
+  crm_agent:
+    path: modules/crm_agent
+  crm_fliper:
+    path: modules/crm_fliper
+  docs:
+    path: modules/docs
+  cloud:
+    path: modules/cloud
+  importer:
+    path: modules/importer
+  feedback:
+    path: modules/feedback
+  profile:
+    path: modules/profile
+  company_cat:
+    path: modules/company_cat
+  mail:
+    path: modules/mail
+  fav_board:
+    path: modules/fav_board
+  tms_app:
+    path: modules/tms_app
+  portal:
+    path: modules/portal
+  network_monitoring:
+    path: modules/network_monitoring
+  notification:
+    path: modules/notification
+  seller:
+    path: modules/seller
+  wall:
+    path: modules/wall
+  payments:
+    path: modules/payments
+  reports:
+    path: modules/reports
+  articles:
+    path: modules/articles
+  association:
+    path: modules/association
+  map:
+    path: modules/map
+  boards:
+    path: modules/boards
+
 flutter:
   uses-material-design: true
   assets:

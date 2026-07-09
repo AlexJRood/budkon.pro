@@ -1,0 +1,1 @@
+﻿export 'package:crm/shared/models/bill_model.dart';

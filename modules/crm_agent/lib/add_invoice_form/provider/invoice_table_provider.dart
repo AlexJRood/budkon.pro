@@ -1,0 +1,1 @@
+﻿export 'package:crm/invoices/form/provider/invoice_table_provider.dart';

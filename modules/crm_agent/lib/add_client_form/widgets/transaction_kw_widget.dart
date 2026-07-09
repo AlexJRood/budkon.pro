@@ -1,0 +1,1 @@
+﻿export 'package:crm/crm/clients/components/transaction_kw_widget.dart';

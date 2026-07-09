@@ -1,0 +1,25 @@
+name: articles
+description: "Articles / news feature package (portal articles list + article pop pages)."
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ^3.7.0
+  flutter: ">=1.17.0"
+
+dependencies:
+  core:
+    path: ../../core
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  get: any
+  pie_menu: any
+  cached_network_image: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:

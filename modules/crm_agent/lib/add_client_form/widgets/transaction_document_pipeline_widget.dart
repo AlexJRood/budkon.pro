@@ -1,0 +1,1 @@
+﻿export 'package:crm/crm/clients/components/transaction_document_pipeline_widget.dart';

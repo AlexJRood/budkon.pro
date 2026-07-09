@@ -1,0 +1,1 @@
+﻿export 'package:crm/invoices/widgets/invoice_details_view.dart';

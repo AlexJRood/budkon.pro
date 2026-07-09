@@ -1,0 +1,1 @@
+﻿export 'package:crm/contact_panel/viewer/viewer_provider.dart';

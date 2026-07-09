@@ -1,0 +1,1 @@
+﻿export 'package:crm/crm/clients/components/vertical_buttons_client_list.dart';

@@ -13,6 +13,23 @@ import 'package:chat/core/module.dart';
 import 'package:emma/core/module.dart';
 import 'package:calendar/core/module.dart';
 import 'package:automation/core/module.dart';
+// Batch 2
+import 'package:crm/core/module.dart';
+import 'package:crm_agent/core/module.dart';
+import 'package:docs/core/module.dart';
+import 'package:cloud/core/module.dart';
+import 'package:importer/core/module.dart';
+import 'package:profile/core/module.dart';
+import 'package:mail/core/module.dart';
+import 'package:tms_app/core/module.dart';
+import 'package:portal/core/module.dart';
+import 'package:network_monitoring/core/module.dart';
+import 'package:notification/core/module.dart';
+import 'package:wall/core/module.dart';
+import 'package:payments/core/module.dart';
+import 'package:reports/core/module.dart';
+import 'package:articles/core/module.dart';
+import 'package:association/core/module.dart';
 
 void registerAppModules() {
   moduleRegistry.registerAll([
@@ -31,6 +48,23 @@ void registerAppModules() {
     EmmaModule(),
     CalendarModule(),
     AutomationModule(),
+    // Batch 2 — przeniesione z Hously.pro
+    CrmModule(),
+    CrmAgentModule(),
+    DocsModule(),
+    CloudModule(),
+    ImporterModule(),
+    ProfileModule(),
+    MailModule(),
+    TmsAppModule(),
+    PortalModule(),
+    NetworkMonitoringModule(),
+    NotificationModule(),
+    WallModule(),
+    PaymentsModule(),
+    ReportsModule(),
+    ArticlesModule(),
+    AssociationModule(),
   ]);
 }
 

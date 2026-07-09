@@ -1,0 +1,438 @@
+Dobra Sir, to robimy konkretny flow 💪
+Podzielę Ci to na:
+
+1. Flow po stronie **agenta**
+2. Flow po stronie **klienta**
+3. Jak ogarnąć **mail / telefon / inne konto**
+4. Co się dzieje z panelem **po zakończeniu transakcji**
+
+---
+
+## 1️⃣ Flow po stronie agenta
+
+### A. Tworzenie ogłoszenia / transakcji
+
+Przy tworzeniu (albo edycji) ogłoszenia / transakcji dodajesz sekcję:
+
+**[ ] Udostępnij klientowi w „Twój Agent”**
+
+Obok ikona (i) z tooltipem:
+
+> „Jeśli zaznaczysz tę opcję, klient otrzyma dostęp do panelu transakcji: postępy, prezentacje, dokumenty, podgląd ogłoszenia.”
+
+Dodatkowe przełączniki:
+
+* **[ ] Klient może zgłaszać poprawki do ogłoszenia**
+  (domyślnie: **włączone** – ale agent może wyłączyć)
+* **[ ] Pokaż dokumenty w panelu klienta**
+  (domyślnie: włączone, ale jeśli nie ma dokumentów → zakładka się nie pojawia)
+* **[ ] Pokaż historię prezentacji (kto oglądał, kiedy)**
+  (domyślnie: włączone)
+
+### B. Zaproszenie klienta do panelu
+
+W transakcji/kliencie:
+
+**Przycisk:**
+`[Wyślij zaproszenie do panelu „Twój Agent”]`
+
+Agent wybiera/dopisuje:
+
+* Imię i nazwisko klienta
+* Email klienta
+* (opcjonalnie) numer telefonu
+
+System tworzy rekord np. `ClientPortalAccess` i wysyła:
+
+* maila z linkiem magicznym
+* ewentualnie SMS z kodem (w kolejnej wersji)
+
+---
+
+## 2️⃣ Flow po stronie klienta
+
+### A. Otrzymuje maila
+
+Treść maila (skrót idei):
+
+> Temat: **Twój Agent – dostęp do panelu transakcji**
+>
+> Cześć [Imię],
+> Twój agent [Imię Agenta] udostępnił Ci panel, w którym możesz śledzić postępy sprzedaży/najmu, zobaczyć prezentacje nieruchomości, dokumenty oraz – jeśli chcesz – doprecyzować informacje o nieruchomości.
+>
+> Kliknij w ten link, aby uzyskać dostęp:
+> **[Przejdź do panelu „Twój Agent”]**
+
+Pod spodem drobniejszym fontem:
+
+> Jeśli masz już konto w Hously, po prostu zaloguj się po kliknięciu w link – panel automatycznie połączy się z Twoim kontem.
+>
+> Jeśli wolisz zarejestrować się na inny adres e-mail niż ten, na który wysłaliśmy zaproszenie – nadal możesz to zrobić po kliknięciu linku.
+
+Czyli komunikat od razu rozwiązuje Twój case z innym mailem.
+
+---
+
+### B. Scenariusze logowania / rejestracji
+
+#### ✅ Scenariusz 1: klient **nie ma konta**
+
+1. Klika link → trafia na ekran wyboru:
+
+   * „Załóż konto”
+   * „Mam już konto – zaloguj”
+
+2. Wybiera **Załóż konto**, rejestruje się:
+
+   * może podać **dowolny email** (nie musi być ten z zaproszenia)
+
+3. Po udanej rejestracji backend:
+
+   * bierze **token z linka**
+   * przypina tę transakcję do **nowo utworzonego usera**
+
+Stary mail z zaproszenia służy jedynie do:
+
+* identyfikacji w `ClientPortalAccess`,
+* wysyłania powiadomień (który potem może zmienić w ustawieniach panelu, jeśli chcesz).
+
+#### ✅ Scenariusz 2: klient **ma już konto** (na ten sam albo inny mail)
+
+1. Klika w link → widzi ekran:
+
+   * „Zaloguj się”
+   * (lub, jeśli już jest zalogowany) od razu krok 3
+
+2. Loguje się na swoje **istniejące konto** – mail może być inny niż ten zaproszeniowy.
+
+3. System:
+
+   * sprawdza token z linka
+   * przypina tę transakcję do **tego konta**
+
+Czyli kluczowe jest:
+👉 **token = dostęp do konkretnej transakcji**,
+a nie sztywne dopasowanie po adresie e-mail.
+
+---
+
+### C. Po zalogowaniu – co widzi klient?
+
+W Side Menu:
+**„Twój Agent”**
+
+Po wejściu – ekran:
+
+**Nagłówek:**
+
+> „Twój Agent – [Imię Agenta / Nazwa Agencji]”
+
+Karty (widoczne zależnie od tego, co agent włączył):
+
+1. **Transakcja**
+
+   * status transakcji („aktywna”, „rezerwacja”, „sprzedane”, „zakończona”…)
+   * podstawowe parametry nieruchomości
+   * timeline kroków („Zdjęcia wykonane”, „Ogłoszenie opublikowane”, „Prezentacja X”, „Oferta klienta Y”)
+
+2. **Prezentacje**
+
+   * lista: data, kto oglądał (tylko typ: „klient indywidualny”, „klient z polecenia”, bez danych osobowych), uwagi agenta
+   * ewentualnie oznaczenia: „zainteresowany / niezainteresowany”
+
+3. **Ogłoszenie**
+
+   * podgląd pełnego ogłoszenia tak, jak w portalu (tylko bez przycisków publicznych)
+   * przycisk:
+     **[Zaproponuj poprawki / uzupełnij dane]** – jeśli agent włączył tę opcję
+
+4. **Dokumenty**
+
+   * lista: umowa pośrednictwa, załączniki, protokoły, itp.
+   * jeśli agent nic nie dodał → zakładka może być automatycznie ukryta
+
+5. (później) **Ustawienia powiadomień**
+
+   * „Na jaki mail wysyłać powiadomienia”
+   * „Czy chcesz otrzymywać powiadomienia o nowych prezentacjach / krokach procesu”
+
+---
+
+## 3️⃣ Edycja / uzupełnianie danych przez klienta
+
+### Jak to działa UX-owo?
+
+W zakładce **Ogłoszenie**:
+
+Przycisk:
+**[Zaproponuj poprawki / uzupełnij informacje]**
+
+Po kliknięciu:
+
+* otwiera się formularz z wybranymi polami:
+
+  * np. metraż, rok budowy, ogrzewanie, standard, czynsz, dodatkowe cechy
+* pola są domyślnie wypełnione aktualnymi wartościami, ale klient może je:
+
+  * poprawić,
+  * dopisać brakujące
+
+Na dole:
+
+> „Zmiany nie są publikowane automatycznie.
+> Twój agent zweryfikuje wszystko przed aktualizacją ogłoszenia.”
+
+Po zapisaniu:
+
+* tworzysz byt typu `ListingClientSuggestion` (z polem: kto, kiedy, jakie pola zmienił)
+* agent dostaje powiadomienie:
+
+  * „Klient [X] zaproponował poprawki do ogłoszenia [Y]”
+* agent ma ekran „Sugestie klienta”:
+
+  * widzi diff:
+    `stara wartość → proponowana wartość`
+  * może: **zaakceptować / odrzucić** per pole lub całość
+
+W panelu klienta przy ogłoszeniu:
+
+* status:
+
+  * „Twoje poprawki oczekują na weryfikację”
+  * albo „Poprawki zostały uwzględnione”
+
+### Ważne:
+
+Na poziomie transakcji/ogłoszenia:
+
+* **[ ] Pozwól klientowi proponować poprawki do ogłoszenia**
+  Agent może to odhaczyć jeśli:
+
+  * klient jest „ciężki” 😉
+  * albo to bardzo skomplikowana oferta.
+
+---
+
+## 4️⃣ Co z panelem po zakończeniu transakcji?
+
+Masz trzy opcje, ja Ci od razu polecę jedną „produkcyjną”.
+
+### Opcja A: znika od razu po zakończeniu
+
+✅ + prosto
+❌ – klient czasem potrzebuje wrócić do dokumentów, historii, potwierdzeń
+
+### Opcja B: zostaje **na zawsze**
+
+✅ + klient zawsze ma dostęp
+❌ – bałagan, stara transakcja ciągle wisi, nie każdy agent tego chce
+
+### Opcja C (moja rekomendacja):
+
+**Tryb archiwum + czasowe wygaszanie**
+
+Proponuję:
+
+* Gdy transakcja ma status „zakończona” (sprzedane / nieudane):
+
+  * panel przechodzi w tryb **tylko do odczytu**
+  * na górze info:
+
+    > „Ta transakcja została zakończona. Masz dostęp do archiwum dokumentów i historii prezentacji.”
+* Domyślnie:
+
+  * archiwum jest dostępne np. **12 miesięcy** od zakończenia
+  * po tym czasie:
+
+    * klient nie widzi już tej transakcji
+    * agent nadal ma pełny dostęp u siebie
+* Agent powinien mieć opcję:
+
+  * **[ ] Pozostaw dostęp archiwalny klientowi bez ograniczeń czasowych**
+  * lub przycisk: `[Wyłącz dostęp klienta teraz]`
+
+Czyli:
+
+> **Normalny flow:**
+>
+> * Transakcja aktywna → panel aktywny
+> * Transakcja zakończona → panel archiwalny (read-only) przez X miesięcy
+> * Potem automatyczne wygaszenie
+
+To jest bardzo „pro” z punktu widzenia agencji.
+
+---
+
+## 5️⃣ Króciutkie podsumowanie
+
+* „Twój Agent” ląduje w **Side Menu** jako panel klienta.
+* Agent:
+
+  * przy transakcji włącza: „Udostępnij klientowi” + ustawia uprawnienia.
+  * wysyła zaproszenie mailem/telefonem.
+* Klient:
+
+  * dostaje link, może zalogować się lub założyć konto na **dowolny mail** – token łączy go z transakcją.
+  * widzi: **Transakcję, Prezentacje, Ogłoszenie, Dokumenty** (wg konfiguracji agenta).
+  * może opcjonalnie zgłaszać poprawki w ogłoszeniu (jeśli agent pozwolił).
+* Panel:
+
+  * znika z trybu aktywnego po zakończeniu transakcji,
+  * przechodzi w **archiwum read-only na X miesięcy**,
+  * agent może wyłączyć dostęp wcześniej lub zostawić dłużej.
+
+---
+
+Jeśli chcesz, następny krok mogę zrobić ultra konkretnie:
+
+* zaproponować **model `ClientPortalAccess` + `ListingClientSuggestion`** w Django,
+* pola, statusy, uprawnienia,
+* plus mały mock UI w stylu Twojej aplikacji (sekcje, nagłówki, teksty).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sir, **architektonicznie to ABSOLUTNIE powinno obsługiwać i sprzedaż, i zakup** – ale **z innym zestawem funkcji**.
+
+Bo masz tak naprawdę **dwa zupełnie różne „mindsety” klienta**:
+
+* **Sprzedający**: „jak idzie sprzedaż mojej nieruchomości?”
+* **Kupujący**: „jak idzie znalezienie mieszkania dla mnie?”
+
+I obie te rzeczy to **idealny use-case „Twój Agent”**.
+
+---
+
+## 1️⃣ Panel dla SPRZEDAJĄCEGO (to, co już mamy w głowie)
+
+To jest to, co opisałeś:
+
+* podgląd ogłoszenia,
+* możliwość uzupełnienia danych o swojej nieruchomości,
+* wgląd: *komu agent prezentował nieruchomość*,
+* dokumenty: umowa pośrednictwa, protokoły z prezentacji, itp.,
+* status transakcji (aktywna / rezerwacja / sprzedane / zakończona).
+
+Tu edycja ogłoszenia przez klienta ma sens, bo **to jest JEGO nieruchomość**.
+
+---
+
+## 2️⃣ Panel dla KUPUJĄCEGO – mega potencjał
+
+Dla kupującego logika jest inna:
+
+On nie ma jednej „swojej nieruchomości”.
+On ma **„misję: znajdźcie mi coś takiego i takiego”**.
+
+W panelu „Twój Agent” dla kupującego widziałbym:
+
+* **Lista prezentacji / oglądanych nieruchomości**
+
+  * data, adres (lub skrót), typ oferty, cena,
+  * notatki agenta,
+  * status: „rozważamy / odpada / złożyliśmy ofertę / w rezerwacji”.
+
+* **Preferencje klienta**
+
+  * lokalizacja, metrówka, budżet, piętro, balkon, garaż, itp.
+  * klient może doprecyzować / zmienić swoje oczekiwania („jednak max 4. piętro”, „balkon koniecznie”)
+
+* **Dokumenty procesu zakupu**
+
+  * rezerwacja,
+  * umowa przedwstępna,
+  * dokumenty do kredytu (w przyszłości),
+  * checklista: co już mamy, co jeszcze trzeba.
+
+* **Komunikacja & feedback**
+
+  * klient może po każdej prezentacji kliknąć:
+
+    * „Podoba mi się / Odpada / Może”
+    * zostawić krótką opinię:
+
+      > „Za ciemne”, „Super lokalizacja, ale za mała kuchnia”
+
+Tu **nie dajełbym edycji treści ogłoszenia** – to nie jest jego listing.
+Za to **feedback + preferencje + wybór faworytów** = złoto dla agenta.
+
+---
+
+## 3️⃣ Jak to spiąć ładnie w jednym module?
+
+Backendowo:
+masz np. `AgentTransaction` z polem:
+
+* `transaction_type` ∈ {`SELL`, `BUY`, (później `RENT`)}
+
+Do tego `ClientPortalAccess` przypięty do transakcji.
+
+W panelu „Twój Agent”:
+
+* Klient widzi listę swoich „spraw”:
+
+> **Twoje sprawy z agentem**
+>
+> * Sprzedaż: Mieszkanie ul. X
+> * Zakup: „Mieszkanie 2–3 pokoje w dzielnicy Y”
+
+Klik na jedną → inny typ widoku:
+
+* jeśli **SELL** → widok sprzedającego (ogłoszenie, prezentacje, edycja danych, dokumenty sprzedaży),
+* jeśli **BUY** → widok kupującego (lista prezentacji, preferencje, dokumenty zakupu, feedback).
+
+Nazwa modułu w Side Menu nadal jedna: **„Twój Agent”**.
+A w środku klient ma po prostu **“Sprawy z agentem”**.
+
+---
+
+## 4️⃣ Co bym zrobił na start (żeby się nie zabić robotą)?
+
+Propozycja:
+
+1. **Architektura od razu pod oba typy** (`SELL` / `BUY`),
+2. Ale **MVP UX-owo rozwijasz najpierw SPRZEDAŻ**:
+
+   * sprzedający ma:
+
+     * podgląd ogłoszenia,
+     * postępy,
+     * prezentacje,
+     * dokumenty,
+     * opcjonalną edycję danych.
+3. W drugiej iteracji:
+
+   * dodajesz widok kupującego:
+
+     * lista prezentacji,
+     * feedback,
+     * preferencje,
+     * dokumenty zakupu.
+
+Czyli: **zaprojektuj od razu „Twój Agent” jako panel do wszystkich typów transakcji, ale wdrażaj krokami.**
+
+---
+
+Jeśli chcesz, Sir, w kolejnym kroku mogę:
+
+* rozpisać dokładnie: jakie sekcje ma `SELL` vs `BUY`,
+* zaproponować pola w `AgentTransaction` / `ClientPortalAccess`,
+* dorzucić prosty JSON z przykładowym payloadem pod front.

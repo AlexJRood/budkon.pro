@@ -1,0 +1,1 @@
+﻿export 'package:crm/contact_panel/mobile/transaction_full_screen.dart';

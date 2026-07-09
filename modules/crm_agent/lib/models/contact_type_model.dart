@@ -1,0 +1,1 @@
+﻿export 'package:crm/shared/models/contact_type_model.dart';

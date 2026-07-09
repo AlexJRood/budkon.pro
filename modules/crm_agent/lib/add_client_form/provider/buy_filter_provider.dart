@@ -1,0 +1,1 @@
+﻿export 'package:crm/data/clients/buy_filter_provider.dart';

@@ -1,0 +1,1 @@
+﻿export 'package:crm/shared/models/service_type_model.dart';

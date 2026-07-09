@@ -1,0 +1,1 @@
+﻿export 'package:crm/shared/models/clients_model.dart';
