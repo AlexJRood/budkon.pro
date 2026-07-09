@@ -1,18 +1,22 @@
 import 'package:core/kernel/kernel.dart';
-import 'package:flutter/material.dart';
+import '../screens/lista/materialy_list_screen.dart';
+import '../screens/historia_cen/historia_cen_screen.dart';
 
 List<RouteSpec> materialyRoutes() => [
   RouteSpec(
     '/materialy',
-    (context, params, data) => const _MaterialyPlaceholder(),
+    (ctx, params, data) {
+      final args = data as Map?;
+      return MaterialyListScreen(
+        budowaId: int.tryParse(params['budowaId'] ?? '') ??
+            args?['budowaId'] as int? ??
+            0,
+        budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+      );
+    },
+  ),
+  RouteSpec(
+    '/materialy/trendy',
+    (ctx, params, data) => const TrendyCenScreen(),
   ),
 ];
-
-// TODO: replace with real screen
-class _MaterialyPlaceholder extends StatelessWidget {
-  const _MaterialyPlaceholder();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Materialy — w budowie')),
-  );
-}

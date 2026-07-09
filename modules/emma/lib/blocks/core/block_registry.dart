@@ -44,6 +44,18 @@ import 'package:emma/blocks/definitions/automation/automation_dry_run_block.dart
 import 'package:emma/blocks/definitions/automation/automation_setup_wizard_block.dart';
 import 'package:emma/blocks/definitions/automation/automation_connector_block.dart';
 
+import 'package:emma/blocks/definitions/budkon/budowa_status_block.dart';
+import 'package:emma/blocks/definitions/budkon/harmonogram_alert_block.dart';
+import 'package:emma/blocks/definitions/budkon/wpis_dziennik_block.dart';
+import 'package:emma/blocks/definitions/budkon/kosztorys_summary_block.dart';
+import 'package:emma/blocks/definitions/budkon/podwykonawca_card_block.dart';
+import 'package:emma/blocks/definitions/budkon/przetarg_deadline_block.dart';
+import 'package:emma/blocks/definitions/budkon/pogoda_budowa_block.dart';
+import 'package:emma/blocks/definitions/budkon/materialy_lista_block.dart';
+import 'package:emma/blocks/definitions/budkon/faktura_alert_block.dart';
+import 'package:emma/blocks/definitions/budkon/budzet_etapu_block.dart';
+import 'package:emma/blocks/definitions/budkon/aktywne_budowy_block.dart';
+
 import 'block_definition.dart';
 import 'block_descriptor.dart';
 
@@ -704,6 +716,18 @@ final emmaBlockRegistryProvider = Provider<EmmaBlockRegistry>((ref) {
       AutomationDryRunBlockDefinition(),
       AutomationSetupWizardBlockDefinition(),
       AutomationConnectorBlockDefinition(),
+
+      BudowaStatusBlockDefinition(),
+      HarmonogramAlertBlockDefinition(),
+      WpisDziennikBlockDefinition(),
+      KosztorysSummaryBlockDefinition(),
+      PodwykonawcaCardBlockDefinition(),
+      PrzetargDeadlineBlockDefinition(),
+      PogodaBudowaBlockDefinition(),
+      MaterialyListaBlockDefinition(),
+      FakturaAlertBlockDefinition(),
+      BudzetEtapuBlockDefinition(),
+      AktywenBudowyBlockDefinition(),
     ],
     fallback: GenericBlockDefinition(),
   );

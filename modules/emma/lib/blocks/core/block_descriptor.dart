@@ -50,6 +50,19 @@ enum EmmaBlockType {
   automationSetupWizard,
   automationConnector,
 
+  // budkon.pro blocks
+  budowaStatus,
+  harmonogramAlert,
+  wpisDziennik,
+  kosztorysSummary,
+  podwykonawcaCard,
+  przetargDeadline,
+  pogodaBudowa,
+  materialyLista,
+  fakturaAlert,
+  budzetEtapu,
+  aktywenBudowy,
+
   unknown,
 }
 
@@ -179,6 +192,36 @@ class EmmaBlockDescriptor {
       case 'automation_api_connector':
       case 'external_api_connector':
         return EmmaBlockType.automationConnector;
+
+      // budkon.pro
+      case 'budowa_status':
+        return EmmaBlockType.budowaStatus;
+      case 'harmonogram_alert':
+        return EmmaBlockType.harmonogramAlert;
+      case 'wpis_dziennik':
+      case 'dziennik_reminder':
+        return EmmaBlockType.wpisDziennik;
+      case 'kosztorys_summary':
+        return EmmaBlockType.kosztorysSummary;
+      case 'podwykonawca_card':
+        return EmmaBlockType.podwykonawcaCard;
+      case 'przetarg_deadline':
+        return EmmaBlockType.przetargDeadline;
+      case 'pogoda_budowa':
+      case 'budowa_weather':
+        return EmmaBlockType.pogodaBudowa;
+      case 'materialy_lista':
+      case 'materials_list':
+        return EmmaBlockType.materialyLista;
+      case 'faktura_alert':
+      case 'invoice_alert':
+        return EmmaBlockType.fakturaAlert;
+      case 'budzet_etapu':
+      case 'stage_budget':
+        return EmmaBlockType.budzetEtapu;
+      case 'aktywne_budowy':
+      case 'active_sites':
+        return EmmaBlockType.aktywenBudowy;
 
       default:
         return EmmaBlockType.unknown;
