@@ -1,5 +1,6 @@
 import 'package:core/kernel/kernel.dart';
 
+import 'package:przetargi/core/module.dart';
 import 'package:budowa/core/module.dart';
 import 'package:kosztorysy/core/module.dart';
 import 'package:oferty/core/module.dart';
@@ -34,6 +35,7 @@ import 'package:association/core/module.dart';
 void registerAppModules() {
   moduleRegistry.registerAll([
     // Budkon-specific
+    PrzetargiModule(),
     BudowaModule(),
     KosztorysyModule(),
     OfertyModule(),
