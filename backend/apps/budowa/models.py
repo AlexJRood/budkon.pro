@@ -22,6 +22,9 @@ class Budowa(models.Model):
     data_rozpoczecia = models.DateField(null=True, blank=True)
     data_planowanego_zakonczenia = models.DateField(null=True, blank=True)
     budzet = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    # Współrzędne GPS — wypełniane automatycznie przez geocoding adresu
+    lat = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.IntegerField()
