@@ -148,3 +148,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ── Superbee AI ──────────────────────────────────────────────────────────────
+SUPERBEE_URL = "http://192.168.1.109:8080"   # Lenovo server
+SUPERBEE_TOKEN = ""                            # token jeśli wymagany
+
+# ── Media ────────────────────────────────────────────────────────────────────
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
