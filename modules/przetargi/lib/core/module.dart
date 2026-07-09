@@ -1,5 +1,6 @@
 import 'package:core/kernel/kernel.dart';
 
+import 'dock.dart';
 import 'routing.dart';
 
 class PrzetargiModule extends AppModule {
@@ -10,4 +11,7 @@ class PrzetargiModule extends AppModule {
 
   @override
   List<RouteSpec> get routes => przetargiRoutes();
+
+  @override
+  List<DockContribution> dockItems() => przetargiDockItems();
 }

@@ -1,3 +1,4 @@
+export 'core/dock.dart';
 export 'core/module.dart';
 export 'core/routing.dart';
 export 'data/models/przetarg_model.dart';
