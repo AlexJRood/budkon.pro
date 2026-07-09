@@ -68,6 +68,21 @@ class PrzetargiApi {
       _dio.patch('/przetargi/$id/status/', data: {'status': status});
 
   // ------------------------------------------------------------------ //
+  // Emma inbox                                                           //
+  // ------------------------------------------------------------------ //
+
+  Future<List<Map<String, dynamic>>> emmaInbox() async {
+    final resp = await _dio.get('/emma-inbox/');
+    return List<Map<String, dynamic>>.from(resp.data as List);
+  }
+
+  Future<void> emmaAkceptuj(int id) =>
+      _dio.post('/emma-inbox/$id/akceptuj/');
+
+  Future<void> emmaOdrzuc(int id) =>
+      _dio.post('/emma-inbox/$id/odrzuc/');
+
+  // ------------------------------------------------------------------ //
   // Subskrypcje                                                          //
   // ------------------------------------------------------------------ //
 

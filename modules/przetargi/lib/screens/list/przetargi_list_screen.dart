@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/przetarg_model.dart';
+import '../../data/providers/emma_inbox_provider.dart';
 import '../../data/providers/przetargi_provider.dart';
+import '../../widgets/emma_inbox_widget.dart';
 import '../../widgets/przetarg_card.dart';
 
 class PrzetargiListScreen extends ConsumerStatefulWidget {
@@ -107,16 +109,21 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
                       .read(fetchProvider.notifier)
                       .fetch(ref.read(przetargiListProvider.notifier)))
                   : RefreshIndicator(
-                      onRefresh: () =>
-                          ref.read(przetargiListProvider.notifier).load(),
+                      onRefresh: () async {
+                        await ref.read(przetargiListProvider.notifier).load();
+                        ref.invalidate(emmaInboxProvider);
+                      },
                       child: ListView.builder(
-                        itemCount: przetargi.length,
-                        itemBuilder: (ctx, i) => PrzetargCard(
-                          przetarg: przetargi[i],
-                          onTap: () => Navigator.of(context).pushNamed(
-                            '/przetargi/${przetargi[i].id}',
-                          ),
-                        ),
+                        itemCount: przetargi.length + 1,
+                        itemBuilder: (ctx, i) {
+                          if (i == 0) return const EmmaInboxWidget();
+                          final p = przetargi[i - 1];
+                          return PrzetargCard(
+                            przetarg: p,
+                            onTap: () => Navigator.of(context)
+                                .pushNamed('/przetargi/${p.id}'),
+                          );
+                        },
                       ),
                     ),
             ),

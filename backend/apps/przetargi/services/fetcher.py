@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from django.db import transaction
 
 from apps.przetargi.models import (
+    EmmaWiadomoscPrzetargu,
     FetchLog,
     Przetarg,
     SubskrypcjaPrzetargow,
@@ -114,6 +115,19 @@ def _analizuj_asynchronicznie(przetarg: Przetarg):
             ai_analizowany_at=datetime.now(timezone.utc),
             status="analizowany",
         )
+
+        # Utwórz wiadomość Emmy jeśli przetarg jest warty uwagi
+        if ocena.czy_warto and ocena.rekomendacja_emma:
+            EmmaWiadomoscPrzetargu.objects.get_or_create(
+                przetarg=przetarg,
+                company_id=przetarg.company_id,
+                defaults={"tekst": ocena.rekomendacja_emma},
+            )
+            logger.info(
+                "Emma: nowa rekomendacja przetargu #%d (score %d)",
+                przetarg.pk,
+                ocena.score,
+            )
     except Exception as e:
         logger.error("Błąd AI analizy przetargu %d: %s", przetarg.pk, e)
 

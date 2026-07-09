@@ -6,8 +6,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import FetchLog, Przetarg, SubskrypcjaPrzetargow
+from .models import EmmaWiadomoscPrzetargu, FetchLog, Przetarg, SubskrypcjaPrzetargow
 from .serializers import (
+    EmmaWiadomoscSerializer,
     FetchLogSerializer,
     PrzetargDetailSerializer,
     PrzetargListSerializer,
@@ -192,6 +193,55 @@ class SubskrypcjaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(company_id=_company_id(self.request))
+
+
+class EmmaWiadomosciViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Skrzynka proaktywnych wiadomości Emmy o przetargach.
+
+    GET  /emma-inbox/          — wszystkie nieodrzucone
+    GET  /emma-inbox/?tylko_nowe=1  — tylko nieprzeczytane
+    POST /emma-inbox/{id}/przeczytaj/
+    POST /emma-inbox/{id}/akceptuj/   — oznacza jako zaakceptowane
+    POST /emma-inbox/{id}/odrzuc/     — oznacza jako odrzucone + ukrywa
+    """
+
+    serializer_class = EmmaWiadomoscSerializer
+
+    def get_queryset(self):
+        company_id = _company_id(self.request)
+        qs = EmmaWiadomoscPrzetargu.objects.filter(
+            company_id=company_id,
+            zaakceptowana__isnull=True,  # nie odrzucone
+        ).select_related("przetarg")
+
+        if self.request.query_params.get("tylko_nowe") == "1":
+            qs = qs.filter(przeczytana=False)
+
+        return qs
+
+    @action(detail=True, methods=["post"])
+    def przeczytaj(self, request, pk=None):
+        obj = self.get_object()
+        obj.przeczytana = True
+        obj.save(update_fields=["przeczytana"])
+        return Response({"ok": True})
+
+    @action(detail=True, methods=["post"])
+    def akceptuj(self, request, pk=None):
+        obj = self.get_object()
+        obj.przeczytana = True
+        obj.zaakceptowana = True
+        obj.save(update_fields=["przeczytana", "zaakceptowana"])
+        return Response({"ok": True, "przetarg_id": obj.przetarg_id})
+
+    @action(detail=True, methods=["post"])
+    def odrzuc(self, request, pk=None):
+        obj = self.get_object()
+        obj.przeczytana = True
+        obj.zaakceptowana = False
+        obj.save(update_fields=["przeczytana", "zaakceptowana"])
+        return Response({"ok": True})
 
 
 class FetchLogViewSet(viewsets.ReadOnlyModelViewSet):

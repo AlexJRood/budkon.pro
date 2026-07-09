@@ -18,6 +18,7 @@ import 'package:emma/blocks/definitions/proactive/suggestion_reply_block.dart';
 import 'package:emma/blocks/definitions/proactive/suggestion_event_block.dart';
 import 'package:emma/blocks/definitions/proactive/suggestion_task_block.dart';
 import 'package:emma/blocks/definitions/proactive/suggestion_invite_response_block.dart';
+import 'package:emma/blocks/definitions/proactive/suggestion_przetarg_block.dart';
 
 import 'package:emma/blocks/definitions/tms/board_list_block.dart';
 import 'package:emma/blocks/definitions/tms/progress_column_block.dart';
@@ -219,6 +220,10 @@ class EmmaBlockRegistry {
       case 'suggestion_task':
       case 'proactive_task':
         return _findDefinition<SuggestionTaskBlockDefinition>();
+
+      case 'suggestion_przetarg':
+      case 'przetarg_suggestion':
+        return _findDefinition<SuggestionPrzetargBlockDefinition>();
 
       case 'suggestion_invite_response':
       case 'proactive_invite_response':
@@ -682,6 +687,7 @@ final emmaBlockRegistryProvider = Provider<EmmaBlockRegistry>((ref) {
       SuggestionReplyBlockDefinition(),
       SuggestionEventBlockDefinition(),
       SuggestionTaskBlockDefinition(),
+      SuggestionPrzetargBlockDefinition(),
       SuggestionInviteResponseBlockDefinition(),
 
       AdCardBlockDefinition(),

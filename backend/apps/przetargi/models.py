@@ -118,6 +118,29 @@ class SubskrypcjaPrzetargow(models.Model):
         return f"Subskrypcja '{self.nazwa}' (firma {self.company_id})"
 
 
+class EmmaWiadomoscPrzetargu(models.Model):
+    """Proaktywna wiadomość Emmy o znalezionym przetargu — czeka na reakcję Romana."""
+
+    company_id = models.IntegerField(db_index=True)
+    przetarg = models.ForeignKey(
+        Przetarg,
+        on_delete=models.CASCADE,
+        related_name="emma_wiadomosci",
+    )
+    tekst = models.TextField()  # rekomendacja_emma z AI
+    kosztorys_id = models.IntegerField(null=True, blank=True)
+    przeczytana = models.BooleanField(default=False)
+    zaakceptowana = models.BooleanField(null=True, blank=True)  # None=pending
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "przetargi"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Emma → przetarg #{self.przetarg_id} (firma {self.company_id})"
+
+
 class FetchLog(models.Model):
     """Log każdego cyklu pobierania przetargów."""
 

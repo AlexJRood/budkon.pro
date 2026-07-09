@@ -32,6 +32,7 @@ enum EmmaBlockType {
   suggestionEvent,
   suggestionTask,
   suggestionInviteResponse,
+  suggestionPrzetarg,
 
   docsTextEdit,
   docsCreateFromContact,
@@ -127,6 +128,10 @@ class EmmaBlockDescriptor {
         return EmmaBlockType.suggestionEvent;
       case 'suggestion_task':
         return EmmaBlockType.suggestionTask;
+      case 'suggestion_przetarg':
+      case 'przetarg_suggestion':
+        return EmmaBlockType.suggestionPrzetarg;
+
       case 'suggestion_invite_response':
         return EmmaBlockType.suggestionInviteResponse;
 
