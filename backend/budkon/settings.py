@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.materialy",
     "apps.podwykonawcy",
     "apps.dziennik",
+    "apps.przetargi",
 ]
 
 MIDDLEWARE = [
