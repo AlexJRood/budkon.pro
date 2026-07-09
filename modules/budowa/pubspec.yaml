@@ -12,5 +12,8 @@ dependencies:
   flutter_riverpod: ^2.6.1
   dio: ^5.7.0
   flutter_screenutil: ^5.9.3
+  go_router: ^14.6.2
   core:
     path: ../../core
+  portal_klienta:
+    path: ../portal_klienta

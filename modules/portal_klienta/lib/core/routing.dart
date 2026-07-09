@@ -1,18 +1,13 @@
 import 'package:core/kernel/kernel.dart';
 import 'package:flutter/material.dart';
+import '../screens/lista/portal_lista_screen.dart';
 
 List<RouteSpec> portal_klientaRoutes() => [
   RouteSpec(
-    '/portal_klienta',
-    (context, params, data) => const _PortalKlientaPlaceholder(),
+    '/budowy/:budowaId/portale',
+    (context, params, data) => PortalListaScreen(
+      budowaId: int.parse(params['budowaId'] ?? '0'),
+      budowaNazwa: data?['budowaNazwa'] as String? ?? '',
+    ),
   ),
 ];
-
-// TODO: replace with real screen
-class _PortalKlientaPlaceholder extends StatelessWidget {
-  const _PortalKlientaPlaceholder();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('PortalKlienta — w budowie')),
-  );
-}

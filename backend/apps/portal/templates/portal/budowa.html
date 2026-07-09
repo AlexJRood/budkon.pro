@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1B2B3A">
+<title>{{ budowa.nazwa }} — Budkon</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0F1923;
+    --card: #1B2B3A;
+    --card2: #243447;
+    --accent: #FF9800;
+    --accent2: #FFB74D;
+    --text: #F0F4F8;
+    --muted: #90A4AE;
+    --ok: #66BB6A;
+    --warn: #EF5350;
+    --radius: 14px;
+    --gap: 16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100dvh;
+    padding-bottom: 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--card);
+    padding: 20px var(--gap) 16px;
+    border-bottom: 1px solid #ffffff12;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header-top { display: flex; align-items: center; gap: 12px; }
+  .logo-dot { width: 36px; height: 36px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0; }
+  .header h1 { font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .header-badge {
+    margin-left: auto; background: var(--accent); color: #000;
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ── Layout ── */
+  .container { padding: var(--gap); max-width: 600px; margin: 0 auto; }
+  .section { margin-top: 24px; }
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: #ffffff10; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 10px;
+    border: 1px solid #ffffff08;
+  }
+  .card-sm { padding: 12px; }
+
+  /* ── Progress ring ── */
+  .progress-hero {
+    display: flex; align-items: center; gap: 20px; padding: 20px;
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid #ffffff08;
+  }
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-label {
+    position: absolute; inset: 0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+  }
+  .ring-pct { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .ring-txt { font-size: 9px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; }
+  .progress-info h2 { font-size: 17px; font-weight: 700; }
+  .progress-info p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .etap-count { margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .etap-count span { color: var(--ok); font-weight: 700; }
+
+  /* ── Etap list ── */
+  .etap-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #ffffff08;
+  }
+  .etap-row:last-child { border-bottom: none; }
+  .etap-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-done { background: var(--ok); }
+  .dot-active { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot-plan { background: #ffffff20; }
+  .etap-name { flex: 1; font-size: 13px; }
+  .etap-status {
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .status-done { background: rgba(102,187,106,0.15); color: var(--ok); }
+  .status-active { background: rgba(255,152,0,0.15); color: var(--accent); }
+  .status-plan { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  /* ── Bar global ── */
+  .bar-track {
+    background: #ffffff12; border-radius: 4px; height: 6px; overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.6s; }
+  .bar-fill.green { background: var(--ok); }
+
+  /* ── Photo grid ── */
+  .photo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  }
+  .photo-item {
+    aspect-ratio: 1; border-radius: 10px; overflow: hidden;
+    background: var(--card2); cursor: pointer; position: relative;
+  }
+  .photo-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.2s;
+  }
+  .photo-item:hover img { transform: scale(1.04); }
+  .photo-opis {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 4px 6px 6px; font-size: 10px; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.95); align-items: center; justify-content: center;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 95vw; max-height: 90dvh; border-radius: 8px; }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 16px; background: none;
+    border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1;
+  }
+
+  /* ── Faktura ── */
+  .fv-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid #ffffff08;
+  }
+  .fv-row:last-child { border-bottom: none; }
+  .fv-icon { font-size: 22px; flex-shrink: 0; }
+  .fv-info { flex: 1; }
+  .fv-numer { font-size: 13px; font-weight: 700; }
+  .fv-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .fv-kwota { font-size: 14px; font-weight: 800; color: var(--accent); }
+  .fv-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; margin-top: 4px;
+  }
+  .badge-paid { background: rgba(102,187,106,0.15); color: var(--ok); }
+  .badge-due { background: rgba(255,152,0,0.15); color: var(--accent); }
+  .badge-over { background: rgba(239,83,80,0.15); color: var(--warn); }
+
+  /* ── Dziennik ── */
+  .wpis-row { padding: 10px 0; border-bottom: 1px solid #ffffff08; }
+  .wpis-row:last-child { border-bottom: none; }
+  .wpis-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .wpis-data { font-size: 11px; font-weight: 700; color: var(--accent2); }
+  .wpis-pogoda { font-size: 14px; }
+  .wpis-temp { font-size: 11px; color: var(--muted); }
+  .wpis-opis { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .wpis-team { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; margin-top: 40px;
+    font-size: 11px; color: var(--muted);
+    border-top: 1px solid #ffffff08; padding-top: 16px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── Wygasł ── */
+  .expired-wrap {
+    min-height: 100dvh; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 16px; padding: 32px;
+    text-align: center;
+  }
+  .expired-icon { font-size: 56px; }
+  .expired-title { font-size: 20px; font-weight: 700; }
+  .expired-sub { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="logo-dot">🏗️</div>
+    <div>
+      <h1>{{ budowa.nazwa }}</h1>
+      <div class="sub">Portal klienta — {{ portal.nazwa_klienta }}</div>
+    </div>
+    <div class="header-badge">{{ postep }}%</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── Postęp budowy ── -->
+  <div class="section">
+    <div class="section-title">Postęp budowy</div>
+
+    <div class="progress-hero">
+      <!-- SVG ring -->
+      <div class="ring-wrap">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="36" fill="none" stroke="#ffffff10" stroke-width="8"/>
+          <circle cx="44" cy="44" r="36" fill="none" stroke="#FF9800" stroke-width="8"
+            stroke-dasharray="{{ postep|floatformat:0 }} 200"
+            stroke-dashoffset="50"
+            stroke-linecap="round"
+            transform="rotate(-90 44 44)"
+            style="stroke-dasharray: calc({{ postep }} * 2.262) 226.2; transition: stroke-dasharray 0.8s;"
+          />
+        </svg>
+        <div class="ring-label">
+          <span class="ring-pct">{{ postep }}%</span>
+          <span class="ring-txt">GOTOWE</span>
+        </div>
+      </div>
+
+      <div class="progress-info">
+        <h2>{{ budowa.nazwa }}</h2>
+        {% if budowa.adres %}<p>📍 {{ budowa.adres }}</p>{% endif %}
+        <p class="etap-count">
+          <span>{{ etapy_zakonczone }}</span> z {{ etapy|length }} etapów zakończonych
+        </p>
+        {% if budowa.data_planowanego_zakonczenia %}
+        <p style="margin-top:6px;font-size:12px;color:#90A4AE;">
+          Planowane zakończenie: <strong style="color:#FFB74D;">
+          {{ budowa.data_planowanego_zakonczenia|date:"d.m.Y" }}</strong>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Etapy ── -->
+  {% if portal.pokazuj_harmonogram and etapy %}
+  <div class="section">
+    <div class="section-title">Etapy robót</div>
+    <div class="card">
+      {% for etap in etapy %}
+      <div class="etap-row">
+        {% if etap.status == 'zakończony' %}
+          <div class="etap-dot dot-done"></div>
+          <span class="etap-name">{{ etap.nazwa }}</span>
+          <span class="etap-status status-done">✓ Zakończony</span>
+        {% elif etap.status == 'w_toku' %}
+          <div class="etap-dot dot-active"></div>
+          <span class="etap-name">{{ etap.nazwa }}</span>
+          <span class="etap-status status-active">▶ W toku</span>
+        {% else %}
+          <div class="etap-dot dot-plan"></div>
+          <span class="etap-name" style="color:#90A4AE;">{{ etap.nazwa }}</span>
+          <span class="etap-status status-plan">Planowany</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Zdjęcia ── -->
+  {% if portal.pokazuj_zdjecia and zdjecia %}
+  <div class="section">
+    <div class="section-title">Zdjęcia z budowy ({{ zdjecia|length }})</div>
+    <div class="photo-grid">
+      {% for z in zdjecia %}
+      <div class="photo-item" onclick="openLightbox('{{ z.url }}')">
+        <img src="{{ z.url }}" alt="{{ z.opis }}" loading="lazy">
+        {% if z.opis %}<div class="photo-opis">{{ z.opis }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Ostatnie wpisy ── -->
+  {% if ostatnie_wpisy %}
+  <div class="section">
+    <div class="section-title">Ostatnie dni na budowie</div>
+    <div class="card">
+      {% for wpis in ostatnie_wpisy %}
+      <div class="wpis-row">
+        <div class="wpis-header">
+          <span class="wpis-data">{{ wpis.data|date:"d.m.Y" }}</span>
+          {% if wpis.pogoda %}
+          <span class="wpis-pogoda">
+            {% if wpis.pogoda == 'slonecznie' %}☀️
+            {% elif wpis.pogoda == 'czesciowe_zachmurzenie' %}⛅
+            {% elif wpis.pogoda == 'deszcz' %}🌧️
+            {% elif wpis.pogoda == 'burza' %}⛈️
+            {% elif wpis.pogoda == 'snieg' %}❄️
+            {% elif wpis.pogoda == 'pochmurno' %}☁️
+            {% elif wpis.pogoda == 'mgla' %}🌫️
+            {% elif wpis.pogoda == 'mroz' %}🥶
+            {% else %}💨{% endif %}
+          </span>
+          {% endif %}
+          {% if wpis.temperatura %}
+          <span class="wpis-temp">{{ wpis.temperatura|floatformat:0 }}°C</span>
+          {% endif %}
+          {% if wpis.liczba_pracownikow > 0 %}
+          <span class="wpis-temp">👷 {{ wpis.liczba_pracownikow }}</span>
+          {% endif %}
+        </div>
+        {% if wpis.opis %}
+        <div class="wpis-opis">{{ wpis.opis|truncatechars:200 }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Faktury ── -->
+  {% if portal.pokazuj_faktury and faktury %}
+  <div class="section">
+    <div class="section-title">Faktury ({{ faktury|length }})</div>
+    <div class="card">
+      {% for fv in faktury %}
+      <div class="fv-row">
+        <div class="fv-icon">🧾</div>
+        <div class="fv-info">
+          <div class="fv-numer">{{ fv.numer }}</div>
+          <div class="fv-meta">
+            Wystawiona: {{ fv.data_wystawienia|date:"d.m.Y" }} ·
+            Termin: {{ fv.termin_platnosci|date:"d.m.Y" }}
+          </div>
+          {% if fv.status == 'oplacona' %}
+            <span class="fv-badge badge-paid">✓ Opłacona</span>
+          {% elif fv.jest_przeterminowana %}
+            <span class="fv-badge badge-over">⚠ Przeterminowana</span>
+          {% else %}
+            <span class="fv-badge badge-due">Do zapłaty</span>
+          {% endif %}
+        </div>
+        <div class="fv-kwota">{{ fv.wartosc_brutto|floatformat:2 }} zł</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    Ostatnia aktualizacja: {{ teraz|date:"d.m.Y H:i" }} ·
+    Budkon.pro &mdash; <a href="https://budkon.pro">budkon.pro</a>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// Animate SVG ring on load
+document.addEventListener('DOMContentLoaded', () => {
+  const circle = document.querySelector('circle[stroke="#FF9800"]');
+  if (!circle) return;
+  const pct = {{ postep }};
+  const circumference = 2 * Math.PI * 36; // r=36
+  const dash = (pct / 100) * circumference;
+  circle.style.strokeDasharray = `${dash} ${circumference}`;
+});
+</script>
+</body>
+</html>

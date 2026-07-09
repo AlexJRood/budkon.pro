@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Link wygasł — Budkon</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0F1923;
+  color: #EDF2F7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.card {
+  background: #1B2B3A;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 40px 32px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+.icon { font-size: 48px; margin-bottom: 20px; }
+h1 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+p { font-size: 14px; color: #7B95A8; line-height: 1.6; }
+.name { color: #FF9800; font-weight: 600; margin-top: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🔒</div>
+  <h1>Link wygasł lub jest nieaktywny</h1>
+  <p>Ten portal klienta nie jest już dostępny. Skontaktuj się z wykonawcą, aby otrzymać nowy link.</p>
+  {% if portal.nazwa_klienta %}
+  <div class="name">Portal dla: {{ portal.nazwa_klienta }}</div>
+  {% endif %}
+</div>
+</body>
+</html>

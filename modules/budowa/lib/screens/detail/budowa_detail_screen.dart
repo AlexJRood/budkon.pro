@@ -6,6 +6,8 @@ import '../../data/providers/budowa_provider.dart';
 import '../../widgets/budowa_status_badge.dart';
 import '../../widgets/etap_tile.dart';
 import '../../widgets/postep_bar.dart';
+import 'package:go_router/go_router.dart';
+import 'package:portal_klienta/portal_klienta.dart';
 import '../form/budowa_form_screen.dart';
 
 class BudowaDetailScreen extends ConsumerWidget {
@@ -141,6 +143,72 @@ class _BudowaDetail extends ConsumerWidget {
               },
             ),
           ),
+          // Hub modułów
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 8.h),
+              child: _SectionHeader('Moduły budowy', icon: Icons.apps_outlined),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 0),
+            sliver: SliverGrid.count(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.2,
+              children: [
+                _ModulTile(
+                  icon: Icons.calculate_outlined,
+                  label: 'Kosztorys',
+                  color: const Color(0xFF9C27B0),
+                  onTap: () => context.push('/kosztorysy?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.description_outlined,
+                  label: 'Oferty',
+                  color: const Color(0xFFFF9800),
+                  onTap: () => context.push('/oferty?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Materiały',
+                  color: const Color(0xFF607D8B),
+                  onTap: () => context.push('/materialy?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.book_outlined,
+                  label: 'Dziennik',
+                  color: const Color(0xFF8BC34A),
+                  onTap: () => context.push('/dziennik?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.groups_outlined,
+                  label: 'Zespół',
+                  color: const Color(0xFF5C6BC0),
+                  onTap: () => context.push('/pracownicy?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'Faktury',
+                  color: const Color(0xFF26A69A),
+                  onTap: () => context.push('/faktury?budowa=${budowa.id}'),
+                ),
+                _ModulTile(
+                  icon: Icons.link_outlined,
+                  label: 'Portal klienta',
+                  color: const Color(0xFF7E57C2),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => PortalListaScreen(
+                      budowaId: budowa.id,
+                      budowaNazwa: budowa.nazwa,
+                    ),
+                  )),
+                ),
+              ],
+            ),
+          ),
+
           SliverToBoxAdapter(child: SizedBox(height: 80.h)),
         ],
       ),
@@ -151,6 +219,47 @@ class _BudowaDetail extends ConsumerWidget {
     if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(2)} mln';
     if (v >= 1000) return '${(v / 1000).toStringAsFixed(0)} tys.';
     return v.toStringAsFixed(0);
+  }
+}
+
+class _ModulTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ModulTile(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withAlpha(20),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 22),
+              SizedBox(width: 10.w),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
