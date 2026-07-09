@@ -8,9 +8,15 @@ import 'package:materialy/core/module.dart';
 import 'package:podwykonawcy/core/module.dart';
 import 'package:dziennik/core/module.dart';
 import 'package:portal_klienta/core/module.dart';
+import 'package:notes/core/module.dart';
+import 'package:chat/core/module.dart';
+import 'package:emma/core/module.dart';
+import 'package:calendar/core/module.dart';
+import 'package:automation/core/module.dart';
 
 void registerAppModules() {
   moduleRegistry.registerAll([
+    // Budkon-specific
     BudowaModule(),
     KosztorysyModule(),
     OfertyModule(),
@@ -19,6 +25,12 @@ void registerAppModules() {
     PodwykonawcyModule(),
     DziennikModule(),
     PortalKlientaModule(),
+    // Shared from superbee.core ecosystem
+    NotesModule(),
+    ChatModule(),
+    EmmaModule(),
+    CalendarModule(),
+    AutomationModule(),
   ]);
 }
 

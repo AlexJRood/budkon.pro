@@ -52,6 +52,18 @@ dependencies:
   portal_klienta:
     path: modules/portal_klienta
 
+  # Moduły wspólne z Hously.pro (bez CRM/mail deps)
+  notes:
+    path: modules/notes
+  chat:
+    path: modules/chat
+  emma:
+    path: modules/emma
+  calendar:
+    path: modules/calendar
+  automation:
+    path: modules/automation
+
 flutter:
   uses-material-design: true
   assets:
