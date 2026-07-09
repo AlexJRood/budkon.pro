@@ -23,4 +23,5 @@ urlpatterns = [
     path("api/v1/", include("apps.kosztorysy.urls")),
     path("api/v1/", include("apps.przetargi.urls")),
     path("api/v1/", include("apps.dziennik.urls")),
+    path("api/v1/", include("apps.harmonogram.urls")),
 ]

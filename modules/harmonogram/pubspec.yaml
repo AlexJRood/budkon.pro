@@ -12,3 +12,6 @@ dependencies:
   flutter_riverpod: ^2.6.1
   core:
     path: ../../core
+  dio: ^5.7.0
+  intl: any
+  flutter_screenutil: ^5.9.3
