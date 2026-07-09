@@ -1,18 +1,18 @@
 import 'package:core/kernel/kernel.dart';
-import 'package:flutter/material.dart';
+import '../screens/list/kosztorysy_list_screen.dart';
+import '../screens/detail/kosztorys_detail_screen.dart';
 
 List<RouteSpec> kosztorysyRoutes() => [
   RouteSpec(
     '/kosztorysy',
-    (context, params, data) => const _KosztorysyPlaceholder(),
+    (context, params, data) => KosztorysyListScreen(
+      budowaId: data?['budowaId'] as int?,
+    ),
+  ),
+  RouteSpec(
+    '/kosztorysy/:id',
+    (context, params, data) => KosztorysDetailScreen(
+      kosztorysId: int.tryParse(params['id'] ?? '') ?? 0,
+    ),
   ),
 ];
-
-// TODO: replace with real screen
-class _KosztorysyPlaceholder extends StatelessWidget {
-  const _KosztorysyPlaceholder();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Kosztorysy — w budowie')),
-  );
-}
