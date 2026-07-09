@@ -1,18 +1,17 @@
 import 'package:core/kernel/kernel.dart';
-import 'package:flutter/material.dart';
+import '../screens/list/podwykonawcy_list_screen.dart';
 
 List<RouteSpec> podwykonawcyRoutes() => [
-  RouteSpec(
-    '/podwykonawcy',
-    (context, params, data) => const _PodwykonawcyPlaceholder(),
-  ),
-];
-
-// TODO: replace with real screen
-class _PodwykonawcyPlaceholder extends StatelessWidget {
-  const _PodwykonawcyPlaceholder();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Podwykonawcy — w budowie')),
-  );
-}
+      RouteSpec(
+        '/podwykonawcy',
+        (ctx, params, data) {
+          final args = data as Map?;
+          return PodwykonawcyListScreen(
+            budowaId: int.tryParse(params['budowaId'] ?? '') ??
+                args?['budowaId'] as int? ??
+                0,
+            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+          );
+        },
+      ),
+    ];

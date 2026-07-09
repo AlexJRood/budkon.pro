@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "apps.przetargi",
     "apps.dziennik",
     "apps.harmonogram",
+    "apps.kontakty",
 ]
 
 MIDDLEWARE = [
