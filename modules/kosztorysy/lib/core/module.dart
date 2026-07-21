@@ -4,6 +4,7 @@ import '../data/models/kosztorys_model.dart';
 import '../screens/list/kosztorysy_list_screen.dart';
 import '../screens/detail/kosztorys_detail_screen.dart';
 import '../screens/form/kosztorys_form_screen.dart';
+import '../screens/projekt_upload/projekt_upload_screen.dart';
 import 'dock.dart';
 
 class KosztorysyModule extends AppModule {
@@ -23,6 +24,11 @@ class KosztorysyModule extends AppModule {
           final args = data as Map?;
           return KosztorysFormScreen(
               defaultBudowaId: args?['budowaId'] as int?);
+        },
+        '/kosztorysy/projekt-upload': (context, state, data) {
+          final args = data as Map?;
+          return ProjektUploadScreen(
+              kosztorysId: args?['kosztorysId'] as int?);
         },
         RegExp(r'^/kosztorysy/(?<id>\d+)$'): (context, state, data) =>
             KosztorysDetailScreen(

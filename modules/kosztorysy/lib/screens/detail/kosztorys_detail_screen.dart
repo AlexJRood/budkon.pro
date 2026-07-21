@@ -50,6 +50,14 @@ class _KosztorysDetail extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           actions: [
             IconButton(
+              icon: Icon(Icons.architecture, color: theme.textColor),
+              tooltip: 'Wczytaj projekt architektoniczny',
+              onPressed: () => ref.read(navigationService).pushNamedScreen(
+                '/kosztorysy/projekt-upload',
+                data: {'kosztorysId': kosztorys.id},
+              ),
+            ),
+            IconButton(
               icon: Icon(Icons.edit_outlined, color: theme.textColor),
               onPressed: () => _openEdit(context, ref),
             ),

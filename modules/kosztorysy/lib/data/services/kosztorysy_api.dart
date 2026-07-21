@@ -90,6 +90,22 @@ class KosztorysyApi {
   Future<void> deletePozycja(int id) =>
       _dio.delete('/kosztorysy-pozycje/$id/', options: _opts);
 
+  // ── Import pozycji z projektu ───────────────────────────────────────────────
+
+  Future<void> importProjektPozycje(
+    int kosztorysId,
+    List<Map<String, dynamic>> pozycje,
+  ) async {
+    await _dio.post(
+      '/kosztorysy/$kosztorysId/import-pozycje/',
+      data: {'pozycje': pozycje},
+      options: Options(
+        headers: {'X-Company-Id': '1'},
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
+  }
+
   // ── KNR search ──────────────────────────────────────────────────────────────
 
   Future<List<KnrPozycjaModel>> searchKnr(String q) async {
