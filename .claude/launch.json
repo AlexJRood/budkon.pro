@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "budkon",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "windows", "--no-sound-null-safety"],
+      "port": 8080
+    }
+  ]
+}
