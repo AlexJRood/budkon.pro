@@ -7,7 +7,7 @@ class HarmonogramApi {
 
   Future<TimelineData> timeline(int budowaId) async {
     final r = await _dio.get(
-      '/harmonogram/timeline/',
+      '/harmonogram-timeline/',
       queryParameters: {'budowa': budowaId},
     );
     return TimelineData.fromJson(r.data as Map<String, dynamic>);
@@ -15,7 +15,7 @@ class HarmonogramApi {
 
   Future<void> autoGeneruj(int budowaId) async {
     await _dio.post(
-      '/harmonogram/timeline/auto-generuj/',
+      '/harmonogram-timeline/auto-generuj/',
       data: {'budowa_id': budowaId},
     );
   }

@@ -97,11 +97,7 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
               ),
             ),
             data: (przetargi) => przetargi.isEmpty
-                ? _EmptyState(
-                    theme: theme,
-                    onFetch: () => ref
-                        .read(fetchProvider.notifier)
-                        .fetch(ref.read(przetargiListProvider.notifier)))
+                ? _EmptyState(theme: theme)
                 : RefreshIndicator(
                     color: theme.themeColor,
                     onRefresh: () async {
@@ -255,13 +251,31 @@ class _StatusFilterBar extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  final VoidCallback onFetch;
+class _EmptyState extends ConsumerWidget {
   final ThemeColors theme;
-  const _EmptyState({required this.onFetch, required this.theme});
+  const _EmptyState({required this.theme});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fetchState = ref.watch(fetchProvider);
+    final isFetching = fetchState.isLoading;
+
+    ref.listen<AsyncValue<int?>>(fetchProvider, (_, next) {
+      if (!context.mounted) return;
+      next.whenOrNull(
+        data: (n) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(n != null && n > 0 ? 'Pobrano $n nowych przetargów' : 'Brak nowych przetargów'),
+          behavior: SnackBarBehavior.floating,
+        )),
+        error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Błąd pobierania: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        )),
+      );
+    });
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -284,9 +298,19 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              icon: const Icon(Icons.cloud_download_outlined),
-              label: const Text('Pobierz z BZP'),
-              onPressed: onFetch,
+              icon: isFetching
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.cloud_download_outlined),
+              label: Text(isFetching ? 'Pobieranie...' : 'Pobierz z BZP'),
+              onPressed: isFetching
+                  ? null
+                  : () => ref
+                      .read(fetchProvider.notifier)
+                      .fetch(ref.read(przetargiListProvider.notifier)),
               style: FilledButton.styleFrom(
                   backgroundColor: theme.themeColor,
                   foregroundColor: theme.buttonTextColor),
