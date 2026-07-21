@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> materialyDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> materialyDockItems() => [
     iconKey: 'inventory_2',
     route: '/materialy',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 50,
     requiresAuth: true,
   ),
 ];
+

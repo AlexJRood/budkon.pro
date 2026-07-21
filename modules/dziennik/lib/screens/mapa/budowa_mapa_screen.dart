@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:latlong2/latlong.dart';
 import '../../data/models/dziennik_model.dart';
 import '../../data/providers/dziennik_provider.dart';
@@ -17,39 +18,40 @@ class BudowaMapaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(marketyProvider(budowaId));
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mapa budowy'),
+            Text('Mapa budowy', style: TextStyle(color: theme.textColor)),
             Text(
               budowaNazwa,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(color: Colors.white70),
+              style: TextStyle(fontSize: 11, color: theme.textColor.withAlpha(160)),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: theme.textColor),
             onPressed: () => ref.invalidate(marketyProvider(budowaId)),
           ),
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.location_off, size: 48, color: Colors.red),
               const SizedBox(height: 12),
-              Text(e.toString()),
+              Text(e.toString(), style: TextStyle(color: theme.textColor)),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(marketyProvider(budowaId)),
@@ -63,6 +65,7 @@ class BudowaMapaScreen extends ConsumerWidget {
           budowaLon: data.budowaLon,
           budowaNazwa: budowaNazwa,
           markety: data.markety,
+          theme: theme,
         ),
       ),
     );
@@ -74,12 +77,14 @@ class _MapView extends StatefulWidget {
   final double budowaLon;
   final String budowaNazwa;
   final List<MarketBudowlany> markety;
+  final ThemeColors theme;
 
   const _MapView({
     required this.budowaLat,
     required this.budowaLon,
     required this.budowaNazwa,
     required this.markety,
+    required this.theme,
   });
 
   @override
@@ -108,7 +113,6 @@ class _MapViewState extends State<_MapView> {
             ),
             MarkerLayer(
               markers: [
-                // Budowa — czerwona szpilka
                 Marker(
                   point: budowaPoint,
                   width: 40,
@@ -118,7 +122,6 @@ class _MapViewState extends State<_MapView> {
                     child: const _BudowaPin(),
                   ),
                 ),
-                // Markety — pomarańczowe ikony
                 ...widget.markety.map(
                   (m) => Marker(
                     point: LatLng(m.lat, m.lon),
@@ -135,14 +138,12 @@ class _MapViewState extends State<_MapView> {
           ],
         ),
 
-        // Legenda
         Positioned(
           top: 12,
           right: 12,
-          child: _Legend(marketCount: widget.markety.length),
+          child: _Legend(marketCount: widget.markety.length, theme: widget.theme),
         ),
 
-        // Popup wybranego marketu
         if (_selected != null)
           Positioned(
             bottom: 0,
@@ -153,14 +154,13 @@ class _MapViewState extends State<_MapView> {
               budowaLat: widget.budowaLat,
               budowaLon: widget.budowaLon,
               onClose: () => setState(() => _selected = null),
+              theme: widget.theme,
             ),
           ),
       ],
     );
   }
 }
-
-// ---- Piny ---------------------------------------------------------------
 
 class _BudowaPin extends StatelessWidget {
   const _BudowaPin();
@@ -174,11 +174,7 @@ class _BudowaPin extends StatelessWidget {
             backgroundColor: Colors.red,
             child: Icon(Icons.construction, color: Colors.white, size: 18),
           ),
-          SizedBox(
-            width: 2,
-            height: 8,
-            child: ColoredBox(color: Colors.red),
-          ),
+          SizedBox(width: 2, height: 8, child: ColoredBox(color: Colors.red)),
         ],
       );
 }
@@ -191,38 +187,31 @@ class _MarketPin extends StatelessWidget {
   Widget build(BuildContext context) => CircleAvatar(
         radius: 18,
         backgroundColor: isSelected ? Colors.orange : Colors.orange.shade700,
-        child: Icon(
-          Icons.store,
-          color: Colors.white,
-          size: isSelected ? 20 : 16,
-        ),
+        child: Icon(Icons.store, color: Colors.white, size: isSelected ? 20 : 16),
       );
 }
 
-// ---- UI -----------------------------------------------------------------
-
 class _Legend extends StatelessWidget {
   final int marketCount;
-  const _Legend({required this.marketCount});
+  final ThemeColors theme;
+  const _Legend({required this.marketCount, required this.theme});
 
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface.withOpacity(0.92),
+          color: theme.secondaryWidgetColor.withAlpha(235),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.bordercolor.withAlpha(60)),
           boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black26)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _LegendRow(color: Colors.red, label: 'Budowa'),
+            _LegendRow(color: Colors.red, label: 'Budowa', theme: theme),
             const SizedBox(height: 4),
-            _LegendRow(
-              color: Colors.orange.shade700,
-              label: 'Sklepy ($marketCount)',
-            ),
+            _LegendRow(color: Colors.orange.shade700, label: 'Sklepy ($marketCount)', theme: theme),
           ],
         ),
       );
@@ -231,7 +220,8 @@ class _Legend extends StatelessWidget {
 class _LegendRow extends StatelessWidget {
   final Color color;
   final String label;
-  const _LegendRow({required this.color, required this.label});
+  final ThemeColors theme;
+  const _LegendRow({required this.color, required this.label, required this.theme});
 
   @override
   Widget build(BuildContext context) => Row(
@@ -239,7 +229,7 @@ class _LegendRow extends StatelessWidget {
         children: [
           CircleAvatar(radius: 6, backgroundColor: color),
           const SizedBox(width: 6),
-          Text(label, style: Theme.of(context).textTheme.labelSmall),
+          Text(label, style: TextStyle(color: theme.textColor, fontSize: 11)),
         ],
       );
 }
@@ -249,12 +239,14 @@ class _MarketSheet extends StatelessWidget {
   final double budowaLat;
   final double budowaLon;
   final VoidCallback onClose;
+  final ThemeColors theme;
 
   const _MarketSheet({
     required this.market,
     required this.budowaLat,
     required this.budowaLon,
     required this.onClose,
+    required this.theme,
   });
 
   double _dystansKm() {
@@ -268,22 +260,22 @@ class _MarketSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final km = _dystansKm();
 
     return Container(
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: theme.secondaryWidgetColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.bordercolor.withAlpha(60)),
         boxShadow: const [BoxShadow(blurRadius: 8, color: Colors.black26)],
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: cs.secondaryContainer,
-            child: const Icon(Icons.store),
+            backgroundColor: theme.themeColor.withAlpha(40),
+            child: Icon(Icons.store, color: theme.themeColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -293,26 +285,24 @@ class _MarketSheet extends StatelessWidget {
               children: [
                 Text(
                   market.nazwa,
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 if (market.adres.isNotEmpty)
                   Text(
                     market.adres,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 Text(
                   '${km.toStringAsFixed(1)} km od budowy',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: cs.primary,
-                      ),
+                  style: TextStyle(color: theme.themeColor, fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close, color: theme.textColor),
             onPressed: onClose,
           ),
         ],

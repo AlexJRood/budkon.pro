@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> przetargiDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> przetargiDockItems() => [
     iconKey: 'search',
     route: '/przetargi',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 25,
     requiresAuth: true,
   ),
 ];
+

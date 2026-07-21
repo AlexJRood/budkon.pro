@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <base href="/">
+    <link rel="preload" href="main.dart.js" as="script">
+    <!-- Stripe.js: async so it doesn't block HTML parsing / Flutter bootstrap.
+         Only needed on payment screens; Dart applies Stripe settings lazily. -->
+    <script async src="https://js.stripe.com/v3/"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=0.87">
+
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="A new Real estate portal. Every thing you need on the palm of your hand.">
+    <meta http-equiv="content-security-policy" content="microphone=(self)">
+
+    <!-- iOS meta tags & icons -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Budkon.pro">
+    <link rel="apple-touch-icon" href="/icons/Icon-192.png">
+
+    <!-- iOS meta tags & icons -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <title>Budkon</title>
+
+    <meta name="google-signin-client_id"
+          content="749372972983-8k4sv4vqoo4pdaqk532hu52i1mv7tbn7.apps.googleusercontent.com">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JPMK21YCCT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-JPMK21YCCT');
+    </script>
+
+</head>
+
+<body>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs" type="module"></script>
+<script type="module">
+    var { pdfjsLib } = globalThis;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.mjs';
+
+    var pdfRenderOptions = {
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/cmaps/',
+      cMapPacked: true,
+    };
+</script>
+
+<script src="flutter_bootstrap.js" async></script>
+
+<script async src="https://apis.google.com/js/platform.js"></script>
+
+<video id="video" controls style="display:none"></video>
+
+</body>
+
+</html>

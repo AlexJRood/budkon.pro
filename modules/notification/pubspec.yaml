@@ -22,8 +22,6 @@ dependencies:
     path: ../chat
   mail:
     path: ../mail
-  association:
-    path: ../association
   wall:
     path: ../wall
   crm_agent:

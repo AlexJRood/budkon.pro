@@ -11,8 +11,6 @@ environment:
 dependencies:
   core:
     path: ../../core
-  association:
-    path: ../association
   flutter:
     sdk: flutter
   network_monitoring:

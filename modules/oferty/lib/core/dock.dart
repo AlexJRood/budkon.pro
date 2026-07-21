@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> ofertyDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> ofertyDockItems() => [
     iconKey: 'description',
     route: '/oferty',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 30,
     requiresAuth: true,
   ),
 ];
+

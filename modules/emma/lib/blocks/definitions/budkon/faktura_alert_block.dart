@@ -1,46 +1,58 @@
-import 'package:flutter/material.dart';
-import '../../core/block_descriptor.dart';
-import '../../core/block_definition.dart';
-import '../../core/block_registry.dart';
-import '../../widgets/emma_block_card_shell.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:emma/blocks/core/block_definition.dart';
+import 'package:emma/blocks/core/block_descriptor.dart';
+import 'package:emma/blocks/definitions/shared/block_ui.dart';
 
 class FakturaAlertBlockDefinition extends EmmaBlockDefinition {
-  const FakturaAlertBlockDefinition()
-      : super(
-          type: EmmaBlockDescriptor.fakturaAlert,
-          title: 'Faktura do wystawienia',
-          description: 'Alert o oczekujących fakturach VAT',
-          iconCodePoint: 0xe237, // receipt_long
-          color: Color(0xFF26A69A),
-        );
+  const FakturaAlertBlockDefinition();
 
   @override
-  Widget buildCard(BuildContext context, Map<String, dynamic> data) =>
-      _FakturaAlertCard(data: data);
-}
-
-class _FakturaAlertCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const _FakturaAlertCard({required this.data});
+  String get key => 'faktura_alert';
 
   @override
-  Widget build(BuildContext context) {
+  bool supports(EmmaBlockDescriptor block) =>
+      block.type == EmmaBlockType.fakturaAlert;
+
+  @override
+  Widget buildBlock({
+    required BuildContext context,
+    required WidgetRef ref,
+    required EmmaBlockDescriptor block,
+    required double maxWidth,
+    required String messageId,
+  }) {
+    final data = block.raw;
     final ilosc = data['ilosc_oczekujacych'] as int? ?? 0;
-    final nastepna = data['nastepna_nazwa'] as String? ?? 'Faktura';
-    final kwota = data['nastepna_kwota_brutto'] as double? ?? 0;
-    final klient = data['klient'] as String? ?? '';
+    final nastepna = data['nastepna_nazwa']?.toString() ?? 'Faktura';
+    final kwota = (data['nastepna_kwota_brutto'] as num?)?.toDouble() ?? 0;
+    final klient = data['klient']?.toString() ?? '';
     final dni = data['dni_do_platnosci'] as int?;
 
+    const accent = Color(0xFF26A69A);
+
     return EmmaBlockCardShell(
-      title: 'Faktury',
-      accent: const Color(0xFF26A69A),
-      tag: EmmaTag(
-        label: '$ilosc do wystawienia',
-        color: ilosc > 0 ? const Color(0xFF26A69A) : Colors.grey,
-      ),
+      maxWidth: maxWidth,
+      borderColor: accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(children: [
+            const EmmaAccentIcon(icon: Icons.receipt_long_outlined, color: accent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Faktury',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ),
+            EmmaTag(
+              label: '$ilosc do wystawienia',
+              color: ilosc > 0 ? accent : Colors.grey,
+            ),
+          ]),
+          const SizedBox(height: 8),
           Text(
             nastepna,
             style: const TextStyle(
@@ -50,7 +62,7 @@ class _FakturaAlertCard extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Row(children: [
-            const EmmaAccentIcon(Icons.person_outline, color: Color(0xFF26A69A)),
+            const EmmaAccentIcon(icon: Icons.person_outline, color: accent),
             const SizedBox(width: 5),
             Expanded(
               child: Text(
@@ -63,16 +75,13 @@ class _FakturaAlertCard extends StatelessWidget {
             Text(
               '${kwota.toStringAsFixed(2)} zł',
               style: const TextStyle(
-                  color: Color(0xFF26A69A),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13),
+                  color: accent, fontWeight: FontWeight.w700, fontSize: 13),
             ),
           ]),
           if (dni != null) ...[
             const SizedBox(height: 3),
             Row(children: [
-              const EmmaAccentIcon(Icons.schedule_outlined,
-                  color: Color(0xFF26A69A)),
+              const EmmaAccentIcon(icon: Icons.schedule_outlined, color: accent),
               const SizedBox(width: 5),
               Text(
                 'Termin płatności: $dni dni',
@@ -86,12 +95,21 @@ class _FakturaAlertCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(children: [
             const Spacer(),
-            EmmaActionPill(label: 'Wystaw FV', route: '/faktury/nowa'),
+            EmmaActionPill(
+              label: 'Wystaw FV',
+              icon: Icons.add_outlined,
+              onTap: null,
+            ),
             const SizedBox(width: 8),
-            EmmaActionPill(label: 'Lista', route: '/faktury'),
+            EmmaActionPill(
+              label: 'Lista',
+              icon: Icons.list_outlined,
+              onTap: null,
+            ),
           ]),
         ],
       ),
     );
   }
 }
+

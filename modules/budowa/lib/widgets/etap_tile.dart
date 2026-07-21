@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../data/models/budowa_model.dart';
 
 class EtapTile extends StatelessWidget {
@@ -34,10 +34,10 @@ class EtapTile extends StatelessWidget {
                     etap.nazwa,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      decoration: etap.status == StatusEtapu.zakończony
+                      decoration: etap.status == StatusEtapu.zakonczony
                           ? TextDecoration.lineThrough
                           : null,
-                      color: etap.status == StatusEtapu.zakończony
+                      color: etap.status == StatusEtapu.zakonczony
                           ? cs.outline
                           : null,
                     ),
@@ -79,7 +79,7 @@ class _StatusIcon extends StatelessWidget {
     return switch (status) {
       StatusEtapu.planowany => Icon(Icons.radio_button_unchecked, size: 22, color: cs.outline),
       StatusEtapu.wToku => Icon(Icons.pending_outlined, size: 22, color: cs.primary),
-      StatusEtapu.zakończony => Icon(Icons.check_circle, size: 22, color: Colors.green),
+      StatusEtapu.zakonczony => Icon(Icons.check_circle, size: 22, color: Colors.green),
     };
   }
 }
@@ -102,3 +102,4 @@ class _StatusMenu extends StatelessWidget {
     );
   }
 }
+

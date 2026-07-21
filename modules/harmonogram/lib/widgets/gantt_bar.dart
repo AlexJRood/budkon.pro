@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../data/models/harmonogram_model.dart';
 
 class GanttBar extends StatelessWidget {
@@ -15,7 +15,7 @@ class GanttBar extends StatelessWidget {
 
   Color _barColor(BuildContext ctx) {
     final cs = Theme.of(ctx).colorScheme;
-    if (zadanie.isOpóźnione) return Colors.orange.shade700;
+    if (zadanie.isOpoznione) return Colors.orange.shade700;
     return switch (zadanie.status) {
       StatusZadania.zakonczone => cs.secondary,
       StatusZadania.w_toku => cs.primary,
@@ -85,7 +85,7 @@ class GanttBar extends StatelessWidget {
               ),
             ),
             // Opóźnienie marker
-            if (zadanie.isOpóźnione)
+            if (zadanie.isOpoznione)
               Positioned(
                 right: 4,
                 top: 0,
@@ -107,3 +107,4 @@ class GanttBar extends StatelessWidget {
     });
   }
 }
+

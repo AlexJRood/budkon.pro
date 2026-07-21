@@ -3,17 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:hously_flutter/const/backgroundgradient.dart';
-import 'package:hously_flutter/const/route_constant.dart';
+import 'package:budkon_flutter/const/backgroundgradient.dart';
+import 'package:budkon_flutter/const/route_constant.dart';
 import 'package:core/theme/design.dart';
-import 'package:hously_flutter/widgets/crm/appbar_crm.dart';
-import 'package:hously_flutter/widgets/network_monitoring/component.dart';
-import 'package:hously_flutter/widgets/side_menu/side_menu_manager.dart';
-import 'package:hously_flutter/widgets/sidebar/sidebar_network_monitoring.dart';
+import 'package:budkon_flutter/widgets/crm/appbar_crm.dart';
+import 'package:budkon_flutter/widgets/network_monitoring/component.dart';
+import 'package:budkon_flutter/widgets/side_menu/side_menu_manager.dart';
+import 'package:budkon_flutter/widgets/sidebar/sidebar_network_monitoring.dart';
 // Zaimportuj provider historii nawigacji
 import 'package:pie_menu/pie_menu.dart';
 
-import 'package:hously_flutter/widgets/side_menu/slide_rotate_menu.dart';
+import 'package:budkon_flutter/widgets/side_menu/slide_rotate_menu.dart';
 
 class HomeMonitoringPcPage extends ConsumerWidget {
   const HomeMonitoringPcPage({super.key});

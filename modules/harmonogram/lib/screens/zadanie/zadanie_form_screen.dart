@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/harmonogram_model.dart';
 import '../../data/providers/harmonogram_provider.dart';
 
@@ -60,8 +61,7 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
       if (isStart) {
         _dataStart = picked;
         if (_dataKoniec != null && _dataKoniec!.isBefore(picked)) {
-          _dataKoniec = picked.add(
-              Duration(days: int.tryParse(_dniCtrl.text) ?? 7));
+          _dataKoniec = picked.add(Duration(days: int.tryParse(_dniCtrl.text) ?? 7));
         }
       } else {
         _dataKoniec = picked;
@@ -71,7 +71,6 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     final payload = <String, dynamic>{
       'nazwa': _nazwaCtrl.text.trim(),
       'opis': _opisCtrl.text.trim(),
@@ -79,41 +78,48 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
       'budzet': double.tryParse(_budzetCtrl.text) ?? 0,
       'czas_trwania_dni': int.tryParse(_dniCtrl.text) ?? 7,
       if (_etapId != null) 'etap': _etapId,
-      if (_dataStart != null)
-        'data_start': _dataStart!.toIso8601String().split('T').first,
-      if (_dataKoniec != null)
-        'data_koniec': _dataKoniec!.toIso8601String().split('T').first,
+      if (_dataStart != null) 'data_start': _dataStart!.toIso8601String().split('T').first,
+      if (_dataKoniec != null) 'data_koniec': _dataKoniec!.toIso8601String().split('T').first,
     };
-
     final result = await ref.read(zadanieFormProvider.notifier).zapisz(
-          budowaId: widget.budowaId,
-          zadanieId: widget.zadanieId,
-          payload: payload,
-        );
-
-    if (result != null && mounted) {
-      Navigator.pop(context, true);
-    }
+      budowaId: widget.budowaId, zadanieId: widget.zadanieId, payload: payload);
+    if (result != null && mounted) Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final formState = ref.watch(zadanieFormProvider);
 
+    InputDecoration _dec(String label) => InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+      filled: true,
+      fillColor: theme.textFieldColor,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      isDense: true,
+    );
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(widget.zadanieId == null ? 'Nowe zadanie' : 'Edytuj zadanie'),
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text(widget.zadanieId == null ? 'Nowe zadanie' : 'Edytuj zadanie',
+            style: TextStyle(color: theme.textColor)),
         actions: [
           if (formState.isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
+            Padding(padding: const EdgeInsets.all(16),
+                child: SizedBox.square(dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor)))
           else
-            TextButton(onPressed: _submit, child: const Text('Zapisz')),
+            TextButton(
+              onPressed: _submit,
+              child: Text('Zapisz', style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
+            ),
         ],
       ),
       body: Form(
@@ -123,96 +129,57 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
           children: [
             TextFormField(
               controller: _nazwaCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Nazwa zadania',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Nazwa zadania'),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _opisCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Opis (opcjonalny)',
-                border: OutlineInputBorder(),
-              ),
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Opis (opcjonalny)'),
             ),
             const SizedBox(height: 16),
 
-            // Status
             DropdownButtonFormField<StatusZadania>(
               value: _status,
-              decoration: const InputDecoration(
-                labelText: 'Status',
-                border: OutlineInputBorder(),
-              ),
-              items: StatusZadania.values
-                  .map((s) => DropdownMenuItem(value: s, child: Text(s.label)))
-                  .toList(),
+              dropdownColor: theme.popupcontainercolor,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Status'),
+              items: StatusZadania.values.map((s) =>
+                DropdownMenuItem(value: s, child: Text(s.label, style: TextStyle(color: theme.textColor)))).toList(),
               onChanged: (v) => setState(() => _status = v!),
             ),
             const SizedBox(height: 16),
 
-            // Daty
-            Row(
-              children: [
-                Expanded(
-                  child: _DateField(
-                    label: 'Data start',
-                    date: _dataStart,
-                    onTap: () => _pickDate(true),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _DateField(
-                    label: 'Data koniec',
-                    date: _dataKoniec,
-                    onTap: () => _pickDate(false),
-                  ),
-                ),
-              ],
-            ),
+            Row(children: [
+              Expanded(child: _DateField(label: 'Data start', date: _dataStart, onTap: () => _pickDate(true), theme: theme)),
+              const SizedBox(width: 12),
+              Expanded(child: _DateField(label: 'Data koniec', date: _dataKoniec, onTap: () => _pickDate(false), theme: theme)),
+            ]),
             const SizedBox(height: 16),
 
-            // Czas trwania + budżet
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _dniCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Czas trwania (dni)',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _budzetCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Budżet (PLN)',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            Row(children: [
+              Expanded(child: TextFormField(
+                controller: _dniCtrl,
+                keyboardType: TextInputType.number,
+                style: TextStyle(color: theme.textColor),
+                decoration: _dec('Czas trwania (dni)'),
+              )),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(
+                controller: _budzetCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: TextStyle(color: theme.textColor),
+                decoration: _dec('Budżet (PLN)'),
+              )),
+            ]),
 
             if (formState.hasError) ...[
               const SizedBox(height: 16),
-              Text(
-                formState.error.toString(),
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(formState.error.toString(), style: const TextStyle(color: Colors.red)),
             ],
 
             const SizedBox(height: 80),
@@ -227,28 +194,30 @@ class _DateField extends StatelessWidget {
   final String label;
   final DateTime? date;
   final VoidCallback onTap;
+  final ThemeColors theme;
 
-  const _DateField({
-    required this.label,
-    required this.date,
-    required this.onTap,
-  });
+  const _DateField({required this.label, required this.date, required this.onTap, required this.theme});
 
   @override
   Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-            isDense: true,
-            suffixIcon: const Icon(Icons.calendar_today, size: 18),
-          ),
-          child: Text(
-            date != null
-                ? '${date!.day.toString().padLeft(2, '0')}.${date!.month.toString().padLeft(2, '0')}.${date!.year}'
-                : '—',
-          ),
-        ),
-      );
+    onTap: onTap,
+    child: InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+        filled: true,
+        fillColor: theme.textFieldColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+        isDense: true,
+        suffixIcon: Icon(Icons.calendar_today, size: 18, color: theme.themeColor),
+      ),
+      child: Text(
+        date != null ? '${date!.day.toString().padLeft(2, '0')}.${date!.month.toString().padLeft(2, '0')}.${date!.year}' : '—',
+        style: TextStyle(color: theme.textColor),
+      ),
+    ),
+  );
 }

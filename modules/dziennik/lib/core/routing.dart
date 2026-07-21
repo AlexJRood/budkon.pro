@@ -1,4 +1,5 @@
-import 'package:core/kernel/kernel.dart';
+import 'package:core/kernel/kernel.dart' hide AppModule;
+import 'package:core/shell/manager/bar_manager.dart';
 import '../screens/list/dziennik_list_screen.dart';
 import '../screens/form/dziennik_form_screen.dart';
 import '../screens/detail/dziennik_detail_screen.dart';
@@ -9,11 +10,12 @@ List<RouteSpec> dziennikRoutes() => [
         '/dziennik',
         (ctx, params, data) {
           final args = data as Map?;
-          return DziennikListScreen(
-            budowaId: int.tryParse(params['budowaId'] ?? '') ??
-                args?['budowaId'] as int? ??
-                0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+          return BarManager(appModule: AppModule.budkon, childPc: DziennikListScreen(
+              budowaId: int.tryParse(params['budowaId'] ?? '') ??
+                  args?['budowaId'] as int? ??
+                  0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+            ),
           );
         },
       ),
@@ -21,10 +23,11 @@ List<RouteSpec> dziennikRoutes() => [
         '/dziennik/form',
         (ctx, params, data) {
           final args = data as Map?;
-          return DziennikFormScreen(
-            budowaId: args?['budowaId'] as int? ?? 0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
-            wpisId: args?['wpisId'] as int?,
+          return BarManager(appModule: AppModule.budkon, childPc: DziennikFormScreen(
+              budowaId: args?['budowaId'] as int? ?? 0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+              wpisId: args?['wpisId'] as int?,
+            ),
           );
         },
       ),
@@ -32,10 +35,11 @@ List<RouteSpec> dziennikRoutes() => [
         '/dziennik/detail',
         (ctx, params, data) {
           final args = data as Map?;
-          return DziennikDetailScreen(
-            wpisId: args?['wpisId'] as int? ?? 0,
-            budowaId: args?['budowaId'] as int? ?? 0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+          return BarManager(appModule: AppModule.budkon, childPc: DziennikDetailScreen(
+              wpisId: args?['wpisId'] as int? ?? 0,
+              budowaId: args?['budowaId'] as int? ?? 0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+            ),
           );
         },
       ),
@@ -43,9 +47,10 @@ List<RouteSpec> dziennikRoutes() => [
         '/dziennik/mapa',
         (ctx, params, data) {
           final args = data as Map?;
-          return BudowaMapaScreen(
-            budowaId: args?['budowaId'] as int? ?? 0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+          return BarManager(appModule: AppModule.budkon, childPc: BudowaMapaScreen(
+              budowaId: args?['budowaId'] as int? ?? 0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+            ),
           );
         },
       ),

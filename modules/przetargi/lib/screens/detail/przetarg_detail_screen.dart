@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/przetarg_model.dart';
@@ -14,17 +15,23 @@ class PrzetargDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(przetargDetailProvider(przetargId));
 
     return state.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
       ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Błąd: $e')),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: theme.textColor),
+        ),
+        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
       ),
-      data: (p) => _PrzetargDetailView(przetarg: p, przetargId: przetargId),
+      data: (p) => _PrzetargDetailView(przetarg: p, przetargId: przetargId, theme: theme),
     );
   }
 }
@@ -32,28 +39,29 @@ class PrzetargDetailScreen extends ConsumerWidget {
 class _PrzetargDetailView extends ConsumerWidget {
   final PrzetargDetail przetarg;
   final int przetargId;
+  final ThemeColors theme;
 
   const _PrzetargDetailView(
-      {required this.przetarg, required this.przetargId});
+      {required this.przetarg, required this.przetargId, required this.theme});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
     final p = przetarg;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
-          // AppBar z tytułem
           SliverAppBar(
             expandedHeight: 160,
             pinned: true,
+            backgroundColor: Colors.transparent,
+            iconTheme: IconThemeData(color: theme.textColor),
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               title: Text(
                 p.tytul,
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14, color: theme.textColor),
                 maxLines: 2,
               ),
               background: Container(
@@ -61,10 +69,7 @@ class _PrzetargDetailView extends ConsumerWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      cs.primaryContainer,
-                      cs.secondaryContainer,
-                    ],
+                    colors: [theme.sidebar, theme.themeColor.withAlpha(80)],
                   ),
                 ),
               ),
@@ -78,25 +83,23 @@ class _PrzetargDetailView extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Status + score
                 Row(
                   children: [
                     PrzetargStatusBadge(p.status),
                     const SizedBox(width: 8),
                     if (p.aiScore != null) AiScoreBadge(score: p.aiScore!),
                     const Spacer(),
-                    if (p.dniDoTerminu != null)
-                      _DniChip(dni: p.dniDoTerminu!),
+                    if (p.dniDoTerminu != null) _DniChip(dni: p.dniDoTerminu!, theme: theme),
                   ],
                 ),
                 const SizedBox(height: 20),
 
-                // Kluczowe dane
-                _InfoCard(children: [
+                _InfoCard(theme: theme, children: [
                   _InfoRow(
                     icon: Icons.business_outlined,
                     label: 'Zamawiający',
                     value: p.zamawiajacy,
+                    theme: theme,
                   ),
                   if (p.wartoscSzacunkowa != null)
                     _InfoRow(
@@ -104,12 +107,14 @@ class _PrzetargDetailView extends ConsumerWidget {
                       label: 'Wartość szacunkowa',
                       value: p.wartoscFormatted,
                       highlight: true,
+                      theme: theme,
                     ),
                   if (p.lokalizacja.isNotEmpty)
                     _InfoRow(
                       icon: Icons.location_on_outlined,
                       label: 'Lokalizacja',
                       value: p.lokalizacja,
+                      theme: theme,
                     ),
                   if (p.terminSkladania != null)
                     _InfoRow(
@@ -117,12 +122,14 @@ class _PrzetargDetailView extends ConsumerWidget {
                       label: 'Termin składania',
                       value: DateFormat('d MMMM yyyy, HH:mm', 'pl_PL')
                           .format(p.terminSkladania!.toLocal()),
+                      theme: theme,
                     ),
                   if (p.terminRealizacji != null)
                     _InfoRow(
                       icon: Icons.construction_outlined,
                       label: 'Termin realizacji',
                       value: p.terminRealizacji!,
+                      theme: theme,
                     ),
                   if (p.zrodloUrl.isNotEmpty)
                     _InfoRow(
@@ -130,37 +137,39 @@ class _PrzetargDetailView extends ConsumerWidget {
                       label: 'Źródło',
                       value: p.zrodloUrl,
                       isLink: true,
+                      theme: theme,
                     ),
                 ]),
                 const SizedBox(height: 16),
 
-                // AI ocena
                 if (p.aiScore != null) ...[
-                  _AiOcenaCard(przetarg: p),
+                  _AiOcenaCard(przetarg: p, theme: theme),
                   const SizedBox(height: 16),
                 ],
 
-                // Opis
                 if (p.opis.isNotEmpty) ...[
                   Text('Opis',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: TextStyle(
+                          color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
                   const SizedBox(height: 8),
-                  Text(p.opis,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(p.opis, style: TextStyle(color: theme.textColor)),
                   const SizedBox(height: 16),
                 ],
 
-                // CPV kody
                 if (p.cpvKody.isNotEmpty) ...[
                   Text('Kody CPV',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: TextStyle(
+                          color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
                     children: p.cpvKody
                         .map(
                           (k) => Chip(
-                            label: Text(k, style: const TextStyle(fontSize: 12)),
+                            label: Text(k,
+                                style: TextStyle(fontSize: 12, color: theme.textColor)),
+                            backgroundColor: theme.secondaryWidgetColor,
+                            side: BorderSide(color: theme.bordercolor.withAlpha(60)),
                             visualDensity: VisualDensity.compact,
                           ),
                         )
@@ -169,7 +178,6 @@ class _PrzetargDetailView extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // Akcje
                 _AkcjeBar(przetarg: p, przetargId: przetargId),
                 const SizedBox(height: 40),
               ]),
@@ -181,32 +189,23 @@ class _PrzetargDetailView extends ConsumerWidget {
   }
 }
 
-// ------------------------------------------------------------------ //
-// AI Ocena card                                                        //
-// ------------------------------------------------------------------ //
-
 class _AiOcenaCard extends StatelessWidget {
   final PrzetargDetail przetarg;
-  const _AiOcenaCard({required this.przetarg});
+  final ThemeColors theme;
+  const _AiOcenaCard({required this.przetarg, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final p = przetarg;
     final pozytywna = p.aiCzyWarto == true;
+    final color = pozytywna ? const Color(0xFF4CAF50) : Colors.red;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: pozytywna
-            ? Colors.green.shade50
-            : cs.errorContainer.withOpacity(0.15),
+        color: color.withAlpha(20),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: pozytywna
-              ? Colors.green.shade200
-              : cs.error.withOpacity(0.3),
-        ),
+        border: Border.all(color: color.withAlpha(60)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,16 +214,13 @@ class _AiOcenaCard extends StatelessWidget {
             children: [
               Icon(
                 pozytywna ? Icons.thumb_up_outlined : Icons.warning_amber_outlined,
-                color: pozytywna ? Colors.green.shade700 : cs.error,
+                color: color,
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
                 pozytywna ? 'AI rekomenduje złożenie oferty' : 'AI: wątpliwości',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: pozytywna ? Colors.green.shade800 : cs.error,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, color: color),
               ),
               const Spacer(),
               if (p.aiScore != null) AiScoreBadge(score: p.aiScore!),
@@ -232,10 +228,8 @@ class _AiOcenaCard extends StatelessWidget {
           ),
           if (p.aiUzasadnienie.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text(
-              p.aiUzasadnienie,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            Text(p.aiUzasadnienie,
+                style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 13)),
           ],
           if (p.aiUwagi.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -245,15 +239,16 @@ class _AiOcenaCard extends StatelessWidget {
               children: p.aiUwagi
                   .map(
                     (u) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: cs.surface,
+                        color: theme.secondaryWidgetColor,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: cs.outlineVariant),
+                        border: Border.all(color: theme.bordercolor.withAlpha(60)),
                       ),
                       child: Text(u,
-                          style: Theme.of(context).textTheme.labelSmall),
+                          style: TextStyle(
+                              color: theme.textColor, fontSize: 11)),
                     ),
                   )
                   .toList(),
@@ -264,10 +259,6 @@ class _AiOcenaCard extends StatelessWidget {
     );
   }
 }
-
-// ------------------------------------------------------------------ //
-// Akcje                                                                //
-// ------------------------------------------------------------------ //
 
 class _AkcjeBar extends ConsumerStatefulWidget {
   final PrzetargDetail przetarg;
@@ -285,49 +276,50 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final p = widget.przetarg;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Generuj kosztorys
         FilledButton.icon(
           icon: _generatingKosztorys
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
               : const Icon(Icons.calculate_outlined),
-          label: Text(p.kosztorysId != null
-              ? 'Regeneruj kosztorys'
-              : 'Generuj kosztorys AI'),
+          label: Text(p.kosztorysId != null ? 'Regeneruj kosztorys' : 'Generuj kosztorys AI'),
           onPressed: _generatingKosztorys ? null : _generujKosztorys,
+          style: FilledButton.styleFrom(
+              backgroundColor: theme.themeColor, foregroundColor: theme.buttonTextColor),
         ),
         const SizedBox(height: 10),
 
-        // Analizuj AI
         OutlinedButton.icon(
           icon: _analyzingAi
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor))
               : const Icon(Icons.psychology_outlined),
-          label: Text(p.aiAnalizowanyAt != null
-              ? 'Ponów analizę AI'
-              : 'Analizuj przez AI'),
+          label: Text(p.aiAnalizowanyAt != null ? 'Ponów analizę AI' : 'Analizuj przez AI'),
           onPressed: _analyzingAi ? null : _analizuj,
+          style: OutlinedButton.styleFrom(
+              foregroundColor: theme.themeColor,
+              side: BorderSide(color: theme.bordercolor.withAlpha(80))),
         ),
 
-        // Link do kosztorysu
         if (p.kosztorysId != null) ...[
           const SizedBox(height: 10),
           OutlinedButton.icon(
             icon: const Icon(Icons.description_outlined),
             label: const Text('Otwórz kosztorys'),
-            onPressed: () => Navigator.of(context)
-                .pushNamed('/kosztorysy/${p.kosztorysId}'),
+            onPressed: () =>
+                Navigator.of(context).pushNamed('/kosztorysy/${p.kosztorysId}'),
+            style: OutlinedButton.styleFrom(
+                foregroundColor: theme.themeColor,
+                side: BorderSide(color: theme.bordercolor.withAlpha(80))),
           ),
         ],
       ],
@@ -343,8 +335,8 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('Ocena AI: ${result['score']}/100 — ${result['uzasadnienie']}'),
+            content: Text(
+                'Ocena AI: ${result['score']}/100 — ${result['uzasadnienie']}'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -371,8 +363,8 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
             content: const Text('Kosztorys gotowy!'),
             action: SnackBarAction(
               label: 'Otwórz',
-              onPressed: () => Navigator.of(context)
-                  .pushNamed('/kosztorysy/$kosztorysId'),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed('/kosztorysy/$kosztorysId'),
             ),
             behavior: SnackBarBehavior.floating,
           ),
@@ -389,10 +381,6 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
   }
 }
 
-// ------------------------------------------------------------------ //
-// Status menu                                                          //
-// ------------------------------------------------------------------ //
-
 class _StatusMenu extends ConsumerWidget {
   final PrzetargDetail przetarg;
   final int przetargId;
@@ -401,16 +389,12 @@ class _StatusMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     return PopupMenuButton<StatusPrzetargu>(
-      icon: const Icon(Icons.more_vert),
+      icon: Icon(Icons.more_vert, color: theme.textColor),
       itemBuilder: (_) => StatusPrzetargu.values
           .where((s) => s != przetarg.status)
-          .map(
-            (s) => PopupMenuItem(
-              value: s,
-              child: Text(s.label),
-            ),
-          )
+          .map((s) => PopupMenuItem(value: s, child: Text(s.label)))
           .toList(),
       onSelected: (s) async {
         await ref
@@ -422,20 +406,18 @@ class _StatusMenu extends ConsumerWidget {
   }
 }
 
-// ------------------------------------------------------------------ //
-// Info card + row                                                      //
-// ------------------------------------------------------------------ //
-
 class _InfoCard extends StatelessWidget {
   final List<Widget> children;
-  const _InfoCard({required this.children});
+  final ThemeColors theme;
+  const _InfoCard({required this.children, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        color: theme.secondaryWidgetColor,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.bordercolor.withAlpha(40)),
       ),
       child: Column(children: children),
     );
@@ -446,6 +428,7 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final ThemeColors theme;
   final bool highlight;
   final bool isLink;
 
@@ -453,19 +436,19 @@ class _InfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.theme,
     this.highlight = false,
     this.isLink = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: cs.onSurfaceVariant),
+          Icon(icon, size: 16, color: theme.textColor.withAlpha(120)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -473,22 +456,15 @@ class _InfoRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: cs.onSurfaceVariant),
+                  style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 11),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: highlight ? FontWeight.bold : null,
-                        color: isLink
-                            ? cs.primary
-                            : highlight
-                                ? cs.primary
-                                : null,
-                      ),
+                  style: TextStyle(
+                    color: (isLink || highlight) ? theme.themeColor : theme.textColor,
+                    fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
               ],
             ),
@@ -501,33 +477,30 @@ class _InfoRow extends StatelessWidget {
 
 class _DniChip extends StatelessWidget {
   final int dni;
-  const _DniChip({required this.dni});
+  final ThemeColors theme;
+  const _DniChip({required this.dni, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final urgent = dni <= 7;
+    final color = urgent ? Colors.red : theme.themeColor;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: urgent ? cs.errorContainer : cs.secondaryContainer,
+        color: color.withAlpha(30),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(80)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timer_outlined,
-              size: 14,
-              color: urgent ? cs.onErrorContainer : cs.onSecondaryContainer),
+          Icon(Icons.timer_outlined, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
             '$dni dni do terminu',
             style: TextStyle(
-              color:
-                  urgent ? cs.onErrorContainer : cs.onSecondaryContainer,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
+                color: color, fontWeight: FontWeight.w600, fontSize: 12),
           ),
         ],
       ),

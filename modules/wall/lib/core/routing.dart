@@ -18,10 +18,7 @@ import 'package:wall/wall_screen/providers/single_post_fetcher.dart'
     deferred as wall_provider;
 import 'package:wall/wall_screen/screens/widgets/create_post_dialog/post_create_screen.dart'
     deferred as wall_create_post;
-import 'package:association/screens/create_social_event.dart'
-    deferred as create_association_events;
-import 'package:association/screens/events/screen/social_events.dart'
-    deferred as association_events;
+
 
 final Map<Pattern, BeamRouteBuilder> wallRoutes = {
   Routes.wall: (context, state, data) {
@@ -70,47 +67,4 @@ final Map<Pattern, BeamRouteBuilder> wallRoutes = {
     );
   },
 
-  Routes.wallEvents: (context, state, data) {
-    setupMetaTag(context);
-    return BeamPage(
-      key: const ValueKey(Routes.wallEvents),
-      title: Routes.getWebsiteTitle(context),
-      child: buildDeferredScreen(
-        association_events.loadLibrary,
-        () => association_events.PublicEventsPage(appModule: AppModule.wall),
-      ),
-    );
-  },
-
-  Routes.wallEventsDetails: (context, state, data) {
-    final slug = state.pathParameters['slug']!;
-
-    if (slug == 'create') {
-      setupMetaTag(context);
-      return BeamPage(
-        key: const ValueKey(Routes.wallEventsCreate),
-        title: Routes.getWebsiteTitle(context),
-        child: buildDeferredScreen(
-          create_association_events.loadLibrary,
-          () => create_association_events.PublicEventCreatePage(
-            baseUrl: 'https://www.superbee.cloud',
-            appModule: AppModule.wall,
-          ),
-        ),
-      );
-    } else {
-      setupMetaTag(context);
-      return BeamPage(
-        key: const ValueKey(Routes.wallEventsDetails),
-        title: Routes.getWebsiteTitle(context),
-        child: buildDeferredScreen(
-          association_events.loadLibrary,
-          () => association_events.PublicEventDetailsPage(
-            slug: slug,
-            appModule: AppModule.wall,
-          ),
-        ),
-      );
-    }
-  },
 };

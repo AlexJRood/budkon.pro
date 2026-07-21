@@ -32,6 +32,7 @@ class EmailDraftBlockDefinition extends EmmaBlockDefinition {
 
     return EmmaBlockCardShell(
       maxWidth: maxWidth,
+      borderColor: Colors.white24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

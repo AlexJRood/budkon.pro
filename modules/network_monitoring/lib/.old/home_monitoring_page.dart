@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hously_flutter/screens/network_monitoring/.old/home_monitoring_mobile_page.dart';
-import 'package:hously_flutter/screens/network_monitoring/.old/home_monitoring_pc_page.dart';
+import 'package:budkon_flutter/screens/network_monitoring/.old/home_monitoring_mobile_page.dart';
+import 'package:budkon_flutter/screens/network_monitoring/.old/home_monitoring_pc_page.dart';
 
 class HomeMonitoringPage extends StatelessWidget {
   const HomeMonitoringPage({super.key});

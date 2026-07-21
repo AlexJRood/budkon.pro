@@ -2,20 +2,20 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:get/get.dart';
-// import 'package:hously_flutter/const/backgroundgradient.dart';
-// import 'package:hously_flutter/const/route_constant.dart';
+// import 'package:budkon_flutter/const/backgroundgradient.dart';
+// import 'package:budkon_flutter/const/route_constant.dart';
 // import 'package:core/theme/design.dart';
 // import 'package:portal/models/ad_list_view_model.dart';
 // import 'package:portal/state_managers/filter_provider.dart'; // Upewnij się, że ścieżka jest poprawna
 // import 'package:core/platform/navigation_service.dart';
 // import 'package:portal/pie_menu/feed.dart';
-// import 'package:hously_flutter/widgets/appbar/hously/pc/appbar.dart';
-// import 'package:hously_flutter/widgets/side_menu/side_menu_manager.dart';
-// import 'package:hously_flutter/widgets/sidebar/sidebar.dart';
+// import 'package:budkon_flutter/widgets/appbar/hously/pc/appbar.dart';
+// import 'package:budkon_flutter/widgets/side_menu/side_menu_manager.dart';
+// import 'package:budkon_flutter/widgets/sidebar/sidebar.dart';
 // import 'package:intl/intl.dart';
 // import 'package:pie_menu/pie_menu.dart';
 //
-import 'package:hously_flutter/widgets/side_menu/slide_rotate_menu.dart';
+import 'package:budkon_flutter/widgets/side_menu/slide_rotate_menu.dart';
 //
 // class DoubleViewPCPage extends ConsumerWidget {
 //   const DoubleViewPCPage({super.key});

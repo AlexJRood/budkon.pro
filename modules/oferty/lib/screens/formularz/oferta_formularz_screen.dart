@@ -1,16 +1,14 @@
+﻿import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/services/oferty_api.dart';
 import '../podglad/oferta_detail_screen.dart';
 
-/// Formularz tworzenia oferty z kosztorysu.
-/// Krok 1: wybierz kosztorys
-/// Krok 2: dane klienta
-/// Krok 3: ustawienia (VAT, rabat, ważność, teksty)
 class OfertyFormularzScreen extends ConsumerStatefulWidget {
   final int? budowaId;
   final String budowaNazwa;
-  final int? kosztorysId; // jeśli przekazany z zewnątrz
+  final int? kosztorysId;
 
   const OfertyFormularzScreen({
     super.key,
@@ -20,28 +18,23 @@ class OfertyFormularzScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OfertyFormularzScreen> createState() =>
-      _OfertyFormularzScreenState();
+  ConsumerState<OfertyFormularzScreen> createState() => _OfertyFormularzScreenState();
 }
 
-class _OfertyFormularzScreenState
-    extends ConsumerState<OfertyFormularzScreen> {
+class _OfertyFormularzScreenState extends ConsumerState<OfertyFormularzScreen> {
   final _pageCtrl = PageController();
   int _step = 0;
   bool _saving = false;
 
-  // Krok 1
   int? _kosztorysId;
   String _kosztorysNazwa = '';
 
-  // Krok 2 — klient
   final _klientNazwaCtrl = TextEditingController();
   final _klientAdresCtrl = TextEditingController();
   final _klientNipCtrl = TextEditingController();
   final _klientEmailCtrl = TextEditingController();
   final _klientTelCtrl = TextEditingController();
 
-  // Krok 3 — ustawienia
   final _tytulCtrl = TextEditingController();
   final _wstepCtrl = TextEditingController();
   final _warunkiCtrl = TextEditingController(
@@ -53,7 +46,6 @@ class _OfertyFormularzScreenState
   double _rabatProcent = 0;
   String? _waznaDo;
 
-  // Krok wystawcy (krótkie pola)
   final _wystawcaNazwaCtrl = TextEditingController();
   final _wystawcaNipCtrl = TextEditingController();
   final _wystawcaEmailCtrl = TextEditingController();
@@ -62,9 +54,7 @@ class _OfertyFormularzScreenState
   @override
   void initState() {
     super.initState();
-    if (widget.kosztorysId != null) {
-      _kosztorysId = widget.kosztorysId;
-    }
+    if (widget.kosztorysId != null) _kosztorysId = widget.kosztorysId;
   }
 
   @override
@@ -88,10 +78,7 @@ class _OfertyFormularzScreenState
   void _nextStep() {
     if (_step < 2) {
       setState(() => _step++);
-      _pageCtrl.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _pageCtrl.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
       _generuj();
     }
@@ -100,20 +87,17 @@ class _OfertyFormularzScreenState
   void _prevStep() {
     if (_step > 0) {
       setState(() => _step--);
-      _pageCtrl.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
       Navigator.pop(context);
     }
   }
 
   bool get _canProceed => switch (_step) {
-        0 => _kosztorysId != null,
-        1 => _klientNazwaCtrl.text.trim().isNotEmpty,
-        _ => true,
-      };
+    0 => _kosztorysId != null,
+    1 => _klientNazwaCtrl.text.trim().isNotEmpty,
+    _ => true,
+  };
 
   Future<void> _generuj() async {
     setState(() => _saving = true);
@@ -121,9 +105,7 @@ class _OfertyFormularzScreenState
       final oferta = await ofertyApi.zKosztorysu({
         'kosztorys_id': _kosztorysId,
         if (widget.budowaId != null) 'budowa_id': widget.budowaId,
-        'tytul': _tytulCtrl.text.trim().isNotEmpty
-            ? _tytulCtrl.text.trim()
-            : null,
+        'tytul': _tytulCtrl.text.trim().isNotEmpty ? _tytulCtrl.text.trim() : null,
         'klient_nazwa': _klientNazwaCtrl.text.trim(),
         'klient_adres': _klientAdresCtrl.text.trim(),
         'klient_nip': _klientNipCtrl.text.trim(),
@@ -141,37 +123,33 @@ class _OfertyFormularzScreenState
       });
 
       if (!mounted) return;
-      // Przejdź do podglądu nowej oferty
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => OfertyDetailScreen(
-            ofertaId: oferta.id,
-            autoPdf: true,
-          ),
-        ),
-      );
+      Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (_) => OfertyDetailScreen(ofertaId: oferta.id, autoPdf: true)));
     } catch (e) {
       setState(() => _saving = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
         leading: BackButton(onPressed: _prevStep),
-        title: Text(['Kosztorys', 'Dane klienta', 'Ustawienia'][_step]),
+        title: Text(
+          ['Kosztorys', 'Dane klienta', 'Ustawienia'][_step],
+          style: TextStyle(color: theme.textColor),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
             value: (_step + 1) / 3,
-            backgroundColor: Colors.white24,
-            valueColor: const AlwaysStoppedAnimation(Colors.white),
+            backgroundColor: theme.textColor.withAlpha(40),
+            valueColor: AlwaysStoppedAnimation(theme.themeColor),
           ),
         ),
       ),
@@ -182,12 +160,11 @@ class _OfertyFormularzScreenState
           _KrokKosztorys(
             budowaId: widget.budowaId,
             selected: _kosztorysId,
-            onSelect: (id, nazwa) => setState(() {
-              _kosztorysId = id;
-              _kosztorysNazwa = nazwa;
-            }),
+            theme: theme,
+            onSelect: (id, nazwa) => setState(() { _kosztorysId = id; _kosztorysNazwa = nazwa; }),
           ),
           _KrokKlient(
+            theme: theme,
             nazwaCtrl: _klientNazwaCtrl,
             adresCtrl: _klientAdresCtrl,
             nipCtrl: _klientNipCtrl,
@@ -195,6 +172,7 @@ class _OfertyFormularzScreenState
             telCtrl: _klientTelCtrl,
           ),
           _KrokUstawienia(
+            theme: theme,
             tytulCtrl: _tytulCtrl,
             tytulHint: _kosztorysNazwa,
             wstepCtrl: _wstepCtrl,
@@ -216,13 +194,12 @@ class _OfertyFormularzScreenState
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: FilledButton(
             onPressed: (_canProceed && !_saving) ? _nextStep : null,
+            style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
             child: _saving
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(_step < 2 ? 'Dalej' : 'Generuj ofertę'),
+                ? SizedBox.square(dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
+                : Text(_step < 2 ? 'Dalej' : 'Generuj ofertę',
+                    style: TextStyle(color: theme.buttonTextColor)),
           ),
         ),
       ),
@@ -230,18 +207,13 @@ class _OfertyFormularzScreenState
   }
 }
 
-// ---- Krok 1: Wybór kosztorysu ----------------------------------------------
-
 class _KrokKosztorys extends ConsumerStatefulWidget {
   final int? budowaId;
   final int? selected;
+  final ThemeColors theme;
   final void Function(int id, String nazwa) onSelect;
 
-  const _KrokKosztorys({
-    required this.budowaId,
-    required this.selected,
-    required this.onSelect,
-  });
+  const _KrokKosztorys({required this.budowaId, required this.selected, required this.theme, required this.onSelect});
 
   @override
   ConsumerState<_KrokKosztorys> createState() => _KrokKosztorysState();
@@ -259,7 +231,7 @@ class _KrokKosztorysState extends ConsumerState<_KrokKosztorys> {
 
   Future<void> _zaladuj() async {
     try {
-      final dio = await _getDio();
+      final dio = _getDio();
       final r = await dio.get('/kosztorysy/', queryParameters: {
         if (widget.budowaId != null) 'budowa': widget.budowaId,
       });
@@ -274,65 +246,51 @@ class _KrokKosztorysState extends ConsumerState<_KrokKosztorys> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.theme;
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: theme.themeColor));
     }
     if (_kosztorysy.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 56, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 16),
-            const Text('Brak kosztorysów dla tej budowy'),
-            const SizedBox(height: 8),
-            Text(
-              'Utwórz kosztorys w module Kosztorysy',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline),
-            ),
-          ],
-        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.receipt_long_outlined, size: 56, color: theme.textColor.withAlpha(80)),
+          const SizedBox(height: 16),
+          Text('Brak kosztorysów dla tej budowy', style: TextStyle(color: theme.textColor)),
+          const SizedBox(height: 8),
+          Text('Utwórz kosztorys w module Kosztorysy',
+              style: TextStyle(color: theme.textColor.withAlpha(140))),
+        ]),
       );
     }
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
-          'Wybierz kosztorys jako podstawę oferty',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-        ),
+        Text('Wybierz kosztorys jako podstawę oferty',
+            style: TextStyle(color: theme.textColor.withAlpha(150))),
         const SizedBox(height: 16),
         ..._kosztorysy.map((k) {
           final id = k['id'] as int;
           final nazwa = (k['nazwa'] ?? '').toString();
           final status = (k['status'] ?? '').toString();
           final selected = widget.selected == id;
-          final cs = Theme.of(context).colorScheme;
 
-          return Card(
-            elevation: 0,
+          return Container(
             margin: const EdgeInsets.only(bottom: 10),
-            shape: RoundedRectangleBorder(
+            decoration: BoxDecoration(
+              color: selected ? theme.themeColor.withAlpha(20) : theme.userTile,
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: selected ? cs.primary : cs.outlineVariant,
+              border: Border.all(
+                color: selected ? theme.themeColor : theme.bordercolor.withAlpha(60),
                 width: selected ? 2 : 1,
               ),
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               title: Text(nazwa,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Text(status),
-              trailing: selected
-                  ? Icon(Icons.check_circle, color: cs.primary)
-                  : null,
+                  style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
+              subtitle: Text(status, style: TextStyle(color: theme.textColor.withAlpha(140))),
+              trailing: selected ? Icon(Icons.check_circle, color: theme.themeColor) : null,
               onTap: () => widget.onSelect(id, nazwa),
             ),
           );
@@ -342,15 +300,13 @@ class _KrokKosztorysState extends ConsumerState<_KrokKosztorys> {
   }
 }
 
-import 'package:dio/dio.dart';
 Dio _getDio() => Dio(BaseOptions(
-      baseUrl: 'http://127.0.0.1:8001/api/v1',
-      headers: {'X-Company-Id': '1'},
-    ));
-
-// ---- Krok 2: Dane klienta --------------------------------------------------
+  baseUrl: 'http://127.0.0.1:8001/api/v1',
+  headers: {'X-Company-Id': '1'},
+));
 
 class _KrokKlient extends StatelessWidget {
+  final ThemeColors theme;
   final TextEditingController nazwaCtrl;
   final TextEditingController adresCtrl;
   final TextEditingController nipCtrl;
@@ -358,6 +314,7 @@ class _KrokKlient extends StatelessWidget {
   final TextEditingController telCtrl;
 
   const _KrokKlient({
+    required this.theme,
     required this.nazwaCtrl,
     required this.adresCtrl,
     required this.nipCtrl,
@@ -367,35 +324,22 @@ class _KrokKlient extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Dane nabywcy oferty',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-          ),
-          const SizedBox(height: 16),
-          _Field(ctrl: nazwaCtrl, label: 'Nazwa klienta / firma *', required: true),
-          _Field(ctrl: adresCtrl, label: 'Adres', maxLines: 2),
-          _Field(ctrl: nipCtrl, label: 'NIP (opcjonalnie)'),
-          _Field(
-            ctrl: emailCtrl,
-            label: 'E-mail',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          _Field(
-            ctrl: telCtrl,
-            label: 'Telefon',
-            keyboardType: TextInputType.phone,
-          ),
-        ],
-      );
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text('Dane nabywcy oferty',
+          style: TextStyle(color: theme.textColor.withAlpha(150))),
+      const SizedBox(height: 16),
+      _Field(theme: theme, ctrl: nazwaCtrl, label: 'Nazwa klienta / firma *'),
+      _Field(theme: theme, ctrl: adresCtrl, label: 'Adres', maxLines: 2),
+      _Field(theme: theme, ctrl: nipCtrl, label: 'NIP (opcjonalnie)'),
+      _Field(theme: theme, ctrl: emailCtrl, label: 'E-mail', keyboardType: TextInputType.emailAddress),
+      _Field(theme: theme, ctrl: telCtrl, label: 'Telefon', keyboardType: TextInputType.phone),
+    ],
+  );
 }
 
-// ---- Krok 3: Ustawienia ----------------------------------------------------
-
 class _KrokUstawienia extends StatefulWidget {
+  final ThemeColors theme;
   final TextEditingController tytulCtrl;
   final String tytulHint;
   final TextEditingController wstepCtrl;
@@ -411,6 +355,7 @@ class _KrokUstawienia extends StatefulWidget {
   final ValueChanged<String?> onWaznaDoChanged;
 
   const _KrokUstawienia({
+    required this.theme,
     required this.tytulCtrl,
     required this.tytulHint,
     required this.wstepCtrl,
@@ -432,152 +377,142 @@ class _KrokUstawienia extends StatefulWidget {
 
 class _KrokUstawieniaState extends State<_KrokUstawienia> {
   @override
-  Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _Section('Oferta'),
-          _Field(
-            ctrl: widget.tytulCtrl,
-            label: 'Tytuł oferty',
-            hint: widget.tytulHint.isNotEmpty
-                ? 'np. Oferta — ${widget.tytulHint}'
-                : null,
-          ),
-          _Field(
-            ctrl: widget.wstepCtrl,
-            label: 'Wstęp (opcjonalnie)',
-            maxLines: 3,
-            hint: 'np. Dziękujemy za zapytanie...',
-          ),
-          _Field(ctrl: widget.warunkiCtrl, label: 'Warunki', maxLines: 4),
+  Widget build(BuildContext context) {
+    final theme = widget.theme;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _Section(title: 'Oferta', theme: theme),
+        _Field(theme: theme, ctrl: widget.tytulCtrl, label: 'Tytuł oferty',
+            hint: widget.tytulHint.isNotEmpty ? 'np. Oferta — ${widget.tytulHint}' : null),
+        _Field(theme: theme, ctrl: widget.wstepCtrl, label: 'Wstęp (opcjonalnie)',
+            maxLines: 3, hint: 'np. Dziękujemy za zapytanie...'),
+        _Field(theme: theme, ctrl: widget.warunkiCtrl, label: 'Warunki', maxLines: 4),
 
-          const SizedBox(height: 16),
-          _Section('Finansowe'),
+        const SizedBox(height: 16),
+        _Section(title: 'Finansowe', theme: theme),
 
-          // VAT
-          DropdownButtonFormField<int>(
-            value: widget.vatProcent,
-            decoration: const InputDecoration(
-              labelText: 'Stawka VAT',
-              border: OutlineInputBorder(),
-              isDense: true,
+        DropdownButtonFormField<int>(
+          value: widget.vatProcent,
+          dropdownColor: theme.popupcontainercolor,
+          style: TextStyle(color: theme.textColor),
+          decoration: InputDecoration(
+            labelText: 'Stawka VAT',
+            labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+            border: OutlineInputBorder(borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+            filled: true,
+            fillColor: theme.textFieldColor,
+            isDense: true,
+          ),
+          items: [0, 5, 8, 23].map((v) =>
+            DropdownMenuItem(value: v, child: Text('$v%', style: TextStyle(color: theme.textColor)))).toList(),
+          onChanged: (v) => widget.onVatChanged(v!),
+        ),
+        const SizedBox(height: 12),
+
+        Row(children: [
+          Text('Rabat: ', style: TextStyle(color: theme.textColor)),
+          Expanded(
+            child: Slider(
+              value: widget.rabatProcent,
+              min: 0, max: 30, divisions: 30,
+              activeColor: theme.themeColor,
+              inactiveColor: theme.bordercolor.withAlpha(80),
+              label: '${widget.rabatProcent.toStringAsFixed(0)}%',
+              onChanged: widget.onRabatChanged,
             ),
-            items: [0, 5, 8, 23]
-                .map((v) => DropdownMenuItem(
-                      value: v,
-                      child: Text('$v%'),
-                    ))
-                .toList(),
-            onChanged: (v) => widget.onVatChanged(v!),
           ),
-          const SizedBox(height: 12),
+          SizedBox(
+            width: 50,
+            child: Text('${widget.rabatProcent.toStringAsFixed(0)}%',
+                style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        const SizedBox(height: 12),
 
-          // Rabat
-          Row(children: [
-            const Text('Rabat: '),
-            Expanded(
-              child: Slider(
-                value: widget.rabatProcent,
-                min: 0,
-                max: 30,
-                divisions: 30,
-                label: '${widget.rabatProcent.toStringAsFixed(0)}%',
-                onChanged: widget.onRabatChanged,
-              ),
-            ),
-            SizedBox(
-              width: 50,
-              child: Text(
-                '${widget.rabatProcent.toStringAsFixed(0)}%',
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ),
-          ]),
-          const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: Icon(Icons.event_outlined, color: theme.themeColor),
+          label: Text('Ustaw datę ważności', style: TextStyle(color: theme.textColor)),
+          style: OutlinedButton.styleFrom(side: BorderSide(color: theme.bordercolor.withAlpha(80))),
+          onPressed: () async {
+            final date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now().add(const Duration(days: 30)),
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            );
+            if (date != null) widget.onWaznaDoChanged(date.toIso8601String().substring(0, 10));
+          },
+        ),
 
-          // Ważna do
-          OutlinedButton.icon(
-            icon: const Icon(Icons.event_outlined),
-            label: const Text('Ustaw datę ważności'),
-            onPressed: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate:
-                    DateTime.now().add(const Duration(days: 30)),
-                firstDate: DateTime.now(),
-                lastDate:
-                    DateTime.now().add(const Duration(days: 365)),
-              );
-              if (date != null) {
-                widget.onWaznaDoChanged(date.toIso8601String().substring(0, 10));
-              }
-            },
-          ),
-
-          const SizedBox(height: 20),
-          _Section('Wystawca (Twoja firma)'),
-          _Field(ctrl: widget.wystawcaNazwaCtrl, label: 'Nazwa firmy'),
-          _Field(ctrl: widget.wystawcaNipCtrl, label: 'NIP firmy'),
-          _Field(
-            ctrl: widget.wystawcaEmailCtrl,
-            label: 'E-mail firmy',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          _Field(
-            ctrl: widget.wystawcaTelCtrl,
-            label: 'Telefon firmy',
-            keyboardType: TextInputType.phone,
-          ),
-        ],
-      );
+        const SizedBox(height: 20),
+        _Section(title: 'Wystawca (Twoja firma)', theme: theme),
+        _Field(theme: theme, ctrl: widget.wystawcaNazwaCtrl, label: 'Nazwa firmy'),
+        _Field(theme: theme, ctrl: widget.wystawcaNipCtrl, label: 'NIP firmy'),
+        _Field(theme: theme, ctrl: widget.wystawcaEmailCtrl, label: 'E-mail firmy',
+            keyboardType: TextInputType.emailAddress),
+        _Field(theme: theme, ctrl: widget.wystawcaTelCtrl, label: 'Telefon firmy',
+            keyboardType: TextInputType.phone),
+      ],
+    );
+  }
 }
 
 class _Section extends StatelessWidget {
   final String title;
-  const _Section(this.title);
+  final ThemeColors theme;
+  const _Section({required this.title, required this.theme});
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(title,
+        style: TextStyle(color: theme.themeColor, fontSize: 13, fontWeight: FontWeight.w700)),
+  );
 }
 
 class _Field extends StatelessWidget {
+  final ThemeColors theme;
   final TextEditingController ctrl;
   final String label;
   final String? hint;
   final int maxLines;
-  final bool required;
   final TextInputType? keyboardType;
 
   const _Field({
+    required this.theme,
     required this.ctrl,
     required this.label,
     this.hint,
     this.maxLines = 1,
-    this.required = false,
     this.keyboardType,
   });
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: TextFormField(
-          controller: ctrl,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(
-            labelText: label,
-            hintText: hint,
-            border: const OutlineInputBorder(),
-            isDense: true,
-          ),
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextFormField(
+      controller: ctrl,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: TextStyle(color: theme.textColor),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+        hintText: hint,
+        hintStyle: TextStyle(color: theme.textColor.withAlpha(80)),
+        filled: true,
+        fillColor: theme.textFieldColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60)),
         ),
-      );
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60)),
+        ),
+        isDense: true,
+      ),
+    ),
+  );
 }

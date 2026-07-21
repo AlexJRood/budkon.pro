@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/portal_model.dart';
 import '../../data/services/portal_api.dart';
 
@@ -35,84 +36,114 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
+
+    InputDecoration _dec(String label) => InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+      filled: true,
+      fillColor: theme.textFieldColor,
+      border: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+    );
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Nowy portal klienta')),
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text('Nowy portal klienta', style: TextStyle(color: theme.textColor)),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Klient
-            _SectionLabel('Dane klienta'),
+            _SectionLabel('Dane klienta', theme: theme),
             const SizedBox(height: 10),
             TextFormField(
               controller: _nazwaCtrl,
-              decoration: const InputDecoration(labelText: 'Imię i nazwisko / Firma *'),
+              decoration: _dec('Imię i nazwisko / Firma *'),
+              style: TextStyle(color: theme.textColor),
               validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _emailCtrl,
-              decoration: const InputDecoration(labelText: 'Email (opcjonalnie)'),
+              decoration: _dec('Email (opcjonalnie)'),
+              style: TextStyle(color: theme.textColor),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _telefonCtrl,
-              decoration: const InputDecoration(labelText: 'Telefon (opcjonalnie)'),
+              decoration: _dec('Telefon (opcjonalnie)'),
+              style: TextStyle(color: theme.textColor),
               keyboardType: TextInputType.phone,
             ),
 
             const SizedBox(height: 24),
 
-            // Uprawnienia
-            _SectionLabel('Co widzi klient'),
+            _SectionLabel('Co widzi klient', theme: theme),
             const SizedBox(height: 4),
             SwitchListTile(
-              title: const Text('Faktury'),
-              subtitle: const Text('Numery, kwoty, terminy płatności'),
+              title: Text('Faktury', style: TextStyle(color: theme.textColor)),
+              subtitle: Text('Numery, kwoty, terminy płatności',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               value: _pokazujFaktury,
+              activeColor: theme.themeColor,
               onChanged: (v) => setState(() => _pokazujFaktury = v),
               contentPadding: EdgeInsets.zero,
             ),
             SwitchListTile(
-              title: const Text('Zdjęcia z budowy'),
-              subtitle: const Text('Galeria z dziennika budowy'),
+              title: Text('Zdjęcia z budowy', style: TextStyle(color: theme.textColor)),
+              subtitle: Text('Galeria z dziennika budowy',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               value: _pokazujZdjecia,
+              activeColor: theme.themeColor,
               onChanged: (v) => setState(() => _pokazujZdjecia = v),
               contentPadding: EdgeInsets.zero,
             ),
             SwitchListTile(
-              title: const Text('Harmonogram'),
-              subtitle: const Text('Etapy i terminy'),
+              title: Text('Harmonogram', style: TextStyle(color: theme.textColor)),
+              subtitle: Text('Etapy i terminy',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               value: _pokazujHarmonogram,
+              activeColor: theme.themeColor,
               onChanged: (v) => setState(() => _pokazujHarmonogram = v),
               contentPadding: EdgeInsets.zero,
             ),
             SwitchListTile(
-              title: const Text('Kosztorys'),
-              subtitle: const Text('Zestawienie kosztów'),
+              title: Text('Kosztorys', style: TextStyle(color: theme.textColor)),
+              subtitle: Text('Zestawienie kosztów',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               value: _pokazujKosztorys,
+              activeColor: theme.themeColor,
               onChanged: (v) => setState(() => _pokazujKosztorys = v),
               contentPadding: EdgeInsets.zero,
             ),
 
             const SizedBox(height: 24),
 
-            // Wygasanie
-            _SectionLabel('Ważność linku'),
+            _SectionLabel('Ważność linku', theme: theme),
             const SizedBox(height: 10),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_month_outlined),
-              title: Text(_wygasa == null
-                  ? 'Bezterminowo'
-                  : 'Wygasa ${_wygasa!.day}.${_wygasa!.month.toString().padLeft(2,'0')}.${_wygasa!.year}'),
-              subtitle: const Text('Dotknij, aby ustawić datę wygaśnięcia'),
+              leading: Icon(Icons.calendar_month_outlined, color: theme.themeColor),
+              title: Text(
+                _wygasa == null
+                    ? 'Bezterminowo'
+                    : 'Wygasa ${_wygasa!.day}.${_wygasa!.month.toString().padLeft(2, '0')}.${_wygasa!.year}',
+                style: TextStyle(color: theme.textColor),
+              ),
+              subtitle: Text('Dotknij, aby ustawić datę wygaśnięcia',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               trailing: _wygasa != null
                   ? IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: Icon(Icons.clear, color: theme.textColor),
                       onPressed: () => setState(() => _wygasa = null),
                     )
                   : null,
@@ -123,6 +154,8 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
 
             FilledButton(
               onPressed: _saving ? null : _zapisz,
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor, foregroundColor: theme.buttonTextColor),
               child: _saving
                   ? const SizedBox.square(
                       dimension: 18,
@@ -162,7 +195,7 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
         pokazujHarmonogram: _pokazujHarmonogram,
         pokazujKosztorys: _pokazujKosztorys,
         wygasa: _wygasa != null
-            ? '${_wygasa!.year}-${_wygasa!.month.toString().padLeft(2,'0')}-${_wygasa!.day.toString().padLeft(2,'0')}'
+            ? '${_wygasa!.year}-${_wygasa!.month.toString().padLeft(2, '0')}-${_wygasa!.day.toString().padLeft(2, '0')}'
             : null,
       );
 
@@ -170,7 +203,8 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
       if (mounted) Navigator.pop(context, result);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -179,8 +213,9 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
 }
 
 class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
+  const _SectionLabel(this.text, {required this.theme});
   final String text;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) => Text(
@@ -189,7 +224,7 @@ class _SectionLabel extends StatelessWidget {
           fontSize: 10,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.0,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: theme.textColor.withAlpha(140),
         ),
       );
 }

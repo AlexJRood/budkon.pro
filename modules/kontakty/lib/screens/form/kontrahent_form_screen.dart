@@ -1,16 +1,19 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/kontakty_model.dart';
 import '../../data/services/kontakty_api.dart';
 
-class KontrahentFormScreen extends StatefulWidget {
+class KontrahentFormScreen extends ConsumerStatefulWidget {
   final KontrahentDetail? existing;
   const KontrahentFormScreen({super.key, this.existing});
 
   @override
-  State<KontrahentFormScreen> createState() => _KontrahentFormScreenState();
+  ConsumerState<KontrahentFormScreen> createState() =>
+      _KontrahentFormScreenState();
 }
 
-class _KontrahentFormScreenState extends State<KontrahentFormScreen> {
+class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _firmaCtrl;
   late final TextEditingController _imieCtrl;
@@ -52,133 +55,150 @@ class _KontrahentFormScreenState extends State<KontrahentFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(_editing ? 'Edytuj kontakt' : 'Nowy kontakt'),
+  Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
+
+    InputDecoration _dec(String label, {Widget? prefix}) => InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+      filled: true,
+      fillColor: theme.textFieldColor,
+      prefixIcon: prefix,
+      border: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      isDense: true,
+    );
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text(_editing ? 'Edytuj kontakt' : 'Nowy kontakt',
+            style: TextStyle(color: theme.textColor)),
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextFormField(
+              controller: _firmaCtrl,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Nazwa firmy',
+                  prefix: Icon(Icons.business_outlined,
+                      color: theme.textColor.withAlpha(150))).copyWith(
+                helperText: 'Zostaw puste jeśli osoba prywatna',
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _imieCtrl,
+                  style: TextStyle(color: theme.textColor),
+                  decoration: _dec('Imię'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: _nazwiskoCtrl,
+                  style: TextStyle(color: theme.textColor),
+                  decoration: _dec('Nazwisko'),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<Branza?>(
+              value: _branza,
+              dropdownColor: theme.popupcontainercolor,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Branża'),
+              items: [
+                const DropdownMenuItem(value: null, child: Text('— brak —')),
+                ...Branza.values.map((b) => DropdownMenuItem(
+                      value: b,
+                      child: Text('${b.emoji}  ${b.label}'),
+                    )),
+              ],
+              onChanged: (v) => setState(() => _branza = v),
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _telefonCtrl,
+              keyboardType: TextInputType.phone,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Telefon',
+                  prefix: Icon(Icons.phone_outlined,
+                      color: theme.textColor.withAlpha(150))),
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('E-mail',
+                  prefix: Icon(Icons.email_outlined,
+                      color: theme.textColor.withAlpha(150))),
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _nipCtrl,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('NIP',
+                  prefix: Icon(Icons.badge_outlined,
+                      color: theme.textColor.withAlpha(150))),
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _adresCtrl,
+              maxLines: 2,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Adres',
+                  prefix: Icon(Icons.location_on_outlined,
+                      color: theme.textColor.withAlpha(150))),
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _uwagiCtrl,
+              maxLines: 3,
+              style: TextStyle(color: theme.textColor),
+              decoration: _dec('Uwagi').copyWith(alignLabelWithHint: true),
+            ),
+
+            const SizedBox(height: 24),
+
+            FilledButton(
+              onPressed: _saving ? null : _zapisz,
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor,
+                  foregroundColor: theme.buttonTextColor),
+              child: _saving
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(_editing ? 'Zapisz zmiany' : 'Dodaj kontakt'),
+            ),
+          ],
         ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Firma lub osoba
-              TextFormField(
-                controller: _firmaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nazwa firmy',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business_outlined),
-                  helperText: 'Zostaw puste jeśli osoba prywatna',
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _imieCtrl,
-                    decoration: const InputDecoration(
-                        labelText: 'Imię',
-                        border: OutlineInputBorder()),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    controller: _nazwiskoCtrl,
-                    decoration: const InputDecoration(
-                        labelText: 'Nazwisko',
-                        border: OutlineInputBorder()),
-                  ),
-                ),
-              ]),
-              const SizedBox(height: 12),
-
-              // Branża
-              DropdownButtonFormField<Branza?>(
-                value: _branza,
-                decoration: const InputDecoration(
-                    labelText: 'Branża',
-                    border: OutlineInputBorder()),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text('— brak —')),
-                  ...Branza.values.map((b) => DropdownMenuItem(
-                        value: b,
-                        child: Text('${b.emoji}  ${b.label}'),
-                      )),
-                ],
-                onChanged: (v) => setState(() => _branza = v),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _telefonCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                    labelText: 'Telefon',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone_outlined)),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                    labelText: 'E-mail',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined)),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _nipCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    labelText: 'NIP',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.badge_outlined)),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _adresCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                    labelText: 'Adres',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_on_outlined)),
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _uwagiCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                    labelText: 'Uwagi',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true),
-              ),
-
-              const SizedBox(height: 24),
-
-              FilledButton(
-                onPressed: _saving ? null : _zapisz,
-                child: _saving
-                    ? const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(_editing ? 'Zapisz zmiany' : 'Dodaj kontakt'),
-              ),
-            ],
-          ),
-        ),
-      );
+      ),
+    );
+  }
 
   Future<void> _zapisz() async {
     if (!_formKey.currentState!.validate()) return;
-    // Wymagane: firma LUB (imię + nazwisko)
     if (_firmaCtrl.text.trim().isEmpty &&
         _imieCtrl.text.trim().isEmpty &&
         _nazwiskoCtrl.text.trim().isEmpty) {

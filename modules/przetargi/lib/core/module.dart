@@ -4,13 +4,14 @@ import 'dock.dart';
 import 'routing.dart';
 
 class PrzetargiModule extends AppModule {
-  const PrzetargiModule();
+  @override
+  String get id => 'przetargi';
 
   @override
   String get name => 'przetargi';
 
   @override
-  List<RouteSpec> get routes => przetargiRoutes();
+  List<RouteSpec> routes() => przetargiRoutes();
 
   @override
   List<DockContribution> dockItems() => przetargiDockItems();

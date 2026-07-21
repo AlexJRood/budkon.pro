@@ -1,19 +1,29 @@
+﻿import 'package:core/kernel/kernel.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'dock.dart';
 import 'routing.dart';
 
-class KontaktyModule {
-  static const id = 'kontakty';
-  static const label = 'Kontakty';
-  static const icon = Icons.contacts_outlined;
-  static const iconFilled = Icons.contacts;
-  static const color = Color(0xFF26A69A); // teal
+class KontaktyModule extends AppModule {
+  @override
+  String get id => 'kontakty';
 
-  static List<RouteBase> get routes => kontaktyRoutes;
+  @override
+  List<DockContribution> dockItems() => kontaktyDockItems();
+
+  @override
+  List<RouteSpec> routes() => kontaktyRoutes();
+
+  @override
+  Future<void> init(ModuleScope scope) async {}
 
   static void navigateToLista(BuildContext context) =>
-      context.push('/kontakty');
+      navigateTo(context, '/kontakty');
 
   static void navigateToProfil(BuildContext context, int id) =>
-      context.push('/kontakty/$id');
+      navigateTo(context, '/kontakty/$id');
+
+  static void navigateTo(BuildContext context, String path) {
+    final nav = Navigator.of(context, rootNavigator: true);
+    nav.pushNamed(path);
+  }
 }

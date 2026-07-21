@@ -1,7 +1,6 @@
-// emma/screens/pc.dart
+﻿// emma/screens/pc.dart
 
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
-import 'package:core/ui/pie/app_pie_canvas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:emma/widgets/sidebar_chat.dart';
@@ -37,8 +36,7 @@ class ChatAiPc extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       // PieCanvas ancestor for the SidebarManagerRail's PieMenu buttons below.
       // Without it pie_menu throws "Could not find any PieCanvas".
-      body: AppPieCanvas(
-        child: Stack(
+      body: Stack(
         children: [
           BackdropFilter(
             filter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -94,7 +92,6 @@ class ChatAiPc extends ConsumerWidget {
           ),
         ],
         ),
-      ),
     );
   }
 }

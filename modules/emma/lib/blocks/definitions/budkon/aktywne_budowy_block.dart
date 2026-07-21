@@ -1,45 +1,56 @@
-import 'package:flutter/material.dart';
-import '../../core/block_descriptor.dart';
-import '../../core/block_definition.dart';
-import '../../widgets/emma_block_card_shell.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:emma/blocks/core/block_definition.dart';
+import 'package:emma/blocks/core/block_descriptor.dart';
+import 'package:emma/blocks/definitions/shared/block_ui.dart';
 
 class AktywenBudowyBlockDefinition extends EmmaBlockDefinition {
-  const AktywenBudowyBlockDefinition()
-      : super(
-          type: EmmaBlockDescriptor.aktywenBudowy,
-          title: 'Aktywne budowy',
-          description: 'Przegląd wszystkich aktywnych budów z postępem',
-          iconCodePoint: 0xea3b, // home_work
-          color: Color(0xFF78909C),
-        );
+  const AktywenBudowyBlockDefinition();
 
   @override
-  Widget buildCard(BuildContext context, Map<String, dynamic> data) =>
-      _AktywenBudowyCard(data: data);
-}
-
-class _AktywenBudowyCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const _AktywenBudowyCard({required this.data});
+  String get key => 'aktywne_budowy';
 
   @override
-  Widget build(BuildContext context) {
+  bool supports(EmmaBlockDescriptor block) =>
+      block.type == EmmaBlockType.aktywenBudowy;
+
+  @override
+  Widget buildBlock({
+    required BuildContext context,
+    required WidgetRef ref,
+    required EmmaBlockDescriptor block,
+    required double maxWidth,
+    required String messageId,
+  }) {
+    final data = block.raw;
     final budowy = (data['budowy'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
     final ilosc = budowy.length;
 
+    const accent = Color(0xFF78909C);
+
     return EmmaBlockCardShell(
-      title: 'Aktywne budowy',
-      accent: const Color(0xFF78909C),
-      tag: EmmaTag(label: '$ilosc aktywne', color: const Color(0xFF78909C)),
+      maxWidth: maxWidth,
+      borderColor: accent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(children: [
+            const EmmaAccentIcon(icon: Icons.home_work_outlined, color: accent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Aktywne budowy',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ),
+            EmmaTag(label: '$ilosc aktywne', color: accent),
+          ]),
+          const SizedBox(height: 8),
           ...budowy.take(3).map((b) {
-            final nazwa = b['nazwa'] as String? ?? '';
+            final nazwa = b['nazwa']?.toString() ?? '';
             final postep = b['postep'] as int? ?? 0;
-            final status = b['status'] as String? ?? '';
-            final budowaId = b['id'] as int? ?? 0;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -61,9 +72,7 @@ class _AktywenBudowyCard extends StatelessWidget {
                     Text(
                       '$postep%',
                       style: const TextStyle(
-                          color: Color(0xFF78909C),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700),
+                          color: accent, fontSize: 12, fontWeight: FontWeight.w700),
                     ),
                   ]),
                   const SizedBox(height: 3),
@@ -73,8 +82,7 @@ class _AktywenBudowyCard extends StatelessWidget {
                       value: postep / 100,
                       minHeight: 5,
                       backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF78909C)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(accent),
                     ),
                   ),
                 ],
@@ -84,16 +92,20 @@ class _AktywenBudowyCard extends StatelessWidget {
           if (ilosc > 3)
             Text(
               '+${ilosc - 3} więcej',
-              style:
-                  const TextStyle(color: Colors.white38, fontSize: 11),
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
             ),
           const SizedBox(height: 8),
           Row(children: [
             const Spacer(),
-            EmmaActionPill(label: 'Wszystkie budowy', route: '/budowa'),
+            EmmaActionPill(
+              label: 'Wszystkie budowy',
+              icon: Icons.arrow_forward_outlined,
+              onTap: null,
+            ),
           ]),
         ],
       ),
     );
   }
 }
+

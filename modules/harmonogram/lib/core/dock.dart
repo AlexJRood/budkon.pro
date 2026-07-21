@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> harmonogramDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> harmonogramDockItems() => [
     iconKey: 'calendar_month',
     route: '/harmonogram',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 40,
     requiresAuth: true,
   ),
 ];
+

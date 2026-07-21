@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/pracownicy_model.dart';
 import '../../data/providers/pracownicy_provider.dart';
 import '../../data/services/pracownicy_api.dart';
@@ -11,13 +12,17 @@ class PracownikProfilScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(pracownikDetailProvider(pracownikId));
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Błąd: $e')),
-        data: (p) => _ProfilBody(pracownik: p),
+        loading: () => Center(
+            child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(
+            child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+        data: (p) => _ProfilBody(pracownik: p, theme: theme),
       ),
     );
   }
@@ -25,18 +30,20 @@ class PracownikProfilScreen extends ConsumerWidget {
 
 class _ProfilBody extends ConsumerWidget {
   final PracownikDetail pracownik;
-  const _ProfilBody({required this.pracownik});
+  final ThemeColors theme;
+  const _ProfilBody({required this.pracownik, required this.theme});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
+    final p = pracownik;
 
     return CustomScrollView(
       slivers: [
-        // Header z awatarem
         SliverAppBar(
           expandedHeight: 160,
           pinned: true,
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: theme.textColor),
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
               decoration: BoxDecoration(
@@ -44,8 +51,8 @@ class _ProfilBody extends ConsumerWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    cs.primary,
-                    cs.primary.withAlpha(160),
+                    theme.themeColor,
+                    theme.themeColor.withAlpha(160),
                   ],
                 ),
               ),
@@ -58,7 +65,7 @@ class _ProfilBody extends ConsumerWidget {
                       radius: 36,
                       backgroundColor: Colors.white.withAlpha(40),
                       child: Text(
-                        pracownik.inicjaly,
+                        p.inicjaly,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
@@ -73,7 +80,7 @@ class _ProfilBody extends ConsumerWidget {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.edit_outlined),
+              icon: Icon(Icons.edit_outlined, color: theme.textColor),
               onPressed: () => _edytuj(context, ref),
             ),
           ],
@@ -85,13 +92,15 @@ class _ProfilBody extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Imię + specjalizacja
                 Center(
                   child: Column(
                     children: [
                       Text(
-                        pracownik.pelneImie,
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        p.pelneImie,
+                        style: TextStyle(
+                            color: theme.textColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 4),
@@ -99,14 +108,14 @@ class _ProfilBody extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            pracownik.glownaSpecjalizacja.emoji,
+                            p.glownaSpecjalizacja.emoji,
                             style: const TextStyle(fontSize: 18),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            pracownik.glownaSpecjalizacja.label,
+                            p.glownaSpecjalizacja.label,
                             style: TextStyle(
-                                color: cs.primary,
+                                color: theme.themeColor,
                                 fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -117,22 +126,22 @@ class _ProfilBody extends ConsumerWidget {
 
                 const SizedBox(height: 16),
 
-                // Stawka + kontakt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (pracownik.aktualnaStawka != null)
+                    if (p.aktualnaStawka != null)
                       _InfoPill(
                         icon: Icons.payments_outlined,
                         label:
-                            '${pracownik.aktualnaStawka!.toStringAsFixed(2)} PLN/h',
-                        color: cs.primary,
+                            '${p.aktualnaStawka!.toStringAsFixed(2)} PLN/h',
+                        color: theme.themeColor,
                       ),
-                    if (pracownik.telefon.isNotEmpty) ...[
+                    if (p.telefon.isNotEmpty) ...[
                       const SizedBox(width: 8),
                       _InfoPill(
                         icon: Icons.phone_outlined,
-                        label: pracownik.telefon,
+                        label: p.telefon,
+                        color: theme.textColor.withAlpha(150),
                       ),
                     ],
                   ],
@@ -140,25 +149,30 @@ class _ProfilBody extends ConsumerWidget {
 
                 const SizedBox(height: 6),
 
-                // Typ umowy + data zatrudnienia
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.badge_outlined, size: 13, color: cs.outline),
+                    Icon(Icons.badge_outlined,
+                        size: 13,
+                        color: theme.textColor.withAlpha(130)),
                     const SizedBox(width: 5),
                     Text(
-                      _typUmowyLabel(pracownik.typUmowy),
-                      style:
-                          TextStyle(color: cs.outline, fontSize: 12),
+                      _typUmowyLabel(p.typUmowy),
+                      style: TextStyle(
+                          color: theme.textColor.withAlpha(150),
+                          fontSize: 12),
                     ),
-                    if (pracownik.dataZatrudnienia != null) ...[
+                    if (p.dataZatrudnienia != null) ...[
                       const SizedBox(width: 12),
-                      Icon(Icons.event, size: 13, color: cs.outline),
+                      Icon(Icons.event,
+                          size: 13,
+                          color: theme.textColor.withAlpha(130)),
                       const SizedBox(width: 4),
                       Text(
-                        'od ${pracownik.dataZatrudnienia}',
-                        style:
-                            TextStyle(color: cs.outline, fontSize: 12),
+                        'od ${p.dataZatrudnienia}',
+                        style: TextStyle(
+                            color: theme.textColor.withAlpha(150),
+                            fontSize: 12),
                       ),
                     ],
                   ],
@@ -166,52 +180,60 @@ class _ProfilBody extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                // ── Macierz umiejętności ─────────────────────────────────
                 _Section(
                   title: 'Umiejętności i doświadczenie',
+                  theme: theme,
                   action: TextButton.icon(
                     icon: const Icon(Icons.add, size: 16),
                     label: const Text('Dodaj'),
                     onPressed: () => _dodajUmiejetnosc(context, ref),
+                    style: TextButton.styleFrom(
+                        foregroundColor: theme.themeColor),
                   ),
                 ),
                 const SizedBox(height: 8),
 
                 SkillMatrix(
-                  umiejetnosci: pracownik.umiejetnosci,
+                  umiejetnosci: p.umiejetnosci,
                   onDodaj: () => _dodajUmiejetnosc(context, ref),
                 ),
 
                 const SizedBox(height: 24),
 
-                // ── Historia stawek ──────────────────────────────────────
-                if (pracownik.historiaStawek.isNotEmpty) ...[
+                if (p.historiaStawek.isNotEmpty) ...[
                   _Section(
                     title: 'Historia stawek',
+                    theme: theme,
                     action: TextButton.icon(
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('Nowa stawka'),
                       onPressed: () => _dodajStawke(context, ref),
+                      style: TextButton.styleFrom(
+                          foregroundColor: theme.themeColor),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ...pracownik.historiaStawek.map(
-                    (s) => _StawkaRow(stawka: s),
+                  ...p.historiaStawek.map(
+                    (s) => _StawkaRow(stawka: s, theme: theme),
                   ),
                 ] else
                   OutlinedButton.icon(
                     icon: const Icon(Icons.payments_outlined),
                     label: const Text('Ustaw stawkę godzinową'),
                     onPressed: () => _dodajStawke(context, ref),
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.themeColor,
+                        side: BorderSide(
+                            color: theme.bordercolor.withAlpha(80))),
                   ),
 
-                // ── Uwagi ────────────────────────────────────────────────
-                if (pracownik.uwagi.isNotEmpty) ...[
+                if (p.uwagi.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  _Section(title: 'Uwagi'),
+                  _Section(title: 'Uwagi', theme: theme),
                   const SizedBox(height: 8),
-                  Text(pracownik.uwagi,
-                      style: TextStyle(color: cs.outline)),
+                  Text(p.uwagi,
+                      style: TextStyle(
+                          color: theme.textColor.withAlpha(180))),
                 ],
 
                 const SizedBox(height: 80),
@@ -235,7 +257,7 @@ class _ProfilBody extends ConsumerWidget {
       BuildContext context, WidgetRef ref) async {
     final wynik = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) => _DodajUmiejetnoscDialog(),
+      builder: (_) => const _DodajUmiejetnoscDialog(),
     );
     if (wynik == null) return;
     try {
@@ -271,7 +293,6 @@ class _ProfilBody extends ConsumerWidget {
   }
 
   Future<void> _edytuj(BuildContext context, WidgetRef ref) async {
-    // TODO: formularz edycji podstawowych danych
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Edycja w przygotowaniu')),
     );
@@ -282,13 +303,17 @@ class _ProfilBody extends ConsumerWidget {
 
 class _Section extends StatelessWidget {
   final String title;
+  final ThemeColors theme;
   final Widget? action;
-  const _Section({required this.title, this.action});
+  const _Section({required this.title, required this.theme, this.action});
 
   @override
   Widget build(BuildContext context) => Row(children: [
         Text(title,
-            style: Theme.of(context).textTheme.titleMedium),
+            style: TextStyle(
+                color: theme.textColor,
+                fontWeight: FontWeight.w700,
+                fontSize: 15)),
         const Spacer(),
         if (action != null) action!,
       ]);
@@ -297,26 +322,25 @@ class _Section extends StatelessWidget {
 class _InfoPill extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color? color;
-  const _InfoPill({required this.icon, required this.label, this.color});
+  final Color color;
+  const _InfoPill(
+      {required this.icon, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final c = color ?? cs.outline;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: c.withAlpha(15),
+        color: color.withAlpha(15),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: c.withAlpha(60)),
+        border: Border.all(color: color.withAlpha(60)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 14, color: c),
+        Icon(icon, size: 14, color: color),
         const SizedBox(width: 5),
         Text(label,
             style: TextStyle(
-                color: c, fontSize: 12, fontWeight: FontWeight.w600)),
+                color: color, fontSize: 12, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -324,25 +348,30 @@ class _InfoPill extends StatelessWidget {
 
 class _StawkaRow extends StatelessWidget {
   final HistoriaStawkiModel stawka;
-  const _StawkaRow({required this.stawka});
+  final ThemeColors theme;
+  const _StawkaRow({required this.stawka, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(children: [
-        Icon(Icons.circle, size: 8, color: cs.primary),
+        Icon(Icons.circle, size: 8, color: theme.themeColor),
         const SizedBox(width: 10),
         Text(
           stawka.dataOd,
           style: TextStyle(
-              color: cs.outline, fontSize: 12, fontFamily: 'monospace'),
+              color: theme.textColor.withAlpha(150),
+              fontSize: 12,
+              fontFamily: 'monospace'),
         ),
         const SizedBox(width: 16),
         Text(
           '${stawka.stawkaGodz.toStringAsFixed(2)} ${stawka.waluta}/h',
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          style: TextStyle(
+              color: theme.textColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 13),
         ),
       ]),
     );
@@ -400,7 +429,6 @@ class _DodajUmiejetnoscDialogState extends State<_DodajUmiejetnoscDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Poziom — segmented button
             Text(
               'Poziom doświadczenia',
               style: Theme.of(context).textTheme.labelMedium,

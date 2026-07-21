@@ -11,6 +11,7 @@ import 'package:core/platform/route_constant.dart';
 
 import 'package:emma/blocks/core/block_definition.dart';
 import 'package:emma/blocks/core/block_descriptor.dart';
+import 'package:calendar/state_managers/selected_date_provider.dart';
 import 'package:emma/blocks/definitions/shared/block_ui.dart';
 
 class CalendarEventBlockDefinition extends EmmaBlockDefinition {

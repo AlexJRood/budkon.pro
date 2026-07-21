@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> budowaDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> budowaDockItems() => [
     iconKey: 'building',
     route: '/budowa',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 10,
     requiresAuth: true,
   ),
 ];
+

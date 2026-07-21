@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/dziennik_model.dart';
 import '../../data/providers/dziennik_provider.dart';
@@ -35,9 +36,7 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
   bool _autoLoaded = false;
   List<ObecnoscModel> _obecnosci = [];
 
-  AutoUzupelnijParams get _autoParams => AutoUzupelnijParams(
-        budowaId: widget.budowaId,
-      );
+  AutoUzupelnijParams get _autoParams => AutoUzupelnijParams(budowaId: widget.budowaId);
 
   @override
   void dispose() {
@@ -57,8 +56,7 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
       _etapId = data.etapId;
       _etapNazwa = data.etapNazwa;
       if (data.liczbaPracownikowPoprzedni > 0) {
-        _pracownicyCtrl.text =
-            data.liczbaPracownikowPoprzedni.toString();
+        _pracownicyCtrl.text = data.liczbaPracownikowPoprzedni.toString();
       }
       if (data.obecnosciPoprzednie.isNotEmpty) {
         _obecnosci = List.of(data.obecnosciPoprzednie);
@@ -92,14 +90,19 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final autoAsync = ref.watch(autoUzupelnijProvider(_autoParams));
     final formState = ref.watch(wpisFormProvider);
 
     autoAsync.whenData(_applyAutoData);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(widget.wpisId == null ? 'Nowy wpis' : 'Edytuj wpis'),
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text(widget.wpisId == null ? 'Nowy wpis' : 'Edytuj wpis',
+            style: TextStyle(color: theme.textColor)),
         actions: [
           if (formState.isLoading)
             const Padding(
@@ -112,7 +115,8 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
           else
             TextButton(
               onPressed: _submit,
-              child: const Text('Zapisz'),
+              child: Text('Zapisz',
+                  style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
             ),
         ],
       ),
@@ -121,90 +125,93 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Auto-uzupełnianie — status
             if (autoAsync.isLoading)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: _AutoFillBanner(loading: true),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _AutoFillBanner(loading: true, theme: theme),
               )
             else if (_autoLoaded)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: _AutoFillBanner(loading: false),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _AutoFillBanner(loading: false, theme: theme),
               ),
 
-            // Pogoda
-            _SectionHeader('Pogoda'),
+            _SectionHeader('Pogoda', theme: theme),
             _PogodaSelector(
               selected: _pogoda,
               temperatura: _temperatura,
               onChanged: (p) => setState(() => _pogoda = p),
+              theme: theme,
             ),
             const SizedBox(height: 8),
             if (_pogoda != null)
               TextFormField(
                 initialValue: _temperatura?.toStringAsFixed(1) ?? '',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: TextStyle(color: theme.textColor),
+                decoration: InputDecoration(
                   labelText: 'Temperatura (°C)',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+                  filled: true,
+                  fillColor: theme.textFieldColor,
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
                   isDense: true,
                 ),
-                onChanged: (v) =>
-                    setState(() => _temperatura = double.tryParse(v)),
+                onChanged: (v) => setState(() => _temperatura = double.tryParse(v)),
               ),
 
             const SizedBox(height: 20),
-            // Etap
-            _SectionHeader('Etap budowy'),
+            _SectionHeader('Etap budowy', theme: theme),
             if (_etapNazwa != null)
               Chip(
                 avatar: const Icon(Icons.construction, size: 16),
                 label: Text(_etapNazwa!),
                 deleteIcon: const Icon(Icons.close, size: 16),
-                onDeleted: () =>
-                    setState(() {
-                      _etapId = null;
-                      _etapNazwa = null;
-                    }),
+                onDeleted: () => setState(() {
+                  _etapId = null;
+                  _etapNazwa = null;
+                }),
               )
             else
               Text(
                 'Brak aktywnego etapu',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Theme.of(context).colorScheme.outline),
+                style: TextStyle(color: theme.textColor.withAlpha(150)),
               ),
 
             const SizedBox(height: 20),
-            // Opis
-            _SectionHeader('Opis dnia'),
+            _SectionHeader('Opis dnia', theme: theme),
             TextFormField(
               controller: _opisCtrl,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText:
-                    'Co dzisiaj zrobiono? Jakie prace były realizowane...',
-                border: OutlineInputBorder(),
+              style: TextStyle(color: theme.textColor),
+              decoration: InputDecoration(
+                hintText: 'Co dzisiaj zrobiono? Jakie prace były realizowane...',
+                hintStyle: TextStyle(color: theme.textColor.withAlpha(100)),
+                filled: true,
+                fillColor: theme.textFieldColor,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
               ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
             ),
 
             const SizedBox(height: 20),
-            // Pracownicy
-            _SectionHeader('Zespół'),
+            _SectionHeader('Zespół', theme: theme),
             Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: _pracownicyCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: theme.textColor),
+                    decoration: InputDecoration(
                       labelText: 'Liczba pracowników',
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+                      filled: true,
+                      fillColor: theme.textFieldColor,
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
                       isDense: true,
                     ),
                   ),
@@ -213,11 +220,15 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _godzinyCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    style: TextStyle(color: theme.textColor),
+                    decoration: InputDecoration(
                       labelText: 'Łączne godziny pracy',
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+                      filled: true,
+                      fillColor: theme.textFieldColor,
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
                       isDense: true,
                     ),
                   ),
@@ -225,26 +236,29 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
               ],
             ),
 
-            // Obecności
             if (_obecnosci.isNotEmpty) ...[
               const SizedBox(height: 12),
-              ..._obecnosci.map((o) => _ObecnoscTile(o)),
+              ..._obecnosci.map((o) => _ObecnoscTile(o, theme: theme)),
             ],
             TextButton.icon(
-              icon: const Icon(Icons.person_add_outlined, size: 18),
-              label: const Text('Dodaj pracownika'),
+              icon: Icon(Icons.person_add_outlined, size: 18, color: theme.themeColor),
+              label: Text('Dodaj pracownika', style: TextStyle(color: theme.themeColor)),
               onPressed: _dodajObecnosc,
             ),
 
             const SizedBox(height: 20),
-            // Uwagi
-            _SectionHeader('Uwagi / problemy'),
+            _SectionHeader('Uwagi / problemy', theme: theme),
             TextFormField(
               controller: _uwagiCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(
+              style: TextStyle(color: theme.textColor),
+              decoration: InputDecoration(
                 hintText: 'Dodatkowe uwagi, problemy, opóźnienia...',
-                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: theme.textColor.withAlpha(100)),
+                filled: true,
+                fillColor: theme.textFieldColor,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
               ),
             ),
 
@@ -266,52 +280,48 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
   }
 }
 
-// ---- Pomocnicze widgety formularza ------------------------------------------
-
 class _SectionHeader extends StatelessWidget {
   final String text;
-  const _SectionHeader(this.text);
+  final ThemeColors theme;
+  const _SectionHeader(this.text, {required this.theme});
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(
           text,
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(color: Theme.of(context).colorScheme.primary),
+          style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700, fontSize: 12),
         ),
       );
 }
 
 class _AutoFillBanner extends StatelessWidget {
   final bool loading;
-  const _AutoFillBanner({required this.loading});
+  final ThemeColors theme;
+  const _AutoFillBanner({required this.loading, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+        color: theme.themeColor.withAlpha(25),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.themeColor.withAlpha(60)),
       ),
       child: Row(
         children: [
           if (loading)
-            const SizedBox.square(
+            SizedBox.square(
               dimension: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor),
             )
           else
-            const Icon(Icons.auto_awesome, size: 16),
+            Icon(Icons.auto_awesome, size: 16, color: theme.themeColor),
           const SizedBox(width: 8),
           Text(
-            loading
-                ? 'Pobieranie pogody i etapu...'
-                : 'Dane uzupełnione automatycznie',
-            style: Theme.of(context).textTheme.labelMedium,
+            loading ? 'Pobieranie pogody i etapu...' : 'Dane uzupełnione automatycznie',
+            style: TextStyle(color: theme.textColor, fontSize: 13),
           ),
         ],
       ),
@@ -323,11 +333,13 @@ class _PogodaSelector extends StatelessWidget {
   final PogodaTyp? selected;
   final double? temperatura;
   final ValueChanged<PogodaTyp?> onChanged;
+  final ThemeColors theme;
 
   const _PogodaSelector({
     required this.selected,
     required this.temperatura,
     required this.onChanged,
+    required this.theme,
   });
 
   @override
@@ -342,6 +354,10 @@ class _PogodaSelector extends StatelessWidget {
           selected: isSelected,
           onSelected: (_) => onChanged(isSelected ? null : p),
           showCheckmark: false,
+          selectedColor: theme.themeColor.withAlpha(60),
+          labelStyle: TextStyle(color: isSelected ? theme.themeColor : theme.textColor),
+          backgroundColor: theme.userTile,
+          side: BorderSide(color: isSelected ? theme.themeColor : theme.bordercolor.withAlpha(60)),
         );
       }).toList(),
     );
@@ -350,7 +366,8 @@ class _PogodaSelector extends StatelessWidget {
 
 class _ObecnoscTile extends StatelessWidget {
   final ObecnoscModel obecnosc;
-  const _ObecnoscTile(this.obecnosc);
+  final ThemeColors theme;
+  const _ObecnoscTile(this.obecnosc, {required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -358,13 +375,15 @@ class _ObecnoscTile extends StatelessWidget {
       dense: true,
       leading: CircleAvatar(
         radius: 16,
-        child: Text(obecnosc.imieNazwisko[0]),
+        backgroundColor: theme.themeColor.withAlpha(40),
+        child: Text(obecnosc.imieNazwisko[0],
+            style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
       ),
-      title: Text(obecnosc.imieNazwisko),
-      subtitle: Text(obecnosc.rola),
+      title: Text(obecnosc.imieNazwisko, style: TextStyle(color: theme.textColor)),
+      subtitle: Text(obecnosc.rola, style: TextStyle(color: theme.textColor.withAlpha(150))),
       trailing: Text(
         '${obecnosc.godziny.toStringAsFixed(0)} h',
-        style: Theme.of(context).textTheme.labelMedium,
+        style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600),
       ),
     );
   }

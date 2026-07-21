@@ -1,0 +1,25 @@
+{
+  "name": "Budkon.pro",
+  "short_name": "Budkon",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2F2D2E",
+  "theme_color": "#692125",
+  "description": "A new real estate portal.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": true,
+  "gcm_sender_id": "103953800507",
+  "related_applications": [
+    { "platform": "play", "url": "https://play.google.com/store/apps/details?id=com.example.app", "id": "com.example.app" },
+    { "platform": "itunes", "url": "https://apps.apple.com/app/id000000000" },
+    { "platform": "windows", "url": "https://example.com/download/windows" },
+    { "platform": "macos", "url": "https://example.com/download/macos" },
+    { "platform": "linux", "url": "https://example.com/download/linux" }
+  ],
+  "icons": [
+    { "src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/Icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/Icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

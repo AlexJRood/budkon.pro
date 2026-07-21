@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 
 import '../../data/models/przetarg_model.dart';
 import '../../data/providers/emma_inbox_provider.dart';
 import '../../data/providers/przetargi_provider.dart';
+import '../../data/services/przetargi_api.dart';
 import '../../widgets/emma_inbox_widget.dart';
 import '../../widgets/przetarg_card.dart';
 
@@ -11,8 +13,7 @@ class PrzetargiListScreen extends ConsumerStatefulWidget {
   const PrzetargiListScreen({super.key});
 
   @override
-  ConsumerState<PrzetargiListScreen> createState() =>
-      _PrzetargiListScreenState();
+  ConsumerState<PrzetargiListScreen> createState() => _PrzetargiListScreenState();
 }
 
 class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
@@ -26,17 +27,20 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = ref.read(themeColorsProvider);
     final listState = ref.watch(przetargiListProvider);
     final filter = ref.watch(przetargiFilterProvider);
     final fetchState = ref.watch(fetchProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Przetargi'),
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text('Przetargi', style: TextStyle(color: theme.textColor)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune_outlined),
+            icon: Icon(Icons.tune_outlined, color: theme.textColor),
             tooltip: 'Subskrypcje',
             onPressed: () => Navigator.of(context).pushNamed('/przetargi/subskrypcje'),
           ),
@@ -45,7 +49,6 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
       ),
       body: Column(
         children: [
-          // Wyszukiwarka
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: SearchBar(
@@ -58,9 +61,8 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
                     icon: const Icon(Icons.clear),
                     onPressed: () {
                       _searchCtrl.clear();
-                      ref
-                          .read(przetargiFilterProvider.notifier)
-                          .state = filter.copyWith(q: null);
+                      ref.read(przetargiFilterProvider.notifier).state =
+                          filter.copyWith(q: null);
                       ref.read(przetargiListProvider.notifier).load(
                             filter: filter.copyWith(q: null),
                           );
@@ -75,9 +77,9 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
             ),
           ),
 
-          // Filtry statusu
           _StatusFilterBar(
             current: filter.status,
+            theme: theme,
             onChanged: (s) {
               final f = filter.copyWith(status: s);
               ref.read(przetargiFilterProvider.notifier).state = f;
@@ -85,30 +87,34 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
             },
           ),
 
-          // Lista
           Expanded(
             child: listState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () =>
+                  Center(child: CircularProgressIndicator(color: theme.themeColor)),
               error: (e, _) => Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.error_outline, color: cs.error, size: 40),
+                    const Icon(Icons.error_outline, color: Colors.red, size: 40),
                     const SizedBox(height: 8),
-                    Text('Błąd: $e'),
+                    Text('Błąd: $e', style: TextStyle(color: theme.textColor)),
                     TextButton(
                       onPressed: () =>
                           ref.read(przetargiListProvider.notifier).load(),
-                      child: const Text('Spróbuj ponownie'),
+                      child: Text('Spróbuj ponownie',
+                          style: TextStyle(color: theme.themeColor)),
                     ),
                   ],
                 ),
               ),
               data: (przetargi) => przetargi.isEmpty
-                  ? _EmptyState(onFetch: () => ref
-                      .read(fetchProvider.notifier)
-                      .fetch(ref.read(przetargiListProvider.notifier)))
+                  ? _EmptyState(
+                      theme: theme,
+                      onFetch: () => ref
+                          .read(fetchProvider.notifier)
+                          .fetch(ref.read(przetargiListProvider.notifier)))
                   : RefreshIndicator(
+                      color: theme.themeColor,
                       onRefresh: () async {
                         await ref.read(przetargiListProvider.notifier).load();
                         ref.invalidate(emmaInboxProvider);
@@ -131,25 +137,18 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('Dodaj ręcznie'),
+        backgroundColor: theme.themeColor,
+        icon: Icon(Icons.add, color: theme.buttonTextColor),
+        label: Text('Dodaj ręcznie', style: TextStyle(color: theme.buttonTextColor)),
         onPressed: () => _showAddManual(context),
       ),
     );
   }
 
   void _showAddManual(BuildContext context) {
-    // Prosty dialog do ręcznego dodania przetargu
-    showDialog(
-      context: context,
-      builder: (_) => const _AddManualDialog(),
-    );
+    showDialog(context: context, builder: (_) => const _AddManualDialog());
   }
 }
-
-// ------------------------------------------------------------------ //
-// Fetch button ze stanem                                               //
-// ------------------------------------------------------------------ //
 
 class _FetchButton extends ConsumerWidget {
   final AsyncValue<int?> fetchState;
@@ -157,21 +156,22 @@ class _FetchButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     if (fetchState.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(14),
+      return Padding(
+        padding: const EdgeInsets.all(14),
         child: SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor),
         ),
       );
     }
     return IconButton(
-      icon: const Icon(Icons.cloud_download_outlined),
+      icon: Icon(Icons.cloud_download_outlined, color: theme.textColor),
       tooltip: 'Pobierz z BZP',
       onPressed: () async {
-        final result = await ref
+        await ref
             .read(fetchProvider.notifier)
             .fetch(ref.read(przetargiListProvider.notifier));
         if (context.mounted) {
@@ -190,15 +190,13 @@ class _FetchButton extends ConsumerWidget {
   }
 }
 
-// ------------------------------------------------------------------ //
-// Filtr statusu                                                        //
-// ------------------------------------------------------------------ //
-
 class _StatusFilterBar extends StatelessWidget {
   final String? current;
   final ValueChanged<String?> onChanged;
+  final ThemeColors theme;
 
-  const _StatusFilterBar({required this.current, required this.onChanged});
+  const _StatusFilterBar(
+      {required this.current, required this.onChanged, required this.theme});
 
   static const _chips = [
     (null, 'Wszystkie'),
@@ -225,6 +223,15 @@ class _StatusFilterBar extends StatelessWidget {
                   selected: current == c.$1,
                   onSelected: (_) => onChanged(c.$1),
                   visualDensity: VisualDensity.compact,
+                  selectedColor: theme.themeColor.withAlpha(60),
+                  checkmarkColor: theme.themeColor,
+                  labelStyle: TextStyle(
+                      color: current == c.$1 ? theme.themeColor : theme.textColor),
+                  backgroundColor: theme.userTile,
+                  side: BorderSide(
+                      color: current == c.$1
+                          ? theme.themeColor
+                          : theme.bordercolor.withAlpha(60)),
                 ),
               ),
             )
@@ -234,17 +241,13 @@ class _StatusFilterBar extends StatelessWidget {
   }
 }
 
-// ------------------------------------------------------------------ //
-// Empty state                                                          //
-// ------------------------------------------------------------------ //
-
 class _EmptyState extends StatelessWidget {
   final VoidCallback onFetch;
-  const _EmptyState({required this.onFetch});
+  final ThemeColors theme;
+  const _EmptyState({required this.onFetch, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -252,26 +255,27 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.find_in_page_outlined,
-                size: 64, color: cs.onSurfaceVariant.withOpacity(0.4)),
+                size: 64, color: theme.textColor.withAlpha(80)),
             const SizedBox(height: 16),
             Text(
               'Brak przetargów',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: TextStyle(
+                  color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Pobierz przetargi z BZP lub dodaj ręcznie.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: cs.onSurfaceVariant),
+              style: TextStyle(color: theme.textColor.withAlpha(150)),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               icon: const Icon(Icons.cloud_download_outlined),
               label: const Text('Pobierz z BZP'),
               onPressed: onFetch,
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor,
+                  foregroundColor: theme.buttonTextColor),
             ),
           ],
         ),
@@ -279,10 +283,6 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-
-// ------------------------------------------------------------------ //
-// Dialog ręcznego dodania                                              //
-// ------------------------------------------------------------------ //
 
 class _AddManualDialog extends ConsumerStatefulWidget {
   const _AddManualDialog();
@@ -336,8 +336,7 @@ class _AddManualDialogState extends ConsumerState<_AddManualDialog> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Dodaj'),
         ),
       ],
@@ -358,15 +357,11 @@ class _AddManualDialogState extends ConsumerState<_AddManualDialog> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Błąd: $e')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 }
-
-// ignore: unused_import
-import '../../data/services/przetargi_api.dart';

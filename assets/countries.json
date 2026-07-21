@@ -1,0 +1,349 @@
+{
+  "cities": [
+    {
+      "city": "Szczecin",
+      "districts": {
+        "district1": "Zachód",
+        "district2": "Prawobrzeże",
+        "district3": "Północ",
+        "district4": "Śródmieście",
+        "district5": "Dąbie"
+      }
+    },
+    {
+      "city": "Kraków",
+      "streets": "kerala",
+      "districts": {
+        "district1": "Podgórze",
+        "district2": "Nowa Huta",
+        "district3": "Krowodrza",
+        "district4": "Dębniki",
+        "district5": "Stare Miasto"
+      }
+    },
+    {
+      "city": "Gdańsk",
+      "districts": {
+        "district1": "Wrzeszcz",
+        "district2": "Przymorze",
+        "district3": "Oliwa",
+        "district4": "Główne Miasto",
+        "district5": "Letnica"
+      }
+    },
+    {
+      "city": "Wrocław",
+      "districts": {
+        "district1": "Stare Miasto",
+        "district2": "Śródmieście",
+        "district3": "Psie Pole",
+        "district4": "Krzyki",
+        "district5": "Fabryczna"
+      }
+    },
+    {
+      "city": "Poznań",
+      "districts": {
+        "district1": "Stare Miasto",
+        "district2": "Jeżyce",
+        "district3": "Wilda",
+        "district4": "Ławica",
+        "district5": "Grunwald"
+      }
+    },
+    {
+      "city": "Łódź",
+      "districts": {
+        "district1": "Bałuty",
+        "district2": "Śródmieście",
+        "district3": "Widzew",
+        "district4": "Polesie",
+        "district5": "Retkinia"
+      }
+    },
+    {
+      "city": "Warszawa",
+      "districts": {
+        "district1": "Mokotów",
+        "district2": "Praga-Południe",
+        "district3": "Wola",
+        "district4": "Żoliborz",
+        "district5": "Ursynów"
+      }
+    },
+    {
+      "city": "Katowice",
+      "districts": {
+        "district1": "Śródmieście",
+        "district2": "Nikiszowiec",
+        "district3": "Zawodzie",
+        "district4": "Dąb",
+        "district5": "Murcki"
+      }
+    },
+    {
+      "city": "Lublin",
+      "districts": {
+        "district1": "Stare Miasto",
+        "district2": "Czuby",
+        "district3": "Węglin",
+        "district4": "Bystrzyca",
+        "district5": "Szerokie"
+      }
+    },
+    {
+      "city": "Toruń",
+      "districts": {
+        "district1": "Stare Miasto",
+        "district2": "Bielany",
+        "district3": "Rubinkowo",
+        "district4": "Wrzosy",
+        "district5": "Mokre"
+      }
+    },
+    {
+      "city": "Zielona Góra",
+      "districts": {
+        "district1": "Centrum",
+        "district2": "Złotnik",
+        "district3": "Łężyca",
+        "district4": "Nowe Miasto",
+        "district5": "Osiedle Pomorskie"
+      }
+    },
+    {
+      "city": "Białystok",
+      "districts": {
+        "district1": "Centrum",
+        "district2": "Słoneczny Stok",
+        "district3": "Bożena",
+        "district4": "Nowe Miasto",
+        "district5": "Bacieczki"
+      }
+    },
+    {
+      "city": "Rzeszów",
+      "districts": {
+        "district1": "Śródmieście",
+        "district2": "Zalesie",
+        "district3": "Słocina",
+        "district4": "Wilkowyja",
+        "district5": "Staroniwa"
+      }
+    },
+    {
+      "city": "Radom",
+      "districts": {
+        "district1": "Śródmieście",
+        "district2": "Gołębiów",
+        "district3": "Wacyn",
+        "district4": "Młodzianów",
+        "district5": "Osiedle Gaj"
+      }
+    },
+    {
+      "city": "Tarnów"
+    },
+    {
+      "city": "Kielce"
+    },
+    {
+      "city": "Siedlce",
+      "districts": {
+        "district1": "Śródmieście",
+        "district2": "Mokry",
+        "district3": "Długosiodło"
+      }
+    },
+    {
+      "city": "Olsztyn",
+      "districts": {
+        "district1": "Śródmieście",
+        "district2": "Zatorze",
+        "district3": "Jaroty"
+      }
+    },
+    {
+      "city": "Częstochowa",
+      "districts": {
+        "district1": "Stare Miasto",
+        "district2": "Raków",
+        "district3": "Kiedrzyn"
+      }
+    },
+    {
+      "city": "Gniezno"
+    },
+    {
+      "city": "Płock"
+    },
+    {
+      "city": "Suwałki"
+    },
+    {
+      "city": "Kalisz"
+    },
+    {
+      "city": "Sopot"
+    },
+    {
+      "city": "Tczew"
+    },
+    {
+      "city": "Przemyśl"
+    },
+    {
+      "city": "Chełm"
+    },
+    {
+      "city": "Tarnobrzeg"
+    },
+    {
+      "city": "Nowy Sącz"
+    },
+    {
+      "city": "Legnica"
+    },
+    {
+      "city": "Zamość"
+    },
+    {
+      "city": "Łomża"
+    },
+    {
+      "city": "Grudziądz"
+    },
+    {
+      "city": "Elbląg"
+    },
+    {
+      "city": "Wałbrzych"
+    },
+    {
+      "city": "Rzeszów"
+    },
+    {
+      "city": "Bytom"
+    },
+    {
+      "city": "Opole"
+    },
+    {
+      "city": "Gorzów Wielkopolski"
+    },
+    {
+      "city": "Koszalin"
+    },
+    {
+      "city": "Oświęcim"
+    },
+    {
+      "city": "Chorzów"
+    },
+    {
+      "city": "Inowrocław"
+    },
+    {
+      "city": "Świdnica"
+    },
+    {
+      "city": "Piła"
+    },
+    {
+      "city": "Puławy"
+    },
+    {
+      "city": "Ostrów Wielkopolski"
+    },
+    {
+      "city": "Starogard Gdański"
+    },
+    {
+      "city": "Jarosław"
+    },
+    {
+      "city": "Krosno"
+    },
+    {
+      "city": "Mielec"
+    },
+    {
+      "city": "Olkusz"
+    },
+    {
+      "city": "Zakopane"
+    },
+    {
+      "city": "Żory"
+    },
+    {
+      "city": "Tomaszów Mazowiecki"
+    },
+    {
+      "city": "Piotrków Trybunalski"
+    },
+    {
+      "city": "Siedlce"
+    },
+    {
+      "city": "Łuków"
+    },
+    {
+      "city": "Biała Podlaska"
+    },
+    {
+      "city": "Ciechanów"
+    },
+    {
+      "city": "Ełk"
+    },
+    {
+      "city": "Kołobrzeg"
+    },
+    {
+      "city": "Augustów"
+    },
+    {
+      "city": "Łowicz"
+    },
+    {
+      "city": "Świnoujście"
+    },
+    {
+      "city": "Tarnów"
+    },
+    {
+      "city": "Jasło"
+    },
+    {
+      "city": "Sanok"
+    },
+    {
+      "city": "Żywiec"
+    },
+    {
+      "city": "Włocławek"
+    },
+    {
+      "city": "Kędzierzyn-Koźle"
+    },
+    {
+      "city": "Leszno"
+    },
+    {
+      "city": "Nowa Sól"
+    },
+    {
+      "city": "Pabianice"
+    },
+    {
+      "city": "Głogów"
+    },
+    {
+      "city": "Bełchatów"
+    },
+    {
+      "city": "Zielona Góra"
+    }
+  ]
+}

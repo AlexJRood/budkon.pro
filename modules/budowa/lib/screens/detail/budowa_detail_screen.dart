@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/budowa_model.dart';
 import '../../data/providers/budowa_provider.dart';
@@ -17,13 +18,18 @@ class BudowaDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(budowaDetailProvider(budowaId));
 
     return async.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Błąd: $e')),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
       ),
       data: (budowa) => _BudowaDetail(budowa: budowa),
     );
@@ -36,17 +42,18 @@ class _BudowaDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = ref.read(themeColorsProvider);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(budowa.nazwa),
+            title: Text(budowa.nazwa, style: TextStyle(color: theme.textColor)),
+            backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined),
+                icon: Icon(Icons.edit_outlined, color: theme.textColor),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => BudowaFormScreen(existing: budowa)),
                 ),
@@ -59,7 +66,6 @@ class _BudowaDetail extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Status + adres
                   Row(
                     children: [
                       BudowaStatusBadge(status: budowa.status),
@@ -68,13 +74,14 @@ class _BudowaDetail extends ConsumerWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer,
+                            color: theme.themeColor.withAlpha(30),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
                             '${_fmt(budowa.budzet)} zł',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onPrimaryContainer,
+                            style: TextStyle(
+                              color: theme.themeColor,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -85,18 +92,20 @@ class _BudowaDetail extends ConsumerWidget {
                     SizedBox(height: 12.h),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 16, color: theme.colorScheme.outline),
+                        Icon(Icons.location_on_outlined, size: 16, color: theme.textColor.withAlpha(120)),
                         SizedBox(width: 6.w),
                         Expanded(
-                          child: Text(budowa.adres, style: theme.textTheme.bodyMedium),
+                          child: Text(
+                            budowa.adres,
+                            style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 14),
+                          ),
                         ),
                       ],
                     ),
                   ],
                   SizedBox(height: 20.h),
 
-                  // Progress
-                  _SectionHeader('Postęp', icon: Icons.trending_up),
+                  _SectionHeader('Postęp', icon: Icons.trending_up, theme: theme),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
@@ -104,26 +113,24 @@ class _BudowaDetail extends ConsumerWidget {
                       SizedBox(width: 12.w),
                       Text(
                         '${budowa.postep}%',
-                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                        style: TextStyle(color: theme.textColor, fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '${budowa.etapy.where((e) => e.status == StatusEtapu.zakończony).length} z ${budowa.etapy.length} etapów zakończonych',
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline),
+                    '${budowa.etapy.where((e) => e.status == StatusEtapu.zakonczony).length} z ${budowa.etapy.length} etapów zakończonych',
+                    style: TextStyle(color: theme.textColor.withAlpha(120), fontSize: 12),
                   ),
                   SizedBox(height: 24.h),
 
-                  // Etapy
-                  _SectionHeader('Etapy budowy', icon: Icons.layers_outlined),
+                  _SectionHeader('Etapy budowy', icon: Icons.layers_outlined, theme: theme),
                   SizedBox(height: 8.h),
                 ],
               ),
             ),
           ),
 
-          // Etapy lista
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             sliver: SliverList.separated(
@@ -143,11 +150,11 @@ class _BudowaDetail extends ConsumerWidget {
               },
             ),
           ),
-          // Hub modułów
+
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 8.h),
-              child: _SectionHeader('Moduły budowy', icon: Icons.apps_outlined),
+              child: _SectionHeader('Moduły budowy', icon: Icons.apps_outlined, theme: theme),
             ),
           ),
           SliverPadding(
@@ -227,11 +234,7 @@ class _ModulTile extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _ModulTile(
-      {required this.icon,
-      required this.label,
-      required this.color,
-      required this.onTap});
+  const _ModulTile({required this.icon, required this.label, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -247,14 +250,7 @@ class _ModulTile extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 22),
               SizedBox(width: 10.w),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
+              Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)),
             ],
           ),
         ),
@@ -264,18 +260,18 @@ class _ModulTile extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.label, {required this.icon});
+  const _SectionHeader(this.label, {required this.icon, required this.theme});
   final String label;
   final IconData icon;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 18, color: theme.colorScheme.primary),
+        Icon(icon, size: 18, color: theme.themeColor),
         SizedBox(width: 6.w),
-        Text(label, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+        Text(label, style: TextStyle(color: theme.textColor, fontSize: 13, fontWeight: FontWeight.w600)),
       ],
     );
   }

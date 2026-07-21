@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> kosztorysyDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> kosztorysyDockItems() => [
     iconKey: 'receipt',
     route: '/kosztorysy',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 20,
     requiresAuth: true,
   ),
 ];
+

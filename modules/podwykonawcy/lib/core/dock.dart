@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> podwykonawcyDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> podwykonawcyDockItems() => [
     iconKey: 'groups',
     route: '/podwykonawcy',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 60,
     requiresAuth: true,
   ),
 ];
+

@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 import 'dock.dart';
 import 'routing.dart';
 
@@ -13,5 +13,6 @@ class OfertyModule extends AppModule {
   List<RouteSpec> routes() => ofertyRoutes();
 
   @override
-  Future<void> init() async {}
+  Future<void> init(ModuleScope scope) async {}
 }
+

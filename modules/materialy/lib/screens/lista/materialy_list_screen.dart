@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/materialy_model.dart';
 import '../../data/providers/materialy_provider.dart';
 import '../../data/services/materialy_api.dart';
@@ -10,26 +11,20 @@ class MaterialyListScreen extends ConsumerStatefulWidget {
   final int budowaId;
   final String budowaNazwa;
 
-  const MaterialyListScreen({
-    super.key,
-    required this.budowaId,
-    required this.budowaNazwa,
-  });
+  const MaterialyListScreen({super.key, required this.budowaId, required this.budowaNazwa});
 
   @override
-  ConsumerState<MaterialyListScreen> createState() =>
-      _MaterialyListScreenState();
+  ConsumerState<MaterialyListScreen> createState() => _MaterialyListScreenState();
 }
 
-class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen>
-    with SingleTickerProviderStateMixin {
+class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabs;
-  String? _filterStatus;
 
   @override
   void initState() {
     super.initState();
     _tabs = TabController(length: 3, vsync: this);
+    _tabs.addListener(() => setState(() {}));
   }
 
   @override
@@ -40,320 +35,192 @@ class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(pozycjeProvider(widget.budowaId));
-    final cs = Theme.of(context).colorScheme;
 
-    // Grupowanie po statusie
-    final doZamowienia = state.lista
-        .where((p) => p.status == StatusPozycji.doZamowienia)
-        .toList();
-    final wTrakcie = state.lista
-        .where((p) =>
-            p.status == StatusPozycji.zamowione ||
-            p.status == StatusPozycji.wDostawie)
-        .toList();
-    final dostarczone = state.lista
-        .where((p) => p.status == StatusPozycji.dostarczone)
-        .toList();
+    final doZamowienia = state.lista.where((p) => p.status == StatusPozycji.doZamowienia).toList();
+    final wTrakcie = state.lista.where((p) =>
+        p.status == StatusPozycji.zamowione || p.status == StatusPozycji.wDostawie).toList();
+    final dostarczone = state.lista.where((p) => p.status == StatusPozycji.dostarczone).toList();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Materiały'),
-            Text(
-              widget.budowaNazwa,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(color: Colors.white70),
-            ),
-          ],
-        ),
+        backgroundColor: Colors.transparent,
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Materiały', style: TextStyle(color: theme.textColor)),
+          Text(widget.budowaNazwa, style: TextStyle(color: theme.textColor.withAlpha(160), fontSize: 11)),
+        ]),
+        iconTheme: IconThemeData(color: theme.textColor),
         actions: [
           IconButton(
-            icon: const Icon(Icons.trending_up),
+            icon: Icon(Icons.trending_up, color: theme.textColor),
             tooltip: 'Trendy cen',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const TrendyCenScreen(),
-              ),
-            ),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrendyCenScreen())),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () =>
-                ref.read(pozycjeProvider(widget.budowaId).notifier).load(),
+            icon: Icon(Icons.refresh, color: theme.textColor),
+            onPressed: () => ref.read(pozycjeProvider(widget.budowaId).notifier).load(),
           ),
         ],
         bottom: TabBar(
           controller: _tabs,
+          labelColor: theme.themeColor,
+          unselectedLabelColor: theme.textColor.withAlpha(150),
+          indicatorColor: theme.themeColor,
           tabs: [
             Tab(text: 'Do zamówienia (${doZamowienia.length})'),
             Tab(text: 'W trakcie (${wTrakcie.length})'),
-            Tab(text: 'Dostarczone'),
+            const Tab(text: 'Dostarczone'),
           ],
         ),
       ),
-
       body: state.loading && state.lista.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabs,
-              children: [
-                _ListaTab(
-                  pozycje: doZamowienia,
-                  budowaId: widget.budowaId,
-                  emptyLabel: 'Brak materiałów do zamówienia',
-                  emptyIcon: Icons.check_circle_outline,
-                ),
-                _ListaTab(
-                  pozycje: wTrakcie,
-                  budowaId: widget.budowaId,
-                  emptyLabel: 'Brak zamówionych materiałów',
-                  emptyIcon: Icons.local_shipping_outlined,
-                ),
-                _ListaTab(
-                  pozycje: dostarczone,
-                  budowaId: widget.budowaId,
-                  emptyLabel: 'Brak dostarczonych materiałów',
-                  emptyIcon: Icons.inventory_2_outlined,
-                ),
-              ],
-            ),
-
+          ? Center(child: CircularProgressIndicator(color: theme.themeColor))
+          : TabBarView(controller: _tabs, children: [
+              _ListaTab(pozycje: doZamowienia, budowaId: widget.budowaId, theme: theme,
+                  emptyLabel: 'Brak materiałów do zamówienia', emptyIcon: Icons.check_circle_outline),
+              _ListaTab(pozycje: wTrakcie, budowaId: widget.budowaId, theme: theme,
+                  emptyLabel: 'Brak zamówionych materiałów', emptyIcon: Icons.local_shipping_outlined),
+              _ListaTab(pozycje: dostarczone, budowaId: widget.budowaId, theme: theme,
+                  emptyLabel: 'Brak dostarczonych materiałów', emptyIcon: Icons.inventory_2_outlined),
+            ]),
       floatingActionButton: _tabs.index == 0
           ? FloatingActionButton.extended(
-              icon: const Icon(Icons.add),
-              label: const Text('Dodaj'),
-              onPressed: () => _dodajPozycje(context),
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => _dodajPozycje(context, theme),
             )
           : null,
     );
   }
 
-  Future<void> _dodajPozycje(BuildContext context) async {
-    // Uproszczona wersja — szukanie materiału w katalogu
+  Future<void> _dodajPozycje(BuildContext context, ThemeColors theme) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _DodajPozycjeSheet(budowaId: widget.budowaId),
+      builder: (_) => _DodajPozycjeSheet(budowaId: widget.budowaId, theme: theme),
     );
-    if (mounted) {
-      ref.read(pozycjeProvider(widget.budowaId).notifier).load();
-    }
+    if (mounted) ref.read(pozycjeProvider(widget.budowaId).notifier).load();
   }
 }
 
-// ---- Tab z listą pozycji ---------------------------------------------------
-
-class _ListaTab extends ConsumerWidget {
+class _ListaTab extends StatelessWidget {
   final List<PozycjaZamowieniaModel> pozycje;
   final int budowaId;
+  final ThemeColors theme;
   final String emptyLabel;
   final IconData emptyIcon;
 
-  const _ListaTab({
-    required this.pozycje,
-    required this.budowaId,
-    required this.emptyLabel,
-    required this.emptyIcon,
-  });
+  const _ListaTab({required this.pozycje, required this.budowaId, required this.theme,
+      required this.emptyLabel, required this.emptyIcon});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (pozycje.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(emptyIcon,
-                size: 56, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 16),
-            Text(emptyLabel,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    )),
-          ],
-        ),
-      );
+      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(emptyIcon, size: 56, color: theme.textColor.withAlpha(80)),
+        const SizedBox(height: 16),
+        Text(emptyLabel, style: TextStyle(color: theme.textColor.withAlpha(150))),
+      ]));
     }
-
-    return RefreshIndicator(
-      onRefresh: () =>
-          ref.read(pozycjeProvider(budowaId).notifier).load(),
+    return Consumer(builder: (context, ref, _) => RefreshIndicator(
+      onRefresh: () => ref.read(pozycjeProvider(budowaId).notifier).load(),
+      color: theme.themeColor,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         itemCount: pozycje.length,
         separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (ctx, i) =>
-            _PozycjaCard(pozycja: pozycje[i], budowaId: budowaId),
+        itemBuilder: (ctx, i) => _PozycjaCard(pozycja: pozycje[i], budowaId: budowaId, theme: theme),
       ),
-    );
+    ));
   }
 }
-
-// ---- Karta pojedynczej pozycji zamówienia ----------------------------------
 
 class _PozycjaCard extends ConsumerWidget {
   final PozycjaZamowieniaModel pozycja;
   final int budowaId;
+  final ThemeColors theme;
 
-  const _PozycjaCard({required this.pozycja, required this.budowaId});
+  const _PozycjaCard({required this.pozycja, required this.budowaId, required this.theme});
 
-  Color _statusColor(BuildContext ctx, StatusPozycji s) {
-    final cs = Theme.of(ctx).colorScheme;
-    return switch (s) {
-      StatusPozycji.doZamowienia => cs.primary,
-      StatusPozycji.zamowione => cs.tertiary,
-      StatusPozycji.wDostawie => const Color(0xFFFF9800),
-      StatusPozycji.dostarczone => const Color(0xFF4CAF50),
-      StatusPozycji.zwrocone => cs.error,
-    };
-  }
+  Color _statusColor(StatusPozycji s) => switch (s) {
+    StatusPozycji.doZamowienia => theme.themeColor,
+    StatusPozycji.zamowione => const Color(0xFF9C27B0),
+    StatusPozycji.wDostawie => const Color(0xFFFF9800),
+    StatusPozycji.dostarczone => const Color(0xFF4CAF50),
+    StatusPozycji.zwrocone => Colors.red,
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mat = pozycja.material;
-    final cs = Theme.of(context).colorScheme;
+    final statusColor = _statusColor(pozycja.status);
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.userTile,
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cs.outlineVariant),
+        border: Border.all(color: theme.bordercolor.withAlpha(60)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _szczegoly(context, ref),
         child: Padding(
           padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(mat.kategoria.emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(mat.nazwa, style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
+                if (mat.producent.isNotEmpty)
+                  Text(mat.producent, style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12)),
+              ])),
+              TrendBadge(trend: mat.trend, showPorada: true),
+            ]),
+            const SizedBox(height: 10),
+            Row(children: [
+              _InfoChip(icon: Icons.inventory_2_outlined, label: pozycja.iloscStr, theme: theme),
+              const SizedBox(width: 8),
+              if (mat.cenaNetto != null)
+                _InfoChip(icon: Icons.payments_outlined, label: '${mat.cenaFormatted}/${mat.jednostka}', theme: theme),
+              const Spacer(),
+              if (pozycja.wartoscNetto != null)
+                Text('${pozycja.wartoscNetto!.toStringAsFixed(0)} PLN',
+                    style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w700, fontSize: 14)),
+            ]),
+            if (pozycja.dataPotrzeby != null) ...[
+              const SizedBox(height: 6),
               Row(children: [
-                // Emoji kategorii
-                Text(mat.kategoria.emoji,
-                    style: const TextStyle(fontSize: 20)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        mat.nazwa,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      if (mat.producent.isNotEmpty)
-                        Text(
-                          mat.producent,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: cs.outline),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Sparkline trendu
-                if (mat.trend != null)
-                  PriceSparkline(
-                    ceny: const [], // mini — bez historii na liście
-                    trend: mat.trend,
-                    width: 0,
-                    height: 0,
-                  ),
-
-                TrendBadge(trend: mat.trend, showPorada: true),
-              ]),
-
-              const SizedBox(height: 10),
-
-              Row(children: [
-                // Ilość
-                _InfoChip(
-                  icon: Icons.inventory_2_outlined,
-                  label: pozycja.iloscStr,
-                ),
-                const SizedBox(width: 8),
-
-                // Cena
-                if (mat.cenaNetto != null)
-                  _InfoChip(
-                    icon: Icons.payments_outlined,
-                    label: '${mat.cenaFormatted}/${mat.jednostka}',
-                  ),
-
-                const Spacer(),
-
-                // Wartość
-                if (pozycja.wartoscNetto != null)
-                  Text(
-                    '${pozycja.wartoscNetto!.toStringAsFixed(0)} PLN',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-              ]),
-
-              if (pozycja.dataPotrzeby != null) ...[
-                const SizedBox(height: 6),
-                Row(children: [
-                  Icon(Icons.event, size: 13, color: cs.outline),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Potrzebne: ${pozycja.dataPotrzeby}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: cs.outline),
-                  ),
-                ]),
-              ],
-
-              const SizedBox(height: 10),
-
-              // Status + akcje
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color:
-                        _statusColor(context, pozycja.status).withAlpha(30),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color:
-                          _statusColor(context, pozycja.status).withAlpha(80),
-                    ),
-                  ),
-                  child: Text(
-                    pozycja.status.label,
-                    style: TextStyle(
-                      color: _statusColor(context, pozycja.status),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  icon: const Icon(Icons.show_chart, size: 16),
-                  label: const Text('Historia cen'),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          HistoriaCenScreen(material: mat),
-                    ),
-                  ),
-                ),
+                Icon(Icons.event, size: 13, color: theme.textColor.withAlpha(120)),
+                const SizedBox(width: 4),
+                Text('Potrzebne: ${pozycja.dataPotrzeby}',
+                    style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12)),
               ]),
             ],
-          ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: statusColor.withAlpha(80)),
+                ),
+                child: Text(pozycja.status.label,
+                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                icon: Icon(Icons.show_chart, size: 16, color: theme.themeColor),
+                label: Text('Historia cen', style: TextStyle(color: theme.themeColor)),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => HistoriaCenScreen(material: mat))),
+              ),
+            ]),
+          ]),
         ),
       ),
     );
@@ -362,17 +229,14 @@ class _PozycjaCard extends ConsumerWidget {
   Future<void> _szczegoly(BuildContext context, WidgetRef ref) async {
     final nowyStatus = await showModalBottomSheet<String>(
       context: context,
-      builder: (_) => _StatusSheet(pozycja: pozycja),
+      builder: (_) => _StatusSheet(pozycja: pozycja, theme: theme),
     );
     if (nowyStatus == null) return;
     try {
       final updated = await materialyApi.zmienStatus(pozycja.id, nowyStatus);
       ref.read(pozycjeProvider(budowaId).notifier).update(updated);
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
-      }
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
     }
   }
 }
@@ -380,70 +244,53 @@ class _PozycjaCard extends ConsumerWidget {
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _InfoChip({required this.icon, required this.label});
+  final ThemeColors theme;
+  const _InfoChip({required this.icon, required this.label, required this.theme});
 
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon,
-              size: 13, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(width: 4),
-          Text(label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  )),
-        ],
-      );
+  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
+    Icon(icon, size: 13, color: theme.textColor.withAlpha(120)),
+    const SizedBox(width: 4),
+    Text(label, style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12)),
+  ]);
 }
-
-// ---- Bottom sheet zmiany statusu -------------------------------------------
 
 class _StatusSheet extends StatelessWidget {
   final PozycjaZamowieniaModel pozycja;
-  const _StatusSheet({required this.pozycja});
+  final ThemeColors theme;
+  const _StatusSheet({required this.pozycja, required this.theme});
 
   @override
   Widget build(BuildContext context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                pozycja.material.nazwa,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 16),
-              ...StatusPozycji.values.map(
-                (s) => ListTile(
-                  title: Text(s.label),
-                  selected: s == pozycja.status,
-                  selectedColor: Theme.of(context).colorScheme.primary,
-                  leading: Radio<StatusPozycji>(
-                    value: s,
-                    groupValue: pozycja.status,
-                    onChanged: (_) => Navigator.pop(context, s.value),
-                  ),
-                  onTap: () => Navigator.pop(context, s.value),
-                ),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(pozycja.material.nazwa,
+            style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w700, fontSize: 16)),
+        const SizedBox(height: 16),
+        ...StatusPozycji.values.map((s) => ListTile(
+          title: Text(s.label, style: TextStyle(color: theme.textColor)),
+          selected: s == pozycja.status,
+          selectedColor: theme.themeColor,
+          leading: Radio<StatusPozycji>(
+            value: s, groupValue: pozycja.status,
+            activeColor: theme.themeColor,
+            onChanged: (_) => Navigator.pop(context, s.value),
           ),
-        ),
-      );
+          onTap: () => Navigator.pop(context, s.value),
+        )),
+      ]),
+    ),
+  );
 }
-
-// ---- Bottom sheet dodawania pozycji ----------------------------------------
 
 class _DodajPozycjeSheet extends ConsumerStatefulWidget {
   final int budowaId;
-  const _DodajPozycjeSheet({required this.budowaId});
+  final ThemeColors theme;
+  const _DodajPozycjeSheet({required this.budowaId, required this.theme});
 
   @override
-  ConsumerState<_DodajPozycjeSheet> createState() =>
-      _DodajPozycjeSheetState();
+  ConsumerState<_DodajPozycjeSheet> createState() => _DodajPozycjeSheetState();
 }
 
 class _DodajPozycjeSheetState extends ConsumerState<_DodajPozycjeSheet> {
@@ -461,54 +308,49 @@ class _DodajPozycjeSheetState extends ConsumerState<_DodajPozycjeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.theme;
     final wyniki = ref.watch(materialPickerProvider);
-    final cs = Theme.of(context).colorScheme;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       maxChildSize: 0.95,
       minChildSize: 0.5,
       expand: false,
-      builder: (_, ctrl) => Column(
-        children: [
+      builder: (_, ctrl) => Container(
+        color: theme.mobileBackground,
+        child: Column(children: [
           const SizedBox(height: 8),
-          Container(
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: cs.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: theme.bordercolor.withAlpha(80), borderRadius: BorderRadius.circular(2))),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              'Dodaj materiał',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            child: Text('Dodaj materiał',
+                style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w700, fontSize: 16)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchCtrl,
               autofocus: true,
+              style: TextStyle(color: theme.textColor),
               decoration: InputDecoration(
                 hintText: 'Szukaj w katalogu...',
-                prefixIcon: const Icon(Icons.search),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintStyle: TextStyle(color: theme.textColor.withAlpha(80)),
+                prefixIcon: Icon(Icons.search, color: theme.textColor.withAlpha(120)),
+                filled: true,
+                fillColor: theme.textFieldColor,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
                 isDense: true,
               ),
-              onChanged: (v) => ref
-                  .read(materialPickerProvider.notifier)
-                  .szukaj(v),
+              onChanged: (v) => ref.read(materialPickerProvider.notifier).szukaj(v),
             ),
           ),
           const SizedBox(height: 8),
           Expanded(
             child: wyniki.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Błąd: $e')),
+              loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+              error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
               data: (lista) => ListView.builder(
                 controller: ctrl,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -516,17 +358,14 @@ class _DodajPozycjeSheetState extends ConsumerState<_DodajPozycjeSheet> {
                 itemBuilder: (_, i) {
                   final m = lista[i];
                   return ListTile(
-                    leading: Text(m.kategoria.emoji,
-                        style: const TextStyle(fontSize: 20)),
-                    title: Text(m.nazwa),
-                    subtitle: Text(
-                        '${m.cenaFormatted}/${m.jednostka}${m.producent.isNotEmpty ? '  •  ${m.producent}' : ''}'),
+                    leading: Text(m.kategoria.emoji, style: const TextStyle(fontSize: 20)),
+                    title: Text(m.nazwa, style: TextStyle(color: theme.textColor)),
+                    subtitle: Text('${m.cenaFormatted}/${m.jednostka}${m.producent.isNotEmpty ? '  •  ${m.producent}' : ''}',
+                        style: TextStyle(color: theme.textColor.withAlpha(140))),
                     trailing: TrendBadge(trend: m.trend, showPorada: true),
                     selected: _selected?.id == m.id,
-                    selectedTileColor:
-                        cs.primaryContainer.withOpacity(0.3),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    selectedTileColor: theme.themeColor.withAlpha(25),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     onTap: () => setState(() => _selected = m),
                   );
                 },
@@ -534,55 +373,43 @@ class _DodajPozycjeSheetState extends ConsumerState<_DodajPozycjeSheet> {
             ),
           ),
           if (_selected != null) ...[
-            const Divider(),
+            Divider(color: theme.bordercolor.withAlpha(60)),
             Padding(
-              padding: EdgeInsets.fromLTRB(
-                16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+              padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 16),
               child: Row(children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _selected!.nazwa,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      Text(
-                        _selected!.cenaFormatted,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: cs.outline),
-                      ),
-                    ],
-                  ),
-                ),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(_selected!.nazwa,
+                      style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
+                  Text(_selected!.cenaFormatted,
+                      style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12)),
+                ])),
                 SizedBox(
                   width: 80,
                   child: TextField(
                     controller: _iloscCtrl,
                     keyboardType: TextInputType.number,
+                    style: TextStyle(color: theme.textColor),
                     decoration: InputDecoration(
                       labelText: _selected!.jednostka,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
+                      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+                      filled: true, fillColor: theme.textFieldColor,
+                      border: const OutlineInputBorder(), isDense: true,
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 FilledButton(
                   onPressed: _saving ? null : _dodaj,
+                  style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
                   child: _saving
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Dodaj'),
+                      ? SizedBox.square(dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
+                      : Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
                 ),
               ]),
             ),
           ],
-        ],
+        ]),
       ),
     );
   }
@@ -593,129 +420,81 @@ class _DodajPozycjeSheetState extends ConsumerState<_DodajPozycjeSheet> {
     final ilosc = double.tryParse(_iloscCtrl.text.replaceAll(',', '.')) ?? 1;
     setState(() => _saving = true);
     try {
-      await materialyApi.listaPozycji(); // dummy — replace with create endpoint
-      // TODO: wywołać POST /zamowienia-pozycje/ z material_id, budowa_id, ilosc
+      await materialyApi.listaPozycji();
       if (mounted) Navigator.pop(context);
     } catch (e) {
       setState(() => _saving = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
     }
   }
 }
-
-// ---- Ekran trendów ---------------------------------------------------------
 
 class TrendyCenScreen extends ConsumerWidget {
   const TrendyCenScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(trendyProvider);
-    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Trendy cen materiałów')),
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text('Trendy cen materiałów', style: TextStyle(color: theme.textColor)),
+        iconTheme: IconThemeData(color: theme.textColor),
+      ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Błąd: $e')),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (trendy) {
           if (trendy.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.trending_flat,
-                      size: 56, color: cs.outline),
-                  const SizedBox(height: 16),
-                  const Text('Brak danych o trendach'),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Dodaj historię cen dla materiałów',
-                    style: TextStyle(color: cs.outline),
-                  ),
-                ],
-              ),
-            );
+            return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.trending_flat, size: 56, color: theme.textColor.withAlpha(80)),
+              const SizedBox(height: 16),
+              Text('Brak danych o trendach', style: TextStyle(color: theme.textColor)),
+              const SizedBox(height: 8),
+              Text('Dodaj historię cen dla materiałów',
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
+            ]));
           }
-
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: trendy.length,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (ctx, i) {
               final t = trendy[i];
-              final trend =
-                  TrendCeny.fromValue(t['trend']?.toString());
+              final trend = TrendCeny.fromValue(t['trend']?.toString());
               final cenySkrot = (t['historia_skrot'] as List? ?? [])
-                  .map((c) => (c as num).toDouble())
-                  .toList();
-              final zmianaProc =
-                  (t['zmiana_procent'] as num?)?.toDouble();
-              final cenaNetto =
-                  (t['cena_netto'] as num?)?.toDouble();
+                  .map((c) => (c as num).toDouble()).toList();
+              final zmianaProc = (t['zmiana_procent'] as num?)?.toDouble();
+              final cenaNetto = (t['cena_netto'] as num?)?.toDouble();
 
-              return Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
+              return Container(
+                decoration: BoxDecoration(
+                  color: theme.userTile,
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: cs.outlineVariant),
+                  border: Border.all(color: theme.bordercolor.withAlpha(60)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Row(children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            (t['nazwa'] ?? '').toString(),
-                            style:
-                                Theme.of(context).textTheme.titleSmall,
-                          ),
-                          if (cenaNetto != null)
-                            Text(
-                              '${cenaNetto.toStringAsFixed(2)} PLN',
-                              style: TextStyle(
-                                  color: cs.outline, fontSize: 12),
-                            ),
-                          const SizedBox(height: 4),
-                          if (trend == TrendCeny.rosnacy)
-                            Text(
-                              trend.porada,
-                              style: const TextStyle(
-                                color: Color(0xFFEF5350),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          else if (trend == TrendCeny.spadajacy)
-                            Text(
-                              trend.porada,
-                              style: const TextStyle(
-                                color: Color(0xFF66BB6A),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text((t['nazwa'] ?? '').toString(),
+                          style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
+                      if (cenaNetto != null)
+                        Text('${cenaNetto.toStringAsFixed(2)} PLN',
+                            style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12)),
+                      const SizedBox(height: 4),
+                      if (trend == TrendCeny.rosnacy)
+                        Text(trend!.porada, style: const TextStyle(color: Color(0xFFEF5350), fontSize: 11, fontWeight: FontWeight.w600))
+                      else if (trend == TrendCeny.spadajacy)
+                        Text(trend!.porada, style: const TextStyle(color: Color(0xFF66BB6A), fontSize: 11, fontWeight: FontWeight.w600)),
+                    ])),
                     const SizedBox(width: 12),
-                    PriceSparkline(
-                      ceny: cenySkrot,
-                      trend: trend,
-                      width: 80,
-                      height: 36,
-                    ),
+                    PriceSparkline(ceny: cenySkrot, trend: trend, width: 80, height: 36),
                     const SizedBox(width: 10),
-                    TrendBadge(
-                      trend: trend,
-                      zmianaProc: zmianaProc,
-                      showPorada: false,
-                    ),
+                    TrendBadge(trend: trend, zmianaProc: zmianaProc, showPorada: false),
                   ]),
                 ),
               );

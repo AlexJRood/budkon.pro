@@ -1,17 +1,14 @@
-import 'package:flutter/material.dart';
-import 'module.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
-class PracownicyDockItem extends StatelessWidget {
-  final bool selected;
-  final VoidCallback onTap;
-  const PracownicyDockItem(
-      {super.key, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => NavigationDestination(
-        icon: Icon(PracownicyModule.icon),
-        selectedIcon:
-            Icon(PracownicyModule.iconFilled, color: PracownicyModule.color),
-        label: PracownicyModule.label,
-      );
-}
+List<DockContribution> pracownicyDockItems() => [
+  const DockContribution(
+    id: 'pracownicy-main',
+    label: 'Zespol',
+    iconKey: 'group',
+    route: '/pracownicy',
+    dock: 'budkon',
+    section: DockSection.center,
+    order: 80,
+    requiresAuth: true,
+  ),
+];

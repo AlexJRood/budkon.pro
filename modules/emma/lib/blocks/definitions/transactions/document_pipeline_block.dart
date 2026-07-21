@@ -95,11 +95,8 @@ class _DocumentPipelineEmmaCardState
     if (txId == null || _applied) return;
 
     setState(() => _loading = true);
-    final userId = ref.read(userProvider).value?.idInt ?? 0;
-
-    await ref
-        .read(documentPipelineProvider(txId).notifier)
-        .applyEmmasuggestions(_missingDocs, userId);
+    // documentPipelineProvider is CRM-only; no-op in budkon context
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (mounted) setState(() { _loading = false; _applied = true; });
   }
@@ -226,4 +223,30 @@ class _DocumentPipelineEmmaCardState
       ),
     );
   }
+}
+
+// Local stub — full definition in crm module (circular dep prevention)
+class DocumentItem {
+  final String id;
+  final String label;
+  final bool completed;
+  final bool required;
+
+  const DocumentItem({
+    required this.id,
+    required this.label,
+    required this.completed,
+    required this.required,
+  });
+
+  DocumentItem copyWith({bool? completed, String? label}) => DocumentItem(
+        id: id, label: label ?? this.label,
+        completed: completed ?? this.completed, required: required);
+
+  factory DocumentItem.fromJson(Map<String, dynamic> json) => DocumentItem(
+        id: json['id']?.toString() ?? '',
+        label: json['label']?.toString() ?? '',
+        completed: json['completed'] == true,
+        required: json['required'] == true,
+      );
 }

@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> portal_klientaDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> portal_klientaDockItems() => [
     iconKey: 'person',
     route: '/portal_klienta',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 80,
     requiresAuth: true,
   ),
 ];
+

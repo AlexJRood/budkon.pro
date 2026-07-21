@@ -1,10 +1,9 @@
-// notification/notification_pc_screen.dart
+﻿// notification/notification_pc_screen.dart
 import 'dart:ui' as ui;
 
 import 'package:core/shell/manager/bar_manager.dart'
     show SidebarManagerRail, AppModule;
 import 'package:core/platform/navigation_service.dart';
-import 'package:core/ui/pie/app_pie_canvas.dart';
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
 import 'package:core/ui/anchors/anchor_spec.dart';
 import 'package:core/ui/anchors/anchor_target.dart';
@@ -50,8 +49,7 @@ class _NotificationPcScreenState extends ConsumerState<NotificationPcScreen> {
         backgroundColor: Colors.transparent,
         // PieCanvas ancestor for the SidebarManagerRail's PieMenu buttons.
         // Without it pie_menu throws "Could not find any PieCanvas".
-        body: AppPieCanvas(
-          child: Stack(
+        body: Stack(
           children: [
             BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -144,7 +142,6 @@ class _NotificationPcScreenState extends ConsumerState<NotificationPcScreen> {
             ),
           ],
           ),
-        ),
       ),
     );
   }

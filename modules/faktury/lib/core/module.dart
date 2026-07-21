@@ -1,23 +1,32 @@
+﻿import 'package:core/kernel/kernel.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'dock.dart';
 import 'routing.dart';
 
-class FakturyModule {
-  static const id = 'faktury';
-  static const label = 'Faktury';
-  static const icon = Icons.receipt_long_outlined;
-  static const iconFilled = Icons.receipt_long;
-  static const color = Color(0xFF26A69A); // teal — jak Emma faktura_alert
+class FakturyModule extends AppModule {
+  @override
+  String get id => 'faktury';
 
-  static List<RouteBase> get routes => fakturyRoutes;
+  @override
+  List<DockContribution> dockItems() => fakturyDockItems();
 
-  static void navigateToLista(BuildContext context, {int? budowaId}) =>
-      context.push('/faktury');
+  @override
+  List<RouteSpec> routes() => fakturyRoutes();
+
+  @override
+  Future<void> init(ModuleScope scope) async {}
+
+  static void navigateToLista(BuildContext context) =>
+      navigateTo(context, '/faktury');
 
   static void navigateToPodglad(BuildContext context, int id) =>
-      context.push('/faktury/$id');
+      navigateTo(context, '/faktury/$id');
 
-  static void navigateToNowa(BuildContext context,
-          {int? budowaId, int? ofertaId}) =>
-      context.push('/faktury/nowa');
+  static void navigateToNowa(BuildContext context) =>
+      navigateTo(context, '/faktury/nowa');
+
+  static void navigateTo(BuildContext context, String path) {
+    final nav = Navigator.of(context, rootNavigator: true);
+    nav.pushNamed(path);
+  }
 }

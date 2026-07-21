@@ -29,12 +29,21 @@ dependencies:
   visibility_detector: ^0.4.0+2
   dotted_border: ^2.1.0
   country_code_picker: any
+  get: any
+  sqflite: ^2.4.2
+  sqflite_common_ffi: ^2.3.7+1
 
   firebase_analytics: ^11.3.0
   firebase_core: ^3.15.1
   firebase_messaging: ^15.2.5
 
   # Budkon modules
+  faktury:
+    path: modules/faktury
+  kontakty:
+    path: modules/kontakty
+  pracownicy:
+    path: modules/pracownicy
   przetargi:
     path: modules/przetargi
   budowa:
@@ -107,14 +116,34 @@ dependencies:
     path: modules/reports
   articles:
     path: modules/articles
-  association:
-    path: modules/association
   map:
     path: modules/map
   boards:
     path: modules/boards
 
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/icon-512.png"
+  remove_alpha_ios: true
+
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: LibreCaslonText
+      fonts:
+        - asset: assets/fonts/LibreCaslonText-Regular.ttf
+          weight: 400
+
   assets:
-    - assets/
+    - assets/images/
+    - assets/countries.json
+    - assets/icons/
+    - assets/logo/
+    - assets/lottie/
+    - assets/audio/
+    - assets/translate/en_EN.json
+    - assets/translate/pl_PL.json
+    - assets/superbee/

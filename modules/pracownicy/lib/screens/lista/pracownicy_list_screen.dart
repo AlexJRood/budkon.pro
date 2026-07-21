@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/pracownicy_model.dart';
 import '../../data/providers/pracownicy_provider.dart';
 import '../../widgets/skill_matrix.dart';
@@ -26,6 +27,7 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(pracownicyProvider);
     final lista = _filterSpec == null
         ? state.lista
@@ -35,32 +37,35 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
             .toList();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Zespół'),
+            Text('Zespół', style: TextStyle(color: theme.textColor)),
             if (widget.budowaId != null)
               Text(
                 widget.budowaNazwa,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: Colors.white70),
+                style: TextStyle(
+                    color: theme.textColor.withAlpha(160), fontSize: 12),
               ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: theme.textColor),
             onPressed: () =>
                 ref.read(pracownicyProvider.notifier).load(),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.person_add_outlined),
-        label: const Text('Dodaj pracownika'),
+        backgroundColor: theme.themeColor,
+        icon: Icon(Icons.person_add_outlined, color: theme.buttonTextColor),
+        label: Text('Dodaj pracownika',
+            style: TextStyle(color: theme.buttonTextColor)),
         onPressed: () async {
           final wynik = await Navigator.push<bool>(
             context,
@@ -74,7 +79,6 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
       ),
       body: Column(
         children: [
-          // Filtr specjalizacji
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding:
@@ -84,12 +88,14 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
                 _SpecFilter(
                   label: 'Wszyscy',
                   selected: _filterSpec == null,
+                  theme: theme,
                   onTap: () => setState(() => _filterSpec = null),
                 ),
                 ...Specjalizacja.values.map(
                   (s) => _SpecFilter(
                     label: '${s.emoji} ${s.label.split('/').first}',
                     selected: _filterSpec == s,
+                    theme: theme,
                     onTap: () => setState(() => _filterSpec = s),
                   ),
                 ),
@@ -100,10 +106,13 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
           Expanded(
             child: Builder(builder: (_) {
               if (state.loading && lista.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                    child: CircularProgressIndicator(color: theme.themeColor));
               }
               if (state.error != null && lista.isEmpty) {
-                return Center(child: Text(state.error!));
+                return Center(
+                    child: Text(state.error!,
+                        style: TextStyle(color: theme.textColor)));
               }
               if (lista.isEmpty) {
                 return Center(
@@ -112,15 +121,17 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
                     children: [
                       Icon(Icons.groups_outlined,
                           size: 56,
-                          color: Theme.of(context).colorScheme.outline),
+                          color: theme.textColor.withAlpha(80)),
                       const SizedBox(height: 16),
-                      const Text('Brak pracowników'),
+                      Text('Brak pracowników',
+                          style: TextStyle(color: theme.textColor)),
                     ],
                   ),
                 );
               }
 
               return RefreshIndicator(
+                color: theme.themeColor,
                 onRefresh: () =>
                     ref.read(pracownicyProvider.notifier).load(),
                 child: ListView.separated(
@@ -130,7 +141,7 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: 8),
                   itemBuilder: (ctx, i) =>
-                      _PracownikCard(pracownik: lista[i]),
+                      _PracownikCard(pracownik: lista[i], theme: theme),
                 ),
               );
             }),
@@ -145,8 +156,12 @@ class _SpecFilter extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final ThemeColors theme;
   const _SpecFilter(
-      {required this.label, required this.selected, required this.onTap});
+      {required this.label,
+      required this.selected,
+      required this.onTap,
+      required this.theme});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -154,6 +169,13 @@ class _SpecFilter extends StatelessWidget {
         child: FilterChip(
           label: Text(label),
           selected: selected,
+          selectedColor: theme.themeColor.withAlpha(40),
+          checkmarkColor: theme.themeColor,
+          backgroundColor: theme.userTile,
+          side: BorderSide(
+              color: selected
+                  ? theme.themeColor
+                  : theme.bordercolor.withAlpha(60)),
           onSelected: (_) => onTap(),
           showCheckmark: false,
         ),
@@ -162,17 +184,16 @@ class _SpecFilter extends StatelessWidget {
 
 class _PracownikCard extends StatelessWidget {
   final PracownikListItem pracownik;
-  const _PracownikCard({required this.pracownik});
+  final ThemeColors theme;
+  const _PracownikCard({required this.pracownik, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.userTile,
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cs.outlineVariant),
+        border: Border.all(color: theme.bordercolor.withAlpha(60)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -187,14 +208,13 @@ class _PracownikCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              // Avatar
               CircleAvatar(
                 radius: 24,
-                backgroundColor: cs.primaryContainer,
+                backgroundColor: theme.themeColor.withAlpha(40),
                 child: Text(
                   pracownik.inicjaly,
                   style: TextStyle(
-                    color: cs.onPrimaryContainer,
+                    color: theme.themeColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -209,14 +229,17 @@ class _PracownikCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           pracownik.pelneImie,
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: TextStyle(
+                              color: theme.textColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14),
                         ),
                       ),
                       if (pracownik.aktualnaStawka != null)
                         Text(
                           '${pracownik.aktualnaStawka!.toStringAsFixed(0)} PLN/h',
                           style: TextStyle(
-                            color: cs.primary,
+                            color: theme.themeColor,
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                           ),
@@ -234,7 +257,8 @@ class _PracownikCard extends StatelessWidget {
                       Text(
                         pracownik.glownaSpecjalizacja.label,
                         style: TextStyle(
-                            color: cs.outline, fontSize: 12),
+                            color: theme.textColor.withAlpha(150),
+                            fontSize: 12),
                       ),
                     ]),
 
@@ -249,18 +273,21 @@ class _PracownikCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(children: [
                         Icon(Icons.phone_outlined,
-                            size: 12, color: cs.outline),
+                            size: 12,
+                            color: theme.textColor.withAlpha(130)),
                         const SizedBox(width: 4),
                         Text(pracownik.telefon,
                             style: TextStyle(
-                                color: cs.outline, fontSize: 11)),
+                                color: theme.textColor.withAlpha(130),
+                                fontSize: 11)),
                       ]),
                     ],
                   ],
                 ),
               ),
 
-              Icon(Icons.chevron_right, color: cs.outline),
+              Icon(Icons.chevron_right,
+                  color: theme.textColor.withAlpha(120)),
             ],
           ),
         ),

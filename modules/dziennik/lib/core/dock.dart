@@ -1,4 +1,4 @@
-import 'package:core/kernel/kernel.dart';
+﻿import 'package:core/kernel/kernel.dart';
 
 List<DockContribution> dziennikDockItems() => [
   const DockContribution(
@@ -7,8 +7,9 @@ List<DockContribution> dziennikDockItems() => [
     iconKey: 'menu_book',
     route: '/dziennik',
     dock: 'budkon',
-    section: DockSection.desktop,
+    section: DockSection.center,
     order: 70,
     requiresAuth: true,
   ),
 ];
+

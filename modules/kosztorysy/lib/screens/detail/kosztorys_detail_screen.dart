@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/kosztorys_model.dart';
 import '../../data/providers/kosztorysy_provider.dart';
@@ -14,14 +15,18 @@ class KosztorysDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(kosztorysDetailProvider(kosztorysId));
 
     return state.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Błąd: $e')),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
       ),
       data: (k) => _KosztorysDetail(kosztorys: k),
     );
@@ -34,24 +39,24 @@ class _KosztorysDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = ref.read(themeColorsProvider);
     final generating = ref.watch(aiGenerateProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(kosztorys.nazwa),
+            title: Text(kosztorys.nazwa, style: TextStyle(color: theme.textColor)),
+            backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined),
+                icon: Icon(Icons.edit_outlined, color: theme.textColor),
                 onPressed: () => _openEdit(context, ref),
               ),
             ],
           ),
 
-          // ── Summary header ──────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
@@ -68,25 +73,23 @@ class _KosztorysDetail extends ConsumerWidget {
                   if (kosztorys.opis.isNotEmpty) ...[
                     SizedBox(height: 10.h),
                     Text(kosztorys.opis,
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: theme.colorScheme.outline)),
+                        style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 13)),
                   ],
                   SizedBox(height: 16.h),
-
-                  // ── AI button ──────────────────────────────────────────────
                   _AiGenerateButton(
                     kosztorys: kosztorys,
                     generating: generating,
+                    theme: theme,
                     onGenerate: (opis, obmiar) async {
                       final result = await ref
                           .read(aiGenerateProvider.notifier)
-                          .generate(kosztorys.id,
-                              opis: opis, obmiar: obmiar);
+                          .generate(kosztorys.id, opis: opis, obmiar: obmiar);
                       if (result == null && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Błąd generowania — sprawdź połączenie z Superbee'),
-                              backgroundColor: Colors.red),
+                            content: Text('Błąd generowania — sprawdź połączenie z Superbee'),
+                            backgroundColor: Colors.red,
+                          ),
                         );
                       }
                     },
@@ -96,34 +99,27 @@ class _KosztorysDetail extends ConsumerWidget {
             ),
           ),
 
-          // ── Działy + pozycje ────────────────────────────────────────────────
           if (kosztorys.dzialy.isEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(32.w),
                 child: Column(
                   children: [
-                    Icon(Icons.playlist_add,
-                        size: 48,
-                        color: theme.colorScheme.outline),
+                    Icon(Icons.playlist_add, size: 48, color: theme.textColor.withAlpha(80)),
                     SizedBox(height: 12.h),
                     Text('Brak pozycji kosztorysowych',
-                        style: theme.textTheme.titleSmall),
+                        style: TextStyle(color: theme.textColor, fontSize: 14, fontWeight: FontWeight.w600)),
                     SizedBox(height: 4.h),
-                    Text(
-                      'Użyj AI Generate lub dodaj ręcznie',
-                      style: theme.textTheme.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text('Użyj AI Generate lub dodaj ręcznie',
+                        style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12),
+                        textAlign: TextAlign.center),
                   ],
                 ),
               ),
             )
           else
             for (final dzial in kosztorys.dzialy) ...[
-              SliverToBoxAdapter(
-                child: _DzialHeader(dzial: dzial),
-              ),
+              SliverToBoxAdapter(child: _DzialHeader(dzial: dzial, theme: theme)),
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 sliver: SliverList.builder(
@@ -133,23 +129,15 @@ class _KosztorysDetail extends ConsumerWidget {
                     return PozycjaTile(
                       pozycja: poz,
                       onChanged: (ilosc, cena) async {
-                        await ref
-                            .read(kosztorysFormProvider.notifier)
-                            .updatePozycja(poz.id, {
+                        await ref.read(kosztorysFormProvider.notifier).updatePozycja(poz.id, {
                           'ilosc': ilosc,
                           'cena_jednostkowa': cena,
                         });
-                        ref
-                            .read(kosztorysDetailProvider(kosztorys.id).notifier)
-                            .fetch();
+                        ref.read(kosztorysDetailProvider(kosztorys.id).notifier).fetch();
                       },
                       onDelete: () async {
-                        await ref
-                            .read(kosztorysFormProvider.notifier)
-                            .deletePozycja(poz.id);
-                        ref
-                            .read(kosztorysDetailProvider(kosztorys.id).notifier)
-                            .fetch();
+                        await ref.read(kosztorysFormProvider.notifier).deletePozycja(poz.id);
+                        ref.read(kosztorysDetailProvider(kosztorys.id).notifier).fetch();
                       },
                     );
                   },
@@ -171,53 +159,37 @@ class _KosztorysDetail extends ConsumerWidget {
       opis: kosztorys.opis,
       status: kosztorys.status,
       wartoscTotal: kosztorys.wartoscTotal,
-      pozycjeCount: kosztorys.dzialy
-          .fold(0, (s, d) => s + d.pozycje.length),
+      pozycjeCount: kosztorys.dzialy.fold(0, (s, d) => s + d.pozycje.length),
       updatedAt: kosztorys.updatedAt,
     );
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (_) => KosztorysFormScreen(existing: listItem)),
-    );
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => KosztorysFormScreen(existing: listItem)));
   }
 }
 
-// ── Dział header ──────────────────────────────────────────────────────────────
-
 class _DzialHeader extends StatelessWidget {
-  const _DzialHeader({required this.dzial});
+  const _DzialHeader({required this.dzial, required this.theme});
   final KosztorysdzDzialModel dzial;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 6.h),
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              dzial.nazwa,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
+            child: Text(dzial.nazwa,
+                style: TextStyle(color: theme.textColor, fontSize: 13, fontWeight: FontWeight.w700)),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: cs.secondaryContainer,
+              color: theme.themeColor.withAlpha(30),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               _fmt(dzial.wartoscDzialu),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: cs.onSecondaryContainer,
-              ),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.themeColor),
             ),
           ),
         ],
@@ -231,40 +203,27 @@ class _DzialHeader extends StatelessWidget {
   }
 }
 
-// ── AI Generate button + dialog ───────────────────────────────────────────────
-
 class _AiGenerateButton extends StatelessWidget {
-  const _AiGenerateButton({
-    required this.kosztorys,
-    required this.generating,
-    required this.onGenerate,
-  });
+  const _AiGenerateButton({required this.kosztorys, required this.generating, required this.onGenerate, required this.theme});
 
   final KosztorysModel kosztorys;
   final bool generating;
+  final ThemeColors theme;
   final void Function(String opis, Map<String, dynamic> obmiar) onGenerate;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return FilledButton.icon(
       onPressed: generating ? null : () => _showDialog(context),
       style: FilledButton.styleFrom(
-        backgroundColor: cs.tertiary,
-        foregroundColor: cs.onTertiary,
+        backgroundColor: theme.themeAccent,
+        foregroundColor: theme.buttonTextColor,
         minimumSize: Size(double.infinity, 44.h),
       ),
       icon: generating
-          ? SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                  strokeWidth: 2, color: cs.onTertiary),
-            )
+          ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
           : const Icon(Icons.auto_awesome),
-      label:
-          Text(generating ? 'Generuję przez AI...' : 'Generuj przez AI'),
+      label: Text(generating ? 'Generuję przez AI...' : 'Generuj przez AI'),
     );
   }
 
@@ -272,9 +231,7 @@ class _AiGenerateButton extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => _AiDialog(
-        initialOpis: kosztorys.aiPrompt.isNotEmpty
-            ? kosztorys.aiPrompt
-            : kosztorys.opis,
+        initialOpis: kosztorys.aiPrompt.isNotEmpty ? kosztorys.aiPrompt : kosztorys.opis,
         onConfirm: (opis, obmiar) {
           Navigator.pop(ctx);
           onGenerate(opis, obmiar);
@@ -317,8 +274,7 @@ class _AiDialogState extends State<_AiDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.auto_awesome,
-              color: Theme.of(context).colorScheme.tertiary),
+          Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.tertiary),
           const SizedBox(width: 8),
           const Text('AI Generate'),
         ],
@@ -328,22 +284,19 @@ class _AiDialogState extends State<_AiDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Opisz zakres robót',
-                style: Theme.of(context).textTheme.labelMedium),
+            Text('Opisz zakres robót', style: Theme.of(context).textTheme.labelMedium),
             const SizedBox(height: 6),
             TextField(
               controller: _opisCtrl,
               maxLines: 4,
               decoration: const InputDecoration(
-                hintText:
-                    'np. remont łazienki 8m², wymiana płytek ceramicznych, nowa instalacja wod-kan, malowanie',
+                hintText: 'np. remont łazienki 8m², wymiana płytek ceramicznych, nowa instalacja wod-kan, malowanie',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
             ),
             const SizedBox(height: 12),
-            Text('Obmiar (opcjonalnie)',
-                style: Theme.of(context).textTheme.labelMedium),
+            Text('Obmiar (opcjonalnie)', style: Theme.of(context).textTheme.labelMedium),
             const SizedBox(height: 6),
             Row(
               children: [
@@ -351,11 +304,7 @@ class _AiDialogState extends State<_AiDialog> {
                   child: TextField(
                     controller: _powCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Powierzchnia m²',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
+                    decoration: const InputDecoration(labelText: 'Powierzchnia m²', border: OutlineInputBorder(), isDense: true),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -363,30 +312,19 @@ class _AiDialogState extends State<_AiDialog> {
                   child: TextField(
                     controller: _kubCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Kubatura m³',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
+                    decoration: const InputDecoration(labelText: 'Kubatura m³', border: OutlineInputBorder(), isDense: true),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              '⚠ Generowanie zastąpi istniejące pozycje.',
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
+            Text('⚠ Generowanie zastąpi istniejące pozycje.',
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.error)),
           ],
         ),
       ),
       actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Anuluj')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Anuluj')),
         FilledButton(
           onPressed: () {
             if (_opisCtrl.text.trim().isEmpty) return;

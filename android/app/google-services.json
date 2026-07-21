@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "456073729010",
+    "project_id": "hously-ai-5b29c",
+    "storage_bucket": "hously-ai-5b29c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456073729010:android:289c1690ae7c521be8916b",
+        "android_client_info": {
+          "package_name": "com.example.budkon_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "456073729010-0lhd2c8p3pug8b22le0qup5hp5auv9ru.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.budkon_flutter",
+            "certificate_hash": "087801b00718d1a71ca2de4536458219bb3580b5"
+          }
+        },
+        {
+          "client_id": "456073729010-lt72gj63nthak325a0ag67c4hiasjp5i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACvLw8Vc6nMCP8rAlbflITXG38b9JlcY0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "456073729010-lt72gj63nthak325a0ag67c4hiasjp5i.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "456073729010-hoc0bbnn7anmrmh2v7ef9bd7oh06ae7e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "pro.hously"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456073729010:android:1ee5283383374cf9e8916b",
+        "android_client_info": {
+          "package_name": "com.hously.pro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "456073729010-lt72gj63nthak325a0ag67c4hiasjp5i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACvLw8Vc6nMCP8rAlbflITXG38b9JlcY0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "456073729010-lt72gj63nthak325a0ag67c4hiasjp5i.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "456073729010-hoc0bbnn7anmrmh2v7ef9bd7oh06ae7e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "pro.hously"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

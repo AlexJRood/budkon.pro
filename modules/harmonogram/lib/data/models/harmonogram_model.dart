@@ -1,4 +1,4 @@
-enum StatusZadania {
+﻿enum StatusZadania {
   planowane,
   w_toku,
   zakonczone,
@@ -79,7 +79,7 @@ class ZadanieModel {
         opoznienieDni: j['opoznienie_dni'] as int?,
       );
 
-  bool get isOpóźnione => opoznienieDni != null && opoznienieDni! > 0;
+  bool get isOpoznione => opoznienieDni != null && opoznienieDni! > 0;
   int get durationDni =>
       czasTrwaniaDni ??
       (dataStart != null && dataKoniec != null
@@ -212,3 +212,4 @@ class TimelineData {
               DateTime.now().add(const Duration(days: 90)),
               (a, b) => a.isAfter(b) ? a : b);
 }
+

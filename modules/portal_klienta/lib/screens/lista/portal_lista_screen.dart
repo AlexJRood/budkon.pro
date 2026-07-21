@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/models/portal_model.dart';
 import '../../data/providers/portal_provider.dart';
 import '../../data/services/portal_api.dart';
@@ -14,29 +15,35 @@ class PortalListaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(portalListProvider(budowaId));
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Portale klienta', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-            Text(budowaNazwa, style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(180))),
+            Text('Portale klienta',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: theme.textColor)),
+            Text(budowaNazwa,
+                style: TextStyle(fontSize: 12, color: theme.textColor.withAlpha(160))),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: theme.themeColor,
+        icon: Icon(Icons.add_link, color: theme.buttonTextColor),
+        label: Text('Nowy link', style: TextStyle(color: theme.buttonTextColor)),
         onPressed: () => _nowyPortal(context, ref),
-        icon: const Icon(Icons.add_link),
-        label: const Text('Nowy link'),
       ),
       body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Błąd: $e')),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (portale) => portale.isEmpty
-            ? _PustaLista(onAdd: () => _nowyPortal(context, ref))
+            ? _PustaLista(onAdd: () => _nowyPortal(context, ref), theme: theme)
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
                 itemCount: portale.length,
@@ -44,6 +51,7 @@ class PortalListaScreen extends ConsumerWidget {
                 itemBuilder: (_, i) => _PortalKarta(
                   portal: portale[i],
                   budowaId: budowaId,
+                  theme: theme,
                 ),
               ),
       ),
@@ -53,9 +61,7 @@ class PortalListaScreen extends ConsumerWidget {
   void _nowyPortal(BuildContext context, WidgetRef ref) async {
     final result = await Navigator.push<PortalKlientaModel>(
       context,
-      MaterialPageRoute(
-        builder: (_) => PortalFormScreen(budowaId: budowaId),
-      ),
+      MaterialPageRoute(builder: (_) => PortalFormScreen(budowaId: budowaId)),
     );
     if (result != null) {
       ref.read(portalListProvider(budowaId).notifier).addLocal(result);
@@ -63,41 +69,41 @@ class PortalListaScreen extends ConsumerWidget {
   }
 }
 
-// ─── Karta portalu ──────────────────────────────────────────────────────────
-
-class _PortalKarta extends ConsumerWidget {
-  const _PortalKarta({required this.portal, required this.budowaId});
+class _PortalKarta extends StatelessWidget {
+  const _PortalKarta({required this.portal, required this.budowaId, required this.theme});
 
   final PortalKlientaModel portal;
   final int budowaId;
+  final ThemeColors theme;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final aktywny = portal.aktywny && portal.jestWazny;
-    final cs = Theme.of(context).colorScheme;
 
     return Card(
+      color: theme.userTile,
       margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.bordercolor.withAlpha(60)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Row(
               children: [
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: aktywny
                       ? const Color(0xFF26A69A).withAlpha(30)
-                      : cs.surfaceContainerHighest,
+                      : theme.secondaryWidgetColor,
                   child: Text(
-                    portal.nazwaKlienta.isNotEmpty
-                        ? portal.nazwaKlienta[0].toUpperCase()
-                        : '?',
+                    portal.nazwaKlienta.isNotEmpty ? portal.nazwaKlienta[0].toUpperCase() : '?',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: aktywny ? const Color(0xFF26A69A) : cs.onSurfaceVariant,
+                      color: aktywny ? const Color(0xFF26A69A) : theme.textColor.withAlpha(150),
                     ),
                   ),
                 ),
@@ -108,11 +114,13 @@ class _PortalKarta extends ConsumerWidget {
                     children: [
                       Text(
                         portal.nazwaKlienta,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15, color: theme.textColor),
                       ),
                       if (portal.emailKlienta.isNotEmpty)
                         Text(portal.emailKlienta,
-                            style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                            style:
+                                TextStyle(fontSize: 12, color: theme.textColor.withAlpha(150))),
                     ],
                   ),
                 ),
@@ -122,58 +130,65 @@ class _PortalKarta extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // Stats
             Row(
               children: [
-                _Stat(icon: Icons.remove_red_eye_outlined,
-                    label: '${portal.liczbaOdczytow} odczytów'),
+                _Stat(
+                    icon: Icons.remove_red_eye_outlined,
+                    label: '${portal.liczbaOdczytow} odczytów',
+                    theme: theme),
                 const SizedBox(width: 16),
                 if (portal.ostatniOdczyt != null)
-                  _Stat(icon: Icons.access_time,
-                      label: _formatDate(portal.ostatniOdczyt!)),
+                  _Stat(
+                      icon: Icons.access_time,
+                      label: _formatDate(portal.ostatniOdczyt!),
+                      theme: theme),
                 if (portal.wygasa != null)
-                  _Stat(icon: Icons.event, label: 'Wygasa ${portal.wygasa}'),
+                  _Stat(icon: Icons.event, label: 'Wygasa ${portal.wygasa}', theme: theme),
               ],
             ),
 
-            // Permissions chips
             const SizedBox(height: 10),
             Wrap(
               spacing: 6,
               children: [
-                if (portal.pokazujFaktury) _Chip('Faktury'),
-                if (portal.pokazujZdjecia) _Chip('Zdjęcia'),
-                if (portal.pokazujHarmonogram) _Chip('Harmonogram'),
-                if (portal.pokazujKosztorys) _Chip('Kosztorys'),
+                if (portal.pokazujFaktury) _Chip('Faktury', theme),
+                if (portal.pokazujZdjecia) _Chip('Zdjęcia', theme),
+                if (portal.pokazujHarmonogram) _Chip('Harmonogram', theme),
+                if (portal.pokazujKosztorys) _Chip('Kosztorys', theme),
               ],
             ),
 
             const SizedBox(height: 14),
 
-            // Actions
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.copy, size: 16),
                     label: const Text('Kopiuj link'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.themeColor,
+                      side: BorderSide(color: theme.bordercolor.withAlpha(80)),
+                    ),
                     onPressed: portal.urlKlienta.isNotEmpty
                         ? () => _kopiuj(context, portal.urlKlienta)
                         : null,
                   ),
                 ),
                 const SizedBox(width: 8),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_horiz),
-                  onSelected: (v) => _akcja(context, ref, v),
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'regeneruj', child: Text('Odnów token')),
-                    if (aktywny)
-                      const PopupMenuItem(
-                        value: 'dezaktywuj',
-                        child: Text('Dezaktywuj', style: TextStyle(color: Colors.red)),
-                      ),
-                  ],
+                Consumer(
+                  builder: (context, ref, _) => PopupMenuButton<String>(
+                    icon: Icon(Icons.more_horiz, color: theme.textColor),
+                    onSelected: (v) => _akcja(context, ref, v),
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(value: 'regeneruj', child: Text('Odnów token')),
+                      if (aktywny)
+                        const PopupMenuItem(
+                          value: 'dezaktywuj',
+                          child: Text('Dezaktywuj', style: TextStyle(color: Colors.red)),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -186,7 +201,9 @@ class _PortalKarta extends ConsumerWidget {
   void _kopiuj(BuildContext context, String url) {
     Clipboard.setData(ClipboardData(text: url));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link skopiowany do schowka'), duration: Duration(seconds: 2)),
+      const SnackBar(
+          content: Text('Link skopiowany do schowka'),
+          duration: Duration(seconds: 2)),
     );
   }
 
@@ -209,7 +226,8 @@ class _PortalKarta extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Błąd: $e')));
       }
     }
   }
@@ -233,9 +251,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: aktywny
-            ? const Color(0xFF26A69A).withAlpha(25)
-            : Colors.red.withAlpha(25),
+        color: aktywny ? const Color(0xFF26A69A).withAlpha(25) : Colors.red.withAlpha(25),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -251,41 +267,44 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.icon, required this.label});
+  const _Stat({required this.icon, required this.label, required this.theme});
   final IconData icon;
   final String label;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(icon, size: 13, color: theme.textColor.withAlpha(120)),
           const SizedBox(width: 4),
           Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: TextStyle(fontSize: 11, color: theme.textColor.withAlpha(150))),
         ],
       );
 }
 
 class _Chip extends StatelessWidget {
-  const _Chip(this.label);
+  const _Chip(this.label, this.theme);
   final String label;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) => Chip(
-        label: Text(label, style: const TextStyle(fontSize: 11)),
+        label: Text(label,
+            style: TextStyle(fontSize: 11, color: theme.textColor)),
         padding: EdgeInsets.zero,
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
+        backgroundColor: theme.secondaryWidgetColor,
+        side: BorderSide(color: theme.bordercolor.withAlpha(60)),
       );
 }
 
-// ─── Pusta lista ────────────────────────────────────────────────────────────
-
 class _PustaLista extends StatelessWidget {
-  const _PustaLista({required this.onAdd});
+  const _PustaLista({required this.onAdd, required this.theme});
   final VoidCallback onAdd;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) => Center(
@@ -294,17 +313,22 @@ class _PustaLista extends StatelessWidget {
           children: [
             const Text('🔗', style: TextStyle(fontSize: 52)),
             const SizedBox(height: 16),
-            const Text('Brak portali klienta',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+            Text('Brak portali klienta',
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w700, color: theme.textColor)),
             const SizedBox(height: 8),
-            Text('Wygeneruj link i wyślij klientowi —\nbędzie widział postęp budowy bez logowania.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text(
+              'Wygeneruj link i wyślij klientowi —\nbędzie widział postęp budowy bez logowania.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: theme.textColor.withAlpha(150)),
+            ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_link),
               label: const Text('Utwórz pierwszy link'),
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor, foregroundColor: theme.buttonTextColor),
             ),
           ],
         ),

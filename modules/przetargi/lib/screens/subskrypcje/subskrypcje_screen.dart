@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 
 import '../../data/models/przetarg_model.dart';
 import '../../data/providers/przetargi_provider.dart';
@@ -10,20 +11,27 @@ class SubskrypcjeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(subskrypcjeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Subskrypcje przetargów')),
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text('Subskrypcje przetargów', style: TextStyle(color: theme.textColor)),
+      ),
       body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Błąd: $e')),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (lista) => lista.isEmpty
-            ? _EmptyState(onAdd: () => _showForm(context, ref, null))
+            ? _EmptyState(theme: theme, onAdd: () => _showForm(context, ref, null))
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: lista.length,
                 itemBuilder: (ctx, i) => _SubskrypcjaCard(
                   sub: lista[i],
+                  theme: theme,
                   onEdit: () => _showForm(context, ref, lista[i]),
                   onDelete: () => _delete(context, ref, lista[i].id),
                   onToggle: (v) => _toggle(ref, lista[i], v),
@@ -31,8 +39,9 @@ class SubskrypcjeScreen extends ConsumerWidget {
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add_alert_outlined),
-        label: const Text('Nowa subskrypcja'),
+        backgroundColor: theme.themeColor,
+        icon: Icon(Icons.add_alert_outlined, color: theme.buttonTextColor),
+        label: Text('Nowa subskrypcja', style: TextStyle(color: theme.buttonTextColor)),
         onPressed: () => _showForm(context, ref, null),
       ),
     );
@@ -50,18 +59,17 @@ class SubskrypcjeScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _delete(
-      BuildContext ctx, WidgetRef ref, int id) async {
+  Future<void> _delete(BuildContext ctx, WidgetRef ref, int id) async {
     final ok = await showDialog<bool>(
       context: ctx,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Usuń subskrypcję?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(_, false),
+              onPressed: () => Navigator.pop(dialogCtx, false),
               child: const Text('Anuluj')),
           FilledButton(
-              onPressed: () => Navigator.pop(_, true),
+              onPressed: () => Navigator.pop(dialogCtx, true),
               child: const Text('Usuń')),
         ],
       ),
@@ -72,26 +80,22 @@ class SubskrypcjeScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _toggle(
-      WidgetRef ref, SubskrypcjaPrzetargow sub, bool aktywna) async {
-    await PrzetargiApi()
-        .updateSubskrypcja(sub.id, {'aktywna': aktywna});
+  Future<void> _toggle(WidgetRef ref, SubskrypcjaPrzetargow sub, bool aktywna) async {
+    await PrzetargiApi().updateSubskrypcja(sub.id, {'aktywna': aktywna});
     ref.invalidate(subskrypcjeProvider);
   }
 }
 
-// ------------------------------------------------------------------ //
-// Karta subskrypcji                                                    //
-// ------------------------------------------------------------------ //
-
 class _SubskrypcjaCard extends StatelessWidget {
   final SubskrypcjaPrzetargow sub;
+  final ThemeColors theme;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<bool> onToggle;
 
   const _SubskrypcjaCard({
     required this.sub,
+    required this.theme,
     required this.onEdit,
     required this.onDelete,
     required this.onToggle,
@@ -99,12 +103,13 @@ class _SubskrypcjaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: theme.userTile,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.bordercolor.withAlpha(60)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -114,16 +119,20 @@ class _SubskrypcjaCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(sub.nazwa,
-                      style: tt.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: theme.textColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14)),
                 ),
-                Switch(value: sub.aktywna, onChanged: onToggle),
+                Switch(
+                    value: sub.aktywna,
+                    activeColor: theme.themeColor,
+                    onChanged: onToggle),
                 PopupMenuButton(
+                  icon: Icon(Icons.more_horiz, color: theme.textColor),
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
-                        value: 'edit', child: Text('Edytuj')),
-                    const PopupMenuItem(
-                        value: 'delete', child: Text('Usuń')),
+                    const PopupMenuItem(value: 'edit', child: Text('Edytuj')),
+                    const PopupMenuItem(value: 'delete', child: Text('Usuń')),
                   ],
                   onSelected: (v) {
                     if (v == 'edit') onEdit();
@@ -139,7 +148,9 @@ class _SubskrypcjaCard extends StatelessWidget {
                 children: sub.cpvKody
                     .map((k) => Chip(
                           label: Text(k,
-                              style: const TextStyle(fontSize: 11)),
+                              style: TextStyle(fontSize: 11, color: theme.textColor)),
+                          backgroundColor: theme.secondaryWidgetColor,
+                          side: BorderSide(color: theme.bordercolor.withAlpha(40)),
                           visualDensity: VisualDensity.compact,
                         ))
                     .toList(),
@@ -149,22 +160,21 @@ class _SubskrypcjaCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Słowa: ${sub.slowaKluczowe.join(", ")}',
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12),
               ),
             ],
             if (sub.wartoscMin != null || sub.wartoscMax != null) ...[
               const SizedBox(height: 4),
               Text(
                 'Wartość: ${sub.wartoscMin ?? 0} — ${sub.wartoscMax ?? "∞"} PLN',
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12),
               ),
             ],
             if (sub.ostatniePobranie != null) ...[
               const SizedBox(height: 6),
               Text(
                 'Ostatnie pobranie: ${_fmt(sub.ostatniePobranie!)}',
-                style: tt.labelSmall
-                    ?.copyWith(color: cs.onSurfaceVariant.withOpacity(0.7)),
+                style: TextStyle(color: theme.textColor.withAlpha(120), fontSize: 11),
               ),
             ],
           ],
@@ -175,13 +185,10 @@ class _SubskrypcjaCard extends StatelessWidget {
 
   String _fmt(DateTime dt) {
     final local = dt.toLocal();
-    return '${local.day}.${local.month.toString().padLeft(2, '0')}.${local.year} ${local.hour}:${local.minute.toString().padLeft(2, '0')}';
+    return '${local.day}.${local.month.toString().padLeft(2, '0')}.${local.year} '
+        '${local.hour}:${local.minute.toString().padLeft(2, '0')}';
   }
 }
-
-// ------------------------------------------------------------------ //
-// Formularz subskrypcji                                                //
-// ------------------------------------------------------------------ //
 
 class _SubskrypcjaForm extends StatefulWidget {
   final SubskrypcjaPrzetargow? sub;
@@ -270,8 +277,7 @@ class _SubskrypcjaFormState extends State<_SubskrypcjaForm> {
               Expanded(
                 child: TextField(
                   controller: _minCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Wartość min (PLN)'),
+                  decoration: const InputDecoration(labelText: 'Wartość min (PLN)'),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -279,8 +285,7 @@ class _SubskrypcjaFormState extends State<_SubskrypcjaForm> {
               Expanded(
                 child: TextField(
                   controller: _maxCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Wartość max (PLN)'),
+                  decoration: const InputDecoration(labelText: 'Wartość max (PLN)'),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -300,8 +305,7 @@ class _SubskrypcjaFormState extends State<_SubskrypcjaForm> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
                 : Text(widget.sub == null ? 'Utwórz' : 'Zapisz'),
           ),
@@ -317,16 +321,12 @@ class _SubskrypcjaFormState extends State<_SubskrypcjaForm> {
   Future<void> _save() async {
     setState(() => _saving = true);
     final data = {
-      'nazwa': _nazwaCtrl.text.trim().isEmpty
-          ? 'Subskrypcja'
-          : _nazwaCtrl.text.trim(),
+      'nazwa': _nazwaCtrl.text.trim().isEmpty ? 'Subskrypcja' : _nazwaCtrl.text.trim(),
       'cpv_kody': _splitList(_cpvCtrl.text),
       'regiony': _splitList(_regionCtrl.text),
       'slowa_kluczowe': _splitList(_slowaCtrl.text),
-      if (_minCtrl.text.isNotEmpty)
-        'wartosc_min': double.tryParse(_minCtrl.text),
-      if (_maxCtrl.text.isNotEmpty)
-        'wartosc_max': double.tryParse(_maxCtrl.text),
+      if (_minCtrl.text.isNotEmpty) 'wartosc_min': double.tryParse(_minCtrl.text),
+      if (_maxCtrl.text.isNotEmpty) 'wartosc_max': double.tryParse(_maxCtrl.text),
       'aktywna': _aktywna,
     };
 
@@ -352,11 +352,11 @@ class _SubskrypcjaFormState extends State<_SubskrypcjaForm> {
 
 class _EmptyState extends StatelessWidget {
   final VoidCallback onAdd;
-  const _EmptyState({required this.onAdd});
+  final ThemeColors theme;
+  const _EmptyState({required this.onAdd, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -364,24 +364,27 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.notifications_none_outlined,
-                size: 64, color: cs.onSurfaceVariant.withOpacity(0.4)),
+                size: 64, color: theme.textColor.withAlpha(80)),
             const SizedBox(height: 16),
             Text('Brak subskrypcji',
-                style: Theme.of(context).textTheme.titleMedium),
+                style: TextStyle(
+                    color: theme.textColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(
               'Utwórz subskrypcję żeby automatycznie pobierać pasujące przetargi z BZP.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: cs.onSurfaceVariant),
+              style: TextStyle(color: theme.textColor.withAlpha(150)),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               icon: const Icon(Icons.add_alert_outlined),
               label: const Text('Utwórz subskrypcję'),
               onPressed: onAdd,
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor,
+                  foregroundColor: theme.buttonTextColor),
             ),
           ],
         ),

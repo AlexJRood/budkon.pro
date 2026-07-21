@@ -4,7 +4,7 @@ import 'package:calendar/state_managers/appointments_provider.dart';
 import 'package:calendar/state_managers/calendar_provider.dart';
 import 'package:calendar/state_managers/popup_calendar_provider.dart';
 import 'package:calendar/widgets/event_preview_card_widget.dart';
-import 'package:calendar/widgets/save_event_widget.dart';
+import 'package:calendar/widgets/save_event_widget.dart' hide ClientListAddFormCrm, selectedDateProvider;
 import 'package:crm/contact_panel/components/client_calendar.dart';
 import 'package:crm/contact_panel/components/no_event_widget.dart';
 import 'package:crm/provider/events_provider.dart';

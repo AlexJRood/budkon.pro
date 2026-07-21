@@ -1,4 +1,5 @@
-import 'package:core/kernel/kernel.dart';
+import 'package:core/kernel/kernel.dart' hide AppModule;
+import 'package:core/shell/manager/bar_manager.dart';
 import '../screens/timeline/harmonogram_screen.dart';
 import '../screens/zadanie/zadanie_detail_screen.dart';
 import '../screens/zadanie/zadanie_form_screen.dart';
@@ -8,11 +9,12 @@ List<RouteSpec> harmonogramRoutes() => [
         '/harmonogram',
         (ctx, params, data) {
           final args = data as Map?;
-          return HarmonogramScreen(
-            budowaId: int.tryParse(params['budowaId'] ?? '') ??
-                args?['budowaId'] as int? ??
-                0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+          return BarManager(appModule: AppModule.budkon, childPc: HarmonogramScreen(
+              budowaId: int.tryParse(params['budowaId'] ?? '') ??
+                  args?['budowaId'] as int? ??
+                  0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+            ),
           );
         },
       ),
@@ -20,9 +22,10 @@ List<RouteSpec> harmonogramRoutes() => [
         '/harmonogram/zadanie',
         (ctx, params, data) {
           final args = data as Map?;
-          return ZadanieDetailScreen(
-            zadanieId: args?['zadanieId'] as int? ?? 0,
-            budowaId: args?['budowaId'] as int? ?? 0,
+          return BarManager(appModule: AppModule.budkon, childPc: ZadanieDetailScreen(
+              zadanieId: args?['zadanieId'] as int? ?? 0,
+              budowaId: args?['budowaId'] as int? ?? 0,
+            ),
           );
         },
       ),
@@ -30,11 +33,12 @@ List<RouteSpec> harmonogramRoutes() => [
         '/harmonogram/zadanie/form',
         (ctx, params, data) {
           final args = data as Map?;
-          return ZadanieFormScreen(
-            budowaId: args?['budowaId'] as int? ?? 0,
-            budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
-            zadanieId: args?['zadanieId'] as int?,
-            etapId: args?['etapId'] as int?,
+          return BarManager(appModule: AppModule.budkon, childPc: ZadanieFormScreen(
+              budowaId: args?['budowaId'] as int? ?? 0,
+              budowaNazwa: args?['budowaNazwa'] as String? ?? 'Budowa',
+              zadanieId: args?['zadanieId'] as int?,
+              etapId: args?['etapId'] as int?,
+            ),
           );
         },
       ),

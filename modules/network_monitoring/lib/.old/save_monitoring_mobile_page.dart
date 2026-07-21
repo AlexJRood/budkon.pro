@@ -5,15 +5,15 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:hously_flutter/const/backgroundgradient.dart';
+import 'package:budkon_flutter/const/backgroundgradient.dart';
 import 'package:core/theme/design.dart';
 import 'package:core/platform/navigation_history_provider.dart';
 import 'package:core/platform/navigation_service.dart';
-import 'package:hously_flutter/utils/api_services.dart';
-import 'package:hously_flutter/widgets/appbar/hously/mobile/appbar_mobile.dart';
-import 'package:hously_flutter/widgets/bottom_bar_mobile/bottom_bar.dart';
+import 'package:budkon_flutter/utils/api_services.dart';
+import 'package:budkon_flutter/widgets/appbar/hously/mobile/appbar_mobile.dart';
+import 'package:budkon_flutter/widgets/bottom_bar_mobile/bottom_bar.dart';
 import 'package:core/common/install_popup.dart';
-import 'package:hously_flutter/widgets/side_menu/side_menu_manager.dart';
+import 'package:budkon_flutter/widgets/side_menu/side_menu_manager.dart';
 
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
 // Zaimportuj provider historii nawigacji

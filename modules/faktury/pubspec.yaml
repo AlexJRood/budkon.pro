@@ -1,0 +1,17 @@
+﻿name: faktury
+description: "Faktury i rozliczenia"
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  dio: ^5.7.0
+  intl: ^0.20.2
+  core:
+    path: ../../core
+

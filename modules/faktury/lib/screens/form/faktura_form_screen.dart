@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
+import '../../data/models/faktury_model.dart';
 import '../../data/services/faktury_api.dart';
 import '../../data/providers/faktury_provider.dart';
 import '../detail/faktura_detail_screen.dart';
@@ -27,12 +29,10 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
   final _uwagiCtrl = TextEditingController();
 
   int _stawkaVat = 23;
-  DateTime _terminPlatnosci =
-      DateTime.now().add(const Duration(days: 14));
+  DateTime _terminPlatnosci = DateTime.now().add(const Duration(days: 14));
   String _metoda = 'przelew';
   bool _saving = false;
 
-  // Manualne pozycje
   final List<Map<String, dynamic>> _pozycje = [];
 
   @override
@@ -45,144 +45,172 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(widget.ofertaId != null
-              ? 'FV z oferty'
-              : 'Nowa faktura'),
-        ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _SectionLabel('Wystawca'),
-              TextFormField(
-                controller: _wystawcaCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Nazwa firmy wystawcy *',
-                    border: OutlineInputBorder()),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Wymagane' : null,
-              ),
-              const SizedBox(height: 10),
-              Row(children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _wystawcaNipCtrl,
-                    decoration: const InputDecoration(
-                        labelText: 'NIP', border: OutlineInputBorder()),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    controller: _wystawcaKontoCtrl,
-                    decoration: const InputDecoration(
-                        labelText: 'Nr konta (IBAN)',
-                        border: OutlineInputBorder()),
-                  ),
-                ),
-              ]),
+  Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
 
-              const SizedBox(height: 20),
-              _SectionLabel('Nabywca'),
-              TextFormField(
-                controller: _nabywcaCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Nazwa nabywcy *',
-                    border: OutlineInputBorder()),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Wymagane' : null,
-              ),
-              const SizedBox(height: 10),
-              Row(children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _nipCtrl,
-                    decoration: const InputDecoration(
-                        labelText: 'NIP nabywcy',
-                        border: OutlineInputBorder()),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    value: _stawkaVat,
-                    decoration: const InputDecoration(
-                        labelText: 'VAT %',
-                        border: OutlineInputBorder()),
-                    items: [0, 5, 8, 23]
-                        .map((v) => DropdownMenuItem(
-                            value: v, child: Text('$v%')))
-                        .toList(),
-                    onChanged: (v) => setState(() => _stawkaVat = v!),
-                  ),
-                ),
-              ]),
+    InputDecoration _dec(String label) => InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+      filled: true,
+      fillColor: theme.textFieldColor,
+      border: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+      isDense: true,
+    );
 
-              const SizedBox(height: 20),
-              _SectionLabel('Płatność'),
-              Row(children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _metoda,
-                    decoration: const InputDecoration(
-                        labelText: 'Metoda',
-                        border: OutlineInputBorder()),
-                    items: const [
-                      DropdownMenuItem(
-                          value: 'przelew', child: Text('Przelew')),
-                      DropdownMenuItem(
-                          value: 'gotowka', child: Text('Gotówka')),
-                      DropdownMenuItem(value: 'blik', child: Text('BLIK')),
-                      DropdownMenuItem(value: 'karta', child: Text('Karta')),
-                    ],
-                    onChanged: (v) => setState(() => _metoda = v!),
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text(widget.ofertaId != null ? 'FV z oferty' : 'Nowa faktura',
+            style: TextStyle(color: theme.textColor)),
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _SectionLabel('Wystawca', theme: theme),
+            TextFormField(
+              controller: _wystawcaCtrl,
+              decoration: _dec('Nazwa firmy wystawcy *'),
+              style: TextStyle(color: theme.textColor),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
+            ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _wystawcaNipCtrl,
+                  decoration: _dec('NIP'),
+                  style: TextStyle(color: theme.textColor),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: InkWell(
-                    onTap: _pickDate,
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                          labelText: 'Termin płatności',
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.calendar_today, size: 18)),
-                      child: Text(
-                        '${_terminPlatnosci.day.toString().padLeft(2, '0')}.${_terminPlatnosci.month.toString().padLeft(2, '0')}.${_terminPlatnosci.year}',
-                      ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: _wystawcaKontoCtrl,
+                  decoration: _dec('Nr konta (IBAN)'),
+                  style: TextStyle(color: theme.textColor),
+                ),
+              ),
+            ]),
+
+            const SizedBox(height: 20),
+            _SectionLabel('Nabywca', theme: theme),
+            TextFormField(
+              controller: _nabywcaCtrl,
+              decoration: _dec('Nazwa nabywcy *'),
+              style: TextStyle(color: theme.textColor),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
+            ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _nipCtrl,
+                  decoration: _dec('NIP nabywcy'),
+                  style: TextStyle(color: theme.textColor),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  value: _stawkaVat,
+                  dropdownColor: theme.popupcontainercolor,
+                  style: TextStyle(color: theme.textColor),
+                  decoration: _dec('VAT %'),
+                  items: [0, 5, 8, 23]
+                      .map((v) => DropdownMenuItem(
+                          value: v, child: Text('$v%', style: TextStyle(color: theme.textColor))))
+                      .toList(),
+                  onChanged: (v) => setState(() => _stawkaVat = v!),
+                ),
+              ),
+            ]),
+
+            const SizedBox(height: 20),
+            _SectionLabel('Płatność', theme: theme),
+            Row(children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _metoda,
+                  dropdownColor: theme.popupcontainercolor,
+                  style: TextStyle(color: theme.textColor),
+                  decoration: _dec('Metoda'),
+                  items: const [
+                    DropdownMenuItem(value: 'przelew', child: Text('Przelew')),
+                    DropdownMenuItem(value: 'gotowka', child: Text('Gotówka')),
+                    DropdownMenuItem(value: 'blik', child: Text('BLIK')),
+                    DropdownMenuItem(value: 'karta', child: Text('Karta')),
+                  ],
+                  onChanged: (v) => setState(() => _metoda = v!),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: InkWell(
+                  onTap: _pickDate,
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Termin płatności',
+                      labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
+                      filled: true,
+                      fillColor: theme.textFieldColor,
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+                      isDense: true,
+                      suffixIcon: Icon(Icons.calendar_today, size: 18, color: theme.themeColor),
+                    ),
+                    child: Text(
+                      '${_terminPlatnosci.day.toString().padLeft(2, '0')}.${_terminPlatnosci.month.toString().padLeft(2, '0')}.${_terminPlatnosci.year}',
+                      style: TextStyle(color: theme.textColor),
                     ),
                   ),
                 ),
-              ]),
-
-              const SizedBox(height: 20),
-              _SectionLabel('Uwagi'),
-              TextFormField(
-                controller: _uwagiCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Opcjonalne uwagi na fakturze'),
               ),
+            ]),
 
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _saving ? null : _zapisz,
-                child: _saving
-                    ? const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Wystaw fakturę'),
+            const SizedBox(height: 20),
+            _SectionLabel('Uwagi', theme: theme),
+            TextFormField(
+              controller: _uwagiCtrl,
+              maxLines: 2,
+              style: TextStyle(color: theme.textColor),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: theme.textFieldColor,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+                hintText: 'Opcjonalne uwagi na fakturze',
+                hintStyle: TextStyle(color: theme.textColor.withAlpha(100)),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _saving ? null : _zapisz,
+              style: FilledButton.styleFrom(
+                  backgroundColor: theme.themeColor, foregroundColor: theme.buttonTextColor),
+              child: _saving
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Wystaw fakturę'),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 
   Future<void> _pickDate() async {
     final d = await showDatePicker(
@@ -243,15 +271,14 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
 
 class _SectionLabel extends StatelessWidget {
   final String label;
-  const _SectionLabel(this.label);
+  final ThemeColors theme;
+  const _SectionLabel(this.label, {required this.theme});
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(fontWeight: FontWeight.w700)),
+            style: TextStyle(
+                color: theme.themeColor, fontWeight: FontWeight.w700, fontSize: 13)),
       );
 }

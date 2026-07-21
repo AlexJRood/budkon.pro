@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/block_definition.dart';
@@ -266,7 +267,6 @@ class _MetaRow extends StatelessWidget {
 }
 
 // Lokalny Dio do budkon backend (port 8001)
-import 'package:dio/dio.dart';
 Dio _budkonDio() => Dio(BaseOptions(
       baseUrl: 'http://127.0.0.1:8001/api/v1',
       headers: {'X-Company-Id': '1'},

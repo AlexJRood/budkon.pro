@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:association/screens/notifications.dart';
 import 'package:beamer/beamer.dart';
 import 'package:emma/provider/emma_notifier.dart';
 import 'package:emma/provider/emma_provider.dart';
@@ -344,18 +343,6 @@ class NotificationBeamerNavigation {
       return;
     }
 
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        pageBuilder: (_, __, ___) => AssociationNotificationsScreen(
-          baseUrl: URLs.baseUrl,
-          associationId: 1,
-          notificationId: campaignId,
-        ),
-        transitionsBuilder: (_, anim, __, child) =>
-            FadeTransition(opacity: anim, child: child),
-      ),
-    );
   }
 
   static Future<void> _openChat(

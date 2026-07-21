@@ -1,4 +1,4 @@
-enum StatusBudowy { oferta, umowa, wToku, zakonczona, anulowana }
+﻿enum StatusBudowy { oferta, umowa, wToku, zakonczona, anulowana }
 
 extension StatusBudowyExt on StatusBudowy {
   String get apiValue => switch (this) {
@@ -26,24 +26,24 @@ extension StatusBudowyExt on StatusBudowy {
       };
 }
 
-enum StatusEtapu { planowany, wToku, zakończony }
+enum StatusEtapu { planowany, wToku, zakonczony }
 
 extension StatusEtapuExt on StatusEtapu {
   String get apiValue => switch (this) {
         StatusEtapu.planowany => 'planowany',
         StatusEtapu.wToku => 'w_toku',
-        StatusEtapu.zakończony => 'zakończony',
+        StatusEtapu.zakonczony => 'zakonczony',
       };
 
   String get label => switch (this) {
         StatusEtapu.planowany => 'Planowany',
         StatusEtapu.wToku => 'W toku',
-        StatusEtapu.zakończony => 'Zakończony',
+        StatusEtapu.zakonczony => 'zakonczony',
       };
 
   static StatusEtapu fromApi(String v) => switch (v) {
         'w_toku' => StatusEtapu.wToku,
-        'zakończony' => StatusEtapu.zakończony,
+        'zakonczony' => StatusEtapu.zakonczony,
         _ => StatusEtapu.planowany,
       };
 }
@@ -163,3 +163,4 @@ class BudowaModel {
               dataPlanowanegZakonczenia!.toIso8601String().split('T').first,
       };
 }
+

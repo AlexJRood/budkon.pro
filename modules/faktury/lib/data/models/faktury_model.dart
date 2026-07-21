@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum TypFaktury {
   sprzedaz, zaliczkowa, koncowa, korygujaca, proforma;
 
@@ -37,9 +39,6 @@ enum StatusFaktury {
         anulowana => const Color(0xFF9E9E9E),
       };
 }
-
-// ignore: depend_on_referenced_packages
-import 'package:flutter/material.dart';
 
 class FakturaListItem {
   final int id;

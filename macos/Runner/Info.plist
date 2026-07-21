@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.business</string>
+
+	<key>NSHumanReadableCopyright</key>
+	<string>$(PRODUCT_COPYRIGHT)</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aplikacja potrzebuje dostępu do biblioteki zdjęć, aby umożliwić wybór i wgrywanie zdjęć do ogłoszeń oraz innych elementów systemu.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Aplikacja może zapisywać obrazy i eksportowane materiały w bibliotece zdjęć użytkownika.</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>Aplikacja potrzebuje dostępu do kamery, aby wykonywać zdjęcia, skanować materiały i obsługiwać funkcje związane z obrazem.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Aplikacja potrzebuje dostępu do mikrofonu, aby nagrywać Twój głos i korzystać z transkrypcji mowy w Emma AI.</string>
+
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Aplikacja używa rozpoznawania mowy do zamiany Twojego głosu na tekst podczas pracy z Emma AI i notatkami ze spotkań.</string>
+</dict>
+</plist>

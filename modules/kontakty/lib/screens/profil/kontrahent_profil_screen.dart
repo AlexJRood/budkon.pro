@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../../data/providers/kontakty_provider.dart';
 import '../form/kontrahent_form_screen.dart';
 
@@ -10,30 +11,40 @@ class KontrahentProfilScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(kontrahentDetailProvider(kontrahentId));
 
     return async.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Błąd: $e')),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: theme.textColor),
+        ),
+        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
       ),
       data: (k) => Scaffold(
+        backgroundColor: Colors.transparent,
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
               expandedHeight: 160,
               pinned: true,
+              backgroundColor: Colors.transparent,
+              iconTheme: IconThemeData(color: theme.textColor),
               flexibleSpace: FlexibleSpaceBar(
                 title: Text(k.displayName,
-                    style: const TextStyle(fontSize: 16)),
+                    style: TextStyle(fontSize: 16, color: theme.textColor)),
                 background: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).colorScheme.secondaryContainer,
-                        Theme.of(context).colorScheme.surface,
+                        theme.themeColor.withAlpha(60),
+                        theme.sidebar,
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -42,13 +53,11 @@ class KontrahentProfilScreen extends ConsumerWidget {
                   child: Center(
                     child: CircleAvatar(
                       radius: 40,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.secondary,
+                      backgroundColor: theme.themeColor.withAlpha(50),
                       child: Text(
                         k.inicjaly,
                         style: TextStyle(
-                          color:
-                              Theme.of(context).colorScheme.onSecondary,
+                          color: theme.themeColor,
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                         ),
@@ -59,7 +68,7 @@ class KontrahentProfilScreen extends ConsumerWidget {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: Icon(Icons.edit_outlined, color: theme.textColor),
                   onPressed: () async {
                     final wynik = await Navigator.push<bool>(
                       context,
@@ -81,53 +90,55 @@ class KontrahentProfilScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Branża
                     if (k.branza != null)
                       _InfoChip(
                         icon: Text(k.branza!.emoji,
                             style: const TextStyle(fontSize: 18)),
                         label: k.branza!.label,
-                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        theme: theme,
                       ),
                     const SizedBox(height: 20),
 
-                    // Dane kontaktowe
-                    _SectionHeader('Dane kontaktowe'),
+                    _SectionHeader('Dane kontaktowe', theme: theme),
                     const SizedBox(height: 8),
 
                     if (k.firma.isNotEmpty && k.pelneImie.isNotEmpty)
                       _InfoRow(Icons.person_outline, 'Imię i nazwisko',
-                          k.pelneImie),
+                          k.pelneImie, theme: theme),
                     if (k.telefon.isNotEmpty)
                       _InfoRow(Icons.phone_outlined, 'Telefon', k.telefon,
+                          theme: theme,
                           onTap: () =>
                               _kopiuj(context, k.telefon, 'Telefon skopiowany')),
                     if (k.email.isNotEmpty)
                       _InfoRow(Icons.email_outlined, 'E-mail', k.email,
+                          theme: theme,
                           onTap: () =>
                               _kopiuj(context, k.email, 'E-mail skopiowany')),
                     if (k.nip.isNotEmpty)
                       _InfoRow(Icons.badge_outlined, 'NIP', k.nip,
+                          theme: theme,
                           onTap: () =>
                               _kopiuj(context, k.nip, 'NIP skopiowany')),
                     if (k.adres.isNotEmpty)
-                      _InfoRow(Icons.location_on_outlined, 'Adres', k.adres),
+                      _InfoRow(Icons.location_on_outlined, 'Adres', k.adres,
+                          theme: theme),
 
                     if (k.uwagi.isNotEmpty) ...[
                       const SizedBox(height: 20),
-                      _SectionHeader('Uwagi'),
+                      _SectionHeader('Uwagi', theme: theme),
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          color: theme.secondaryWidgetColor,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: theme.bordercolor.withAlpha(40)),
                         ),
                         child: Text(k.uwagi,
-                            style: Theme.of(context).textTheme.bodyMedium),
+                            style: TextStyle(color: theme.textColor)),
                       ),
                     ],
 
@@ -144,22 +155,23 @@ class KontrahentProfilScreen extends ConsumerWidget {
 
   void _kopiuj(BuildContext context, String text, String msg) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
   }
 }
 
 class _SectionHeader extends StatelessWidget {
   final String label;
-  const _SectionHeader(this.label);
+  final ThemeColors theme;
+  const _SectionHeader(this.label, {required this.theme});
 
   @override
   Widget build(BuildContext context) => Text(
         label,
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(fontWeight: FontWeight.w700),
+        style: TextStyle(
+            color: theme.textColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 14),
       );
 }
 
@@ -167,32 +179,36 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final ThemeColors theme;
   final VoidCallback? onTap;
-  const _InfoRow(this.icon, this.label, this.value, {this.onTap});
+  const _InfoRow(this.icon, this.label, this.value,
+      {required this.theme, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(children: [
-          Icon(icon, size: 18, color: cs.primary),
+          Icon(icon, size: 18, color: theme.themeColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: TextStyle(color: cs.outline, fontSize: 11)),
-                Text(value, style: Theme.of(context).textTheme.bodyMedium),
+                    style: TextStyle(
+                        color: theme.textColor.withAlpha(130), fontSize: 11)),
+                Text(value,
+                    style: TextStyle(color: theme.textColor, fontSize: 14)),
               ],
             ),
           ),
           if (onTap != null)
-            Icon(Icons.copy_outlined, size: 14, color: cs.outline),
+            Icon(Icons.copy_outlined,
+                size: 14, color: theme.textColor.withAlpha(130)),
         ]),
       ),
     );
@@ -202,22 +218,25 @@ class _InfoRow extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final Widget icon;
   final String label;
-  final Color color;
-  const _InfoChip({required this.icon, required this.label, required this.color});
+  final ThemeColors theme;
+  const _InfoChip(
+      {required this.icon, required this.label, required this.theme});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: color,
+          color: theme.themeColor.withAlpha(30),
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.themeColor.withAlpha(60)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           icon,
           const SizedBox(width: 6),
           Text(label,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  color: theme.themeColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 13)),
         ]),

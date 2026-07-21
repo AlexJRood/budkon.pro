@@ -2,14 +2,14 @@
 // import 'package:flutter/material.dart';
 
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:hously_flutter/const/backgroundgradient.dart';
-// import 'package:hously_flutter/screens/go_pro/pc/components/const.dart';
-// import 'package:hously_flutter/screens/go_pro/pc/components/pro_cards.dart';
-// import 'package:hously_flutter/widgets/appbar/hously/pc/appbar_logo.dart';
-// import 'package:hously_flutter/widgets/side_menu/side_menu_manager.dart';
-// import 'package:hously_flutter/widgets/sidebar/sidebar.dart';
+// import 'package:budkon_flutter/const/backgroundgradient.dart';
+// import 'package:budkon_flutter/screens/go_pro/pc/components/const.dart';
+// import 'package:budkon_flutter/screens/go_pro/pc/components/pro_cards.dart';
+// import 'package:budkon_flutter/widgets/appbar/hously/pc/appbar_logo.dart';
+// import 'package:budkon_flutter/widgets/side_menu/side_menu_manager.dart';
+// import 'package:budkon_flutter/widgets/sidebar/sidebar.dart';
 
-// import 'package:hously_flutter/widgets/side_menu/slide_rotate_menu.dart';
+// import 'package:budkon_flutter/widgets/side_menu/slide_rotate_menu.dart';
 
 // class GoProPc extends ConsumerWidget {
 //   const GoProPc({super.key});

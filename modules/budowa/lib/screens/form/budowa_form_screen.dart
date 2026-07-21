@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/budowa_model.dart';
 import '../../data/providers/budowa_provider.dart';
@@ -48,16 +49,19 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final saving = ref.watch(budowaFormProvider).isLoading;
-    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(_isEdit ? 'Edytuj budowę' : 'Nowa budowa'),
+        backgroundColor: Colors.transparent,
+        title: Text(_isEdit ? 'Edytuj budowę' : 'Nowa budowa', style: TextStyle(color: theme.textColor)),
+        iconTheme: IconThemeData(color: theme.textColor),
         actions: [
           if (_isEdit)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: Icon(Icons.delete_outline, color: theme.textColor),
               tooltip: 'Usuń',
               onPressed: saving ? null : _confirmDelete,
             ),
@@ -68,33 +72,22 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
         child: ListView(
           padding: EdgeInsets.all(16.w),
           children: [
-            _Field(
-              label: 'Nazwa projektu *',
-              controller: _nazwaCtrl,
+            _Field(label: 'Nazwa projektu *', controller: _nazwaCtrl,
               validator: (v) => (v == null || v.isEmpty) ? 'Pole wymagane' : null,
-              hint: 'np. Dom jednorodzinny Kowalski',
-            ),
+              hint: 'np. Dom jednorodzinny Kowalski', theme: theme),
+            SizedBox(height: 12.h),
+            _Field(label: 'Adres', controller: _adresCtrl, hint: 'ul. Leśna 5, Kraków', theme: theme),
             SizedBox(height: 12.h),
             _Field(
-              label: 'Adres',
-              controller: _adresCtrl,
-              hint: 'ul. Leśna 5, Kraków',
-            ),
-            SizedBox(height: 12.h),
-            _Field(
-              label: 'Budżet (zł)',
-              controller: _budzetCtrl,
-              hint: '450000',
-              keyboardType: TextInputType.number,
+              label: 'Budżet (zł)', controller: _budzetCtrl, hint: '450000',
+              keyboardType: TextInputType.number, theme: theme,
               validator: (v) {
-                if (v != null && v.isNotEmpty && double.tryParse(v) == null) {
-                  return 'Podaj liczbę';
-                }
+                if (v != null && v.isNotEmpty && double.tryParse(v) == null) return 'Podaj liczbę';
                 return null;
               },
             ),
             SizedBox(height: 16.h),
-            Text('Status', style: theme.textTheme.labelMedium),
+            Text('Status', style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
             SizedBox(height: 6.h),
             SegmentedButton<StatusBudowy>(
               segments: StatusBudowy.values
@@ -112,16 +105,14 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
               children: [
                 Expanded(
                   child: _DatePicker(
-                    label: 'Data rozpoczęcia',
-                    value: _dataRozpoczecia,
+                    label: 'Data rozpoczęcia', value: _dataRozpoczecia, theme: theme,
                     onChanged: (d) => setState(() => _dataRozpoczecia = d),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: _DatePicker(
-                    label: 'Planowane zakończenie',
-                    value: _dataZakonczenia,
+                    label: 'Planowane zakończenie', value: _dataZakonczenia, theme: theme,
                     onChanged: (d) => setState(() => _dataZakonczenia = d),
                   ),
                 ),
@@ -130,13 +121,10 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
             SizedBox(height: 32.h),
             FilledButton(
               onPressed: saving ? null : _save,
+              style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
               child: saving
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz budowę'),
+                  ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
+                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz budowę', style: TextStyle(color: theme.buttonTextColor)),
             ),
           ],
         ),
@@ -146,7 +134,6 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-
     final budowa = BudowaModel(
       id: widget.existing?.id ?? 0,
       nazwa: _nazwaCtrl.text.trim(),
@@ -156,7 +143,6 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
       dataRozpoczecia: _dataRozpoczecia,
       dataPlanowanegZakonczenia: _dataZakonczenia,
     );
-
     final result = await ref.read(budowaFormProvider.notifier).save(budowa);
     if (result != null && mounted) Navigator.of(context).pop();
   }
@@ -185,16 +171,12 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
 }
 
 class _Field extends StatelessWidget {
-  const _Field({
-    required this.label,
-    required this.controller,
-    this.hint,
-    this.validator,
-    this.keyboardType,
-  });
+  const _Field({required this.label, required this.controller, required this.theme,
+    this.hint, this.validator, this.keyboardType});
 
   final String label;
   final TextEditingController controller;
+  final ThemeColors theme;
   final String? hint;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
@@ -204,15 +186,26 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        Text(label, style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
         SizedBox(height: 6.h),
         TextFormField(
           controller: controller,
           validator: validator,
           keyboardType: keyboardType,
+          style: TextStyle(color: theme.textColor),
           decoration: InputDecoration(
             hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+            hintStyle: TextStyle(color: theme.textColor.withAlpha(80)),
+            filled: true,
+            fillColor: theme.textFieldColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: theme.bordercolor.withAlpha(60)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: theme.bordercolor.withAlpha(60)),
+            ),
             isDense: true,
           ),
         ),
@@ -222,17 +215,18 @@ class _Field extends StatelessWidget {
 }
 
 class _DatePicker extends StatelessWidget {
-  const _DatePicker({required this.label, this.value, required this.onChanged});
+  const _DatePicker({required this.label, this.value, required this.onChanged, required this.theme});
   final String label;
   final DateTime? value;
   final ValueChanged<DateTime?> onChanged;
+  final ThemeColors theme;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        Text(label, style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
         SizedBox(height: 6.h),
         OutlinedButton.icon(
           onPressed: () async {
@@ -244,16 +238,15 @@ class _DatePicker extends StatelessWidget {
             );
             onChanged(picked);
           },
-          icon: const Icon(Icons.calendar_today, size: 16),
+          icon: Icon(Icons.calendar_today, size: 16, color: theme.themeColor),
           label: Text(
-            value != null
-                ? '${value!.day}.${value!.month}.${value!.year}'
-                : 'Wybierz datę',
-            style: TextStyle(fontSize: 13.sp),
+            value != null ? '${value!.day}.${value!.month}.${value!.year}' : 'Wybierz datę',
+            style: TextStyle(fontSize: 13.sp, color: theme.textColor),
           ),
           style: OutlinedButton.styleFrom(
             minimumSize: Size(double.infinity, 40.h),
             alignment: Alignment.centerLeft,
+            side: BorderSide(color: theme.bordercolor.withAlpha(80)),
           ),
         ),
       ],

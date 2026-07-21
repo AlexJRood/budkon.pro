@@ -1,66 +1,74 @@
-import 'package:flutter/material.dart';
-import '../../core/block_descriptor.dart';
-import '../../core/block_definition.dart';
-import '../../widgets/emma_block_card_shell.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:emma/blocks/core/block_definition.dart';
+import 'package:emma/blocks/core/block_descriptor.dart';
+import 'package:emma/blocks/definitions/shared/block_ui.dart';
 
 class BudzetEtapuBlockDefinition extends EmmaBlockDefinition {
-  const BudzetEtapuBlockDefinition()
-      : super(
-          type: EmmaBlockDescriptor.budzetEtapu,
-          title: 'Budżet etapu',
-          description: 'Wydatki vs budżet aktualnego etapu',
-          iconCodePoint: 0xe862, // account_balance_wallet
-          color: Color(0xFF42A5F5),
-        );
+  const BudzetEtapuBlockDefinition();
 
   @override
-  Widget buildCard(BuildContext context, Map<String, dynamic> data) =>
-      _BudzetEtapuCard(data: data);
-}
-
-class _BudzetEtapuCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const _BudzetEtapuCard({required this.data});
+  String get key => 'budzet_etapu';
 
   @override
-  Widget build(BuildContext context) {
-    final nazwaEtapu = data['etap_nazwa'] as String? ?? 'Etap';
+  bool supports(EmmaBlockDescriptor block) =>
+      block.type == EmmaBlockType.budzetEtapu;
+
+  @override
+  Widget buildBlock({
+    required BuildContext context,
+    required WidgetRef ref,
+    required EmmaBlockDescriptor block,
+    required double maxWidth,
+    required String messageId,
+  }) {
+    final data = block.raw;
+    final nazwaEtapu = data['etap_nazwa']?.toString() ?? 'Etap';
     final budzet = (data['budzet'] as num?)?.toDouble() ?? 0;
     final wydano = (data['wydano'] as num?)?.toDouble() ?? 0;
     final procent = budzet > 0 ? (wydano / budzet).clamp(0.0, 1.0) : 0.0;
     final pozostalo = budzet - wydano;
     final przekroczony = wydano > budzet;
 
+    const baseAccent = Color(0xFF42A5F5);
     final barColor = przekroczony
         ? Colors.redAccent
         : procent > 0.85
             ? Colors.orange
-            : const Color(0xFF42A5F5);
+            : baseAccent;
 
     return EmmaBlockCardShell(
-      title: 'Budżet etapu',
-      accent: const Color(0xFF42A5F5),
-      tag: EmmaTag(
-        label: przekroczony
-            ? '⚠ Przekroczony!'
-            : '${(procent * 100).toStringAsFixed(0)}% wydane',
-        color: barColor,
-      ),
+      maxWidth: maxWidth,
+      borderColor: barColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(children: [
+            const EmmaAccentIcon(icon: Icons.account_balance_wallet_outlined, color: baseAccent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Budżet etapu',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ),
+            EmmaTag(
+              label: przekroczony
+                  ? '⚠ Przekroczony!'
+                  : '${(procent * 100).toStringAsFixed(0)}% wydane',
+              color: barColor,
+            ),
+          ]),
+          const SizedBox(height: 8),
           Text(
             nazwaEtapu,
             style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 13),
+                color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
-
-          // Pasek
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -71,12 +79,11 @@ class _BudzetEtapuCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-
           Row(children: [
             Text(
               '${_fmt(wydano)} zł',
-              style:
-                  TextStyle(color: barColor, fontWeight: FontWeight.w700, fontSize: 12),
+              style: TextStyle(
+                  color: barColor, fontWeight: FontWeight.w700, fontSize: 12),
             ),
             const Text(' / ',
                 style: TextStyle(color: Colors.white38, fontSize: 12)),
@@ -87,7 +94,7 @@ class _BudzetEtapuCard extends StatelessWidget {
             const Spacer(),
             Text(
               przekroczony
-                  ? '−${_fmt(pozostalo.abs())} zł'
+                  ? '-${_fmt(pozostalo.abs())} zł'
                   : '${_fmt(pozostalo)} zł wolne',
               style: TextStyle(
                 color: przekroczony ? Colors.redAccent : Colors.white54,
@@ -95,11 +102,14 @@ class _BudzetEtapuCard extends StatelessWidget {
               ),
             ),
           ]),
-
           const SizedBox(height: 8),
           Row(children: [
             const Spacer(),
-            EmmaActionPill(label: 'Kosztorys', route: '/kosztorysy'),
+            EmmaActionPill(
+              label: 'Kosztorys',
+              icon: Icons.calculate_outlined,
+              onTap: null,
+            ),
           ]),
         ],
       ),
@@ -112,3 +122,4 @@ class _BudzetEtapuCard extends StatelessWidget {
     return v.toStringAsFixed(0);
   }
 }
+

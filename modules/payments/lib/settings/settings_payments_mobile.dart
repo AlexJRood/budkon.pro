@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:core/settings/settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get_utils/get_utils.dart';
@@ -17,7 +17,7 @@ class SettingsPaymentsMobile extends ConsumerWidget {
     final theme = ref.watch(themeColorsProvider);
 
     return Scaffold(
-      backgroundColor: theme.mobileBackground,
+      backgroundColor: Colors.transparent,
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(

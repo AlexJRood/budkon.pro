@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/faktury_model.dart';
 import '../../data/providers/faktury_provider.dart';
@@ -20,16 +21,23 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(fakturyProvider);
     final lista = _filterStatus == null
         ? state.lista
         : state.lista.where((f) => f.status == _filterStatus).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Faktury')),
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text('Faktury', style: TextStyle(color: theme.textColor)),
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('Nowa faktura'),
+        backgroundColor: theme.themeColor,
+        icon: Icon(Icons.add, color: theme.buttonTextColor),
+        label: Text('Nowa faktura', style: TextStyle(color: theme.buttonTextColor)),
         onPressed: () async {
           final wynik = await Navigator.push<bool>(
             context,
@@ -41,7 +49,6 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
       ),
       body: Column(
         children: [
-          // Filtr statusów
           SizedBox(
             height: 46,
             child: ListView(
@@ -50,15 +57,17 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
               children: [
                 _StatusChip(
                   label: 'Wszystkie',
-                  color: Colors.grey,
+                  color: theme.textColor.withAlpha(150),
                   selected: _filterStatus == null,
                   onTap: () => setState(() => _filterStatus = null),
+                  theme: theme,
                 ),
                 ...StatusFaktury.values.map((s) => _StatusChip(
                       label: s.label,
                       color: s.color,
                       selected: _filterStatus == s,
                       onTap: () => setState(() => _filterStatus = s),
+                      theme: theme,
                     )),
               ],
             ),
@@ -68,7 +77,7 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
           Expanded(
             child: Builder(builder: (_) {
               if (state.loading && lista.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(child: CircularProgressIndicator(color: theme.themeColor));
               }
               if (lista.isEmpty) {
                 return Center(
@@ -76,23 +85,23 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: 56,
-                          color: Theme.of(context).colorScheme.outline),
+                          size: 56, color: theme.textColor.withAlpha(80)),
                       const SizedBox(height: 12),
-                      const Text('Brak faktur'),
+                      Text('Brak faktur', style: TextStyle(color: theme.textColor)),
                     ],
                   ),
                 );
               }
               return RefreshIndicator(
+                color: theme.themeColor,
                 onRefresh: () =>
                     ref.read(fakturyProvider.notifier).load(budowaId: widget.budowaId),
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                   itemCount: lista.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 6),
-                  itemBuilder: (ctx, i) =>
-                      _FakturaTile(faktura: lista[i], dateFmt: _dateFmt),
+                  itemBuilder: (ctx, i) => _FakturaTile(
+                      faktura: lista[i], dateFmt: _dateFmt, theme: theme),
                 ),
               );
             }),
@@ -108,23 +117,28 @@ class _StatusChip extends StatelessWidget {
   final Color color;
   final bool selected;
   final VoidCallback onTap;
-  const _StatusChip(
-      {required this.label,
-      required this.color,
-      required this.selected,
-      required this.onTap});
+  final ThemeColors theme;
+
+  const _StatusChip({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+    required this.theme,
+  });
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(right: 8),
         child: FilterChip(
-          label: Text(label, style: const TextStyle(fontSize: 12)),
+          label: Text(label, style: TextStyle(fontSize: 12, color: selected ? color : theme.textColor)),
           selected: selected,
           selectedColor: color.withAlpha(40),
           checkmarkColor: color,
           onSelected: (_) => onTap(),
           showCheckmark: selected,
-          side: BorderSide(color: selected ? color : Colors.transparent),
+          backgroundColor: theme.userTile,
+          side: BorderSide(color: selected ? color : theme.bordercolor.withAlpha(60)),
         ),
       );
 }
@@ -132,23 +146,23 @@ class _StatusChip extends StatelessWidget {
 class _FakturaTile extends StatelessWidget {
   final FakturaListItem faktura;
   final DateFormat dateFmt;
-  const _FakturaTile({required this.faktura, required this.dateFmt});
+  final ThemeColors theme;
+  const _FakturaTile({required this.faktura, required this.dateFmt, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final statusColor = faktura.jestPrzeterminowana
         ? const Color(0xFFEF5350)
         : faktura.status.color;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.userTile,
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
+        border: Border.all(
           color: faktura.jestPrzeterminowana
               ? const Color(0xFFEF5350).withAlpha(120)
-              : cs.outlineVariant,
+              : theme.bordercolor.withAlpha(60),
         ),
       ),
       child: InkWell(
@@ -162,12 +176,10 @@ class _FakturaTile extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              // Status dot
               Container(
                 width: 10,
                 height: 10,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: statusColor),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
               ),
               const SizedBox(width: 10),
 
@@ -178,15 +190,15 @@ class _FakturaTile extends StatelessWidget {
                     Row(children: [
                       Text(
                         faktura.numerDisplay,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            color: theme.textColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: statusColor.withAlpha(25),
                           borderRadius: BorderRadius.circular(6),
@@ -196,15 +208,13 @@ class _FakturaTile extends StatelessWidget {
                               ? 'PRZETERMINOWANA'
                               : faktura.status.label.toUpperCase(),
                           style: TextStyle(
-                              color: statusColor,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800),
+                              color: statusColor, fontSize: 9, fontWeight: FontWeight.w800),
                         ),
                       ),
                     ]),
                     const SizedBox(height: 3),
                     Text(faktura.nabywcaNazwa,
-                        style: TextStyle(color: cs.outline, fontSize: 12)),
+                        style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12)),
                     const SizedBox(height: 3),
                     Row(children: [
                       Text(
@@ -212,7 +222,7 @@ class _FakturaTile extends StatelessWidget {
                         style: TextStyle(
                           color: faktura.jestPrzeterminowana
                               ? const Color(0xFFEF5350)
-                              : cs.outline,
+                              : theme.textColor.withAlpha(150),
                           fontSize: 11,
                         ),
                       ),
@@ -220,7 +230,7 @@ class _FakturaTile extends StatelessWidget {
                       Text(
                         '${faktura.wartoscBrutto.toStringAsFixed(2)} zł',
                         style: TextStyle(
-                          color: cs.primary,
+                          color: theme.themeColor,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
@@ -230,7 +240,7 @@ class _FakturaTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(Icons.chevron_right, color: cs.outline),
+              Icon(Icons.chevron_right, color: theme.textColor.withAlpha(120)),
             ],
           ),
         ),

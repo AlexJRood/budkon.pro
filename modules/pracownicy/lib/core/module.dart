@@ -1,19 +1,29 @@
+﻿import 'package:core/kernel/kernel.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'dock.dart';
 import 'routing.dart';
 
-class PracownicyModule {
-  static const id = 'pracownicy';
-  static const label = 'Zespół';
-  static const icon = Icons.groups_outlined;
-  static const iconFilled = Icons.groups;
-  static const color = Color(0xFF5C6BC0); // indigo
+class PracownicyModule extends AppModule {
+  @override
+  String get id => 'pracownicy';
 
-  static List<RouteBase> get routes => pracownicyRoutes;
+  @override
+  List<DockContribution> dockItems() => pracownicyDockItems();
 
-  static void navigateToLista(BuildContext context, {int? budowaId}) =>
-      context.push('/pracownicy', extra: budowaId);
+  @override
+  List<RouteSpec> routes() => pracownicyRoutes();
+
+  @override
+  Future<void> init(ModuleScope scope) async {}
+
+  static void navigateToLista(BuildContext context) =>
+      navigateTo(context, '/pracownicy');
 
   static void navigateToProfil(BuildContext context, int id) =>
-      context.push('/pracownicy/$id');
+      navigateTo(context, '/pracownicy/$id');
+
+  static void navigateTo(BuildContext context, String path) {
+    final nav = Navigator.of(context, rootNavigator: true);
+    nav.pushNamed(path);
+  }
 }

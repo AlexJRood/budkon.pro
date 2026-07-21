@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/faktury_model.dart';
 import '../../data/providers/faktury_provider.dart';
@@ -13,14 +14,23 @@ class FakturaDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final async = ref.watch(fakturaDetailProvider(fakturaId));
 
     return async.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      ),
       error: (e, _) => Scaffold(
-          appBar: AppBar(), body: Center(child: Text('Błąd: $e'))),
-      data: (fv) => _FakturaBody(fv: fv, ref: ref),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: theme.textColor),
+        ),
+        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+      ),
+      data: (fv) => _FakturaBody(fv: fv, ref: ref, theme: theme),
     );
   }
 }
@@ -28,22 +38,24 @@ class FakturaDetailScreen extends ConsumerWidget {
 class _FakturaBody extends StatelessWidget {
   final FakturaDetail fv;
   final WidgetRef ref;
-  const _FakturaBody({required this.fv, required this.ref});
+  final ThemeColors theme;
+  const _FakturaBody({required this.fv, required this.ref, required this.theme});
 
   static final _dateFmt = DateFormat('dd.MM.yyyy', 'pl_PL');
   static final _numFmt = NumberFormat('#,##0.00', 'pl_PL');
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(fv.numerDisplay),
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: theme.textColor),
+        title: Text(fv.numerDisplay, style: TextStyle(color: theme.textColor)),
         actions: [
-          if (fv.status == StatusFaktury.szkic ||
-              fv.status == StatusFaktury.wystawiona)
+          if (fv.status == StatusFaktury.szkic || fv.status == StatusFaktury.wystawiona)
             PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: theme.textColor),
               onSelected: (action) => _handleAction(context, action),
               itemBuilder: (_) => [
                 if (fv.status == StatusFaktury.szkic ||
@@ -66,29 +78,25 @@ class _FakturaBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Status badge
                   Row(children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: fv.status.color.withAlpha(30),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: fv.status.color.withAlpha(100)),
+                        border: Border.all(color: fv.status.color.withAlpha(100)),
                       ),
                       child: Text(
                         fv.status.label,
                         style: TextStyle(
-                            color: fv.status.color,
-                            fontWeight: FontWeight.w700),
+                            color: fv.status.color, fontWeight: FontWeight.w700),
                       ),
                     ),
                     const Spacer(),
                     Text(
                       '${_numFmt.format(fv.wartoscBrutto)} zł',
                       style: TextStyle(
-                        color: cs.primary,
+                        color: theme.themeColor,
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
@@ -97,7 +105,6 @@ class _FakturaBody extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Strony
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -107,7 +114,9 @@ class _FakturaBody extends StatelessWidget {
                         nip: fv.wystawcaNip,
                         adres: fv.wystawcaAdres,
                         extra: fv.wystawcaKonto.isNotEmpty
-                            ? 'Konto: ${fv.wystawcaKonto}' : null,
+                            ? 'Konto: ${fv.wystawcaKonto}'
+                            : null,
+                        theme: theme,
                       )),
                       const SizedBox(width: 10),
                       Expanded(child: _StronaCard(
@@ -115,32 +124,29 @@ class _FakturaBody extends StatelessWidget {
                         nazwa: fv.nabywcaNazwa,
                         nip: fv.nabywcaNip,
                         adres: fv.nabywcaAdres,
+                        theme: theme,
                       )),
                     ],
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Daty + metoda
-                  _InfoRow('Wystawiono', _dateFmt.format(fv.dataWystawienia)),
-                  _InfoRow('Termin płatności',
-                      _dateFmt.format(fv.terminPlatnosci),
-                      valueColor: fv.jestPrzeterminowana
-                          ? const Color(0xFFEF5350)
-                          : null),
-                  _InfoRow('Metoda płatności',
-                      fv.metodaPlatnosci.replaceAll('_', ' ')),
+                  _InfoRow('Wystawiono', _dateFmt.format(fv.dataWystawienia), theme: theme),
+                  _InfoRow('Termin płatności', _dateFmt.format(fv.terminPlatnosci),
+                      theme: theme,
+                      valueColor: fv.jestPrzeterminowana ? const Color(0xFFEF5350) : null),
+                  _InfoRow('Metoda płatności', fv.metodaPlatnosci.replaceAll('_', ' '),
+                      theme: theme),
 
                   const SizedBox(height: 20),
-                  const Divider(),
+                  Divider(color: theme.bordercolor.withAlpha(60)),
                   const SizedBox(height: 8),
 
-                  // Pozycje
                   Text('Pozycje',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                      style: TextStyle(
+                          color: theme.textColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14)),
                   const SizedBox(height: 8),
 
                   ...fv.pozycje.asMap().entries.map((e) {
@@ -157,34 +163,36 @@ class _FakturaBody extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(p['nazwa'] as String? ?? '',
-                                  style: const TextStyle(
+                                  style: TextStyle(
+                                      color: theme.textColor,
                                       fontWeight: FontWeight.w500,
                                       fontSize: 13)),
                               Text(
                                 '${_numFmt.format(ilosc)} ${p['jednostka'] ?? 'szt.'} × ${_numFmt.format(cena)} zł',
                                 style: TextStyle(
-                                    color: cs.outline, fontSize: 11),
+                                    color: theme.textColor.withAlpha(150), fontSize: 11),
                               ),
                             ],
                           ),
                         ),
                         Text(
                           '${_numFmt.format(ilosc * cena)} zł',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
+                          style: TextStyle(
+                              color: theme.textColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13),
                         ),
                       ]),
                     );
                   }),
 
-                  const Divider(),
+                  Divider(color: theme.bordercolor.withAlpha(60)),
                   const SizedBox(height: 8),
 
-                  // Podsumowanie
-                  _SumaRow('Netto', fv.wartoscNetto, cs.outline),
-                  _SumaRow('VAT ${fv.stawkaVat}%', fv.wartoscVat, cs.outline),
-                  _SumaRow('BRUTTO', fv.wartoscBrutto, cs.primary,
-                      bold: true, large: true),
+                  _SumaRow('Netto', fv.wartoscNetto, theme.textColor.withAlpha(150), theme: theme),
+                  _SumaRow('VAT ${fv.stawkaVat}%', fv.wartoscVat, theme.textColor.withAlpha(150), theme: theme),
+                  _SumaRow('BRUTTO', fv.wartoscBrutto, theme.themeColor,
+                      bold: true, large: true, theme: theme),
 
                   if (fv.uwagi.isNotEmpty) ...[
                     const SizedBox(height: 16),
@@ -192,10 +200,11 @@ class _FakturaBody extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: cs.surfaceContainerHighest,
+                        color: theme.secondaryWidgetColor,
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: theme.bordercolor.withAlpha(40)),
                       ),
-                      child: Text(fv.uwagi),
+                      child: Text(fv.uwagi, style: TextStyle(color: theme.textColor)),
                     ),
                   ],
 
@@ -233,45 +242,42 @@ class _StronaCard extends StatelessWidget {
   final String nip;
   final String adres;
   final String? extra;
-  const _StronaCard(
-      {required this.title,
-      required this.nazwa,
-      required this.nip,
-      required this.adres,
-      this.extra});
+  final ThemeColors theme;
+
+  const _StronaCard({
+    required this.title,
+    required this.nazwa,
+    required this.nip,
+    required this.adres,
+    required this.theme,
+    this.extra,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          color: theme.secondaryWidgetColor,
           borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: theme.bordercolor.withAlpha(40)),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700)),
+                  color: theme.themeColor, fontSize: 10, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(nazwa,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 12)),
+              style: TextStyle(
+                  color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 12)),
           if (nip.isNotEmpty)
             Text('NIP: $nip',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 11)),
+                style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 11)),
           if (adres.isNotEmpty)
             Text(adres,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 11)),
+                style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 11)),
           if (extra != null)
             Text(extra!,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 10)),
+                style: TextStyle(color: theme.textColor.withAlpha(120), fontSize: 10)),
         ]),
       );
 }
@@ -279,23 +285,22 @@ class _StronaCard extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
+  final ThemeColors theme;
   final Color? valueColor;
-  const _InfoRow(this.label, this.value, {this.valueColor});
+  const _InfoRow(this.label, this.value, {required this.theme, this.valueColor});
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(children: [
           Text(label,
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
-                  fontSize: 12)),
+              style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12)),
           const Spacer(),
           Text(value,
               style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
-                  color: valueColor)),
+                  color: valueColor ?? theme.textColor)),
         ]),
       );
 }
@@ -304,11 +309,13 @@ class _SumaRow extends StatelessWidget {
   final String label;
   final double value;
   final Color color;
+  final ThemeColors theme;
   final bool bold;
   final bool large;
   static final _fmt = NumberFormat('#,##0.00', 'pl_PL');
+
   const _SumaRow(this.label, this.value, this.color,
-      {this.bold = false, this.large = false});
+      {required this.theme, this.bold = false, this.large = false});
 
   @override
   Widget build(BuildContext context) => Padding(
