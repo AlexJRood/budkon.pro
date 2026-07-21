@@ -1,3 +1,4 @@
+import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -320,10 +321,7 @@ class _KrokKosztorysState extends ConsumerState<_KrokKosztorys> {
   }
 }
 
-Dio _getDio() => Dio(BaseOptions(
-  baseUrl: 'http://127.0.0.1:8001/api/v1',
-  headers: {'X-Company-Id': '1'},
-));
+Dio _getDio() => budkonDio();
 
 class _KrokKlient extends StatelessWidget {
   final ThemeColors theme;

@@ -1,19 +1,11 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/kosztorys_model.dart';
 
-const _budkonBase = 'http://127.0.0.1:8001/api/v1';
-
-final _dioProvider = Provider((ref) => Dio(BaseOptions(
-      baseUrl: _budkonBase,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 60), // AI pipeline może trwać
-      contentType: 'application/json',
-    )));
-
 final kosztorysyApiProvider =
-    Provider((ref) => KosztorysyApi(ref.watch(_dioProvider)));
+    Provider((ref) => KosztorysyApi(ref.watch(budkonDioProvider)));
 
 class KosztorysyApi {
   KosztorysyApi(this._dio);

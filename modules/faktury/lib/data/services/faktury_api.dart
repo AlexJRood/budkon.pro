@@ -1,16 +1,9 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import '../models/faktury_model.dart';
 
 class FakturyApi {
-  static const _base = 'http://127.0.0.1:8001/api/v1';
-  static const _headers = {'X-Company-Id': '1'};
-
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: _base,
-    headers: _headers,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 20),
-  ));
+  final Dio _dio = budkonDio(receiveTimeout: const Duration(seconds: 20));
 
   Future<List<FakturaListItem>> lista({int? budowaId, String? status}) async {
     final params = <String, dynamic>{};

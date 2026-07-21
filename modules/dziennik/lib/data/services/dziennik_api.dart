@@ -1,16 +1,9 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import '../models/dziennik_model.dart';
 
 class DziennikApi {
-  static const _base = 'http://127.0.0.1:8001/api/v1';
-  static const _headers = {'X-Company-Id': '1'};
-
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: _base,
-    headers: _headers,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 30),
-  ));
+  final Dio _dio = budkonDio(receiveTimeout: const Duration(seconds: 30));
 
   // ---- Lista wpisów -------------------------------------------------------
 
@@ -24,7 +17,8 @@ class DziennikApi {
     if (miesiac != null) params['miesiac'] = miesiac;
 
     final r = await _dio.get('/dziennik/', queryParameters: params);
-    return (r.data as List)
+    final list = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list
         .map((e) => WpisListItem.fromJson(e as Map<String, dynamic>))
         .toList();
   }

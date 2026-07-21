@@ -1,16 +1,9 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import '../models/podwykonawcy_model.dart';
 
 class PodwykonawcyApi {
-  static const _base = 'http://127.0.0.1:8001/api/v1';
-  static const _headers = {'X-Company-Id': '1'};
-
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: _base,
-    headers: _headers,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 20),
-  ));
+  final Dio _dio = budkonDio(receiveTimeout: const Duration(seconds: 20));
 
   // ---- Kontrahenci --------------------------------------------------------
 
@@ -19,7 +12,8 @@ class PodwykonawcyApi {
       '/kontakty/szukaj/',
       queryParameters: {'q': q, 'limit': 30},
     );
-    return (r.data as List)
+    final list0 = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list0
         .map((e) => KontrahentModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -43,7 +37,8 @@ class PodwykonawcyApi {
       '/podwykonawcy/',
       queryParameters: {'budowa': budowaId},
     );
-    return (r.data as List)
+    final list1 = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list1
         .map((e) => PowiazanieModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }

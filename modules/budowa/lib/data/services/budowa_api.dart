@@ -1,19 +1,10 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/budowa_model.dart';
 
-// TODO: move to env config / core settings
-const _budkonBase = 'http://127.0.0.1:8001/api/v1';
-
-final _dioProvider = Provider((ref) => Dio(BaseOptions(
-      baseUrl: _budkonBase,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 15),
-      contentType: 'application/json',
-    )));
-
-final budowaApiProvider = Provider((ref) => BudowaApi(ref.watch(_dioProvider)));
+final budowaApiProvider = Provider((ref) => BudowaApi(ref.watch(budkonDioProvider)));
 
 class BudowaApi {
   BudowaApi(this._dio);

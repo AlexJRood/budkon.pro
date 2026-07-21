@@ -1,14 +1,8 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 
 class PrzetargiApi {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://127.0.0.1:8001/api/v1',
-      headers: {'X-Company-Id': '1'},
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 30),
-    ),
-  );
+  final Dio _dio = budkonDio(receiveTimeout: const Duration(seconds: 30));
 
   // ------------------------------------------------------------------ //
   // Przetargi                                                            //
@@ -25,7 +19,8 @@ class PrzetargiApi {
     if (q != null && q.isNotEmpty) params['q'] = q;
 
     final resp = await _dio.get('/przetargi/', queryParameters: params);
-    return List<Map<String, dynamic>>.from(resp.data as List);
+    final raw = resp.data is Map ? (resp.data['results'] as List? ?? []) : resp.data as List? ?? [];
+    return List<Map<String, dynamic>>.from(raw);
   }
 
   Future<Map<String, dynamic>> getPrzetarg(int id) async {
@@ -73,7 +68,8 @@ class PrzetargiApi {
 
   Future<List<Map<String, dynamic>>> emmaInbox() async {
     final resp = await _dio.get('/emma-inbox/');
-    return List<Map<String, dynamic>>.from(resp.data as List);
+    final raw = resp.data is Map ? (resp.data['results'] as List? ?? []) : resp.data as List? ?? [];
+    return List<Map<String, dynamic>>.from(raw);
   }
 
   Future<void> emmaAkceptuj(int id) =>
@@ -88,7 +84,8 @@ class PrzetargiApi {
 
   Future<List<Map<String, dynamic>>> listSubskrypcje() async {
     final resp = await _dio.get('/przetargi-subskrypcje/');
-    return List<Map<String, dynamic>>.from(resp.data as List);
+    final raw = resp.data is Map ? (resp.data['results'] as List? ?? []) : resp.data as List? ?? [];
+    return List<Map<String, dynamic>>.from(raw);
   }
 
   Future<Map<String, dynamic>> createSubskrypcja(

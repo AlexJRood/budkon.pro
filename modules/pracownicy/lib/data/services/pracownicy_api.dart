@@ -1,10 +1,8 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import '../models/pracownicy_model.dart';
 
-final _dio = Dio(BaseOptions(
-  baseUrl: 'http://127.0.0.1:8001/api/v1',
-  headers: {'X-Company-Id': '1'},
-));
+final _dio = budkonDio();
 
 class PracownicyApi {
   Future<List<PracownikListItem>> lista({String? q, String? specjalizacja}) async {
@@ -13,7 +11,8 @@ class PracownicyApi {
       if (specjalizacja != null) 'specjalizacja': specjalizacja,
       'aktywni': '1',
     });
-    return (r.data as List)
+    final list = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list
         .map((e) => PracownikListItem.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -36,7 +35,8 @@ class PracownicyApi {
   Future<List<PracownikDetail>> doBudowy(int budowaId) async {
     final r = await _dio.get('/pracownicy/do-budowy/',
         queryParameters: {'budowa_id': budowaId});
-    return (r.data as List)
+    final dlist = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return dlist
         .map((e) => PracownikDetail.fromJson(e as Map<String, dynamic>))
         .toList();
   }

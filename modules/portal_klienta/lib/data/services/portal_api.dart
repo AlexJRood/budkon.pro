@@ -1,18 +1,10 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/portal_model.dart';
 
-const _budkonBase = 'http://127.0.0.1:8001/api/v1';
-
-final _dioProvider = Provider((ref) => Dio(BaseOptions(
-      baseUrl: _budkonBase,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 15),
-      contentType: 'application/json',
-    )));
-
-final portalApiProvider = Provider((ref) => PortalApi(ref.watch(_dioProvider)));
+final portalApiProvider = Provider((ref) => PortalApi(ref.watch(budkonDioProvider)));
 
 class PortalApi {
   PortalApi(this._dio);

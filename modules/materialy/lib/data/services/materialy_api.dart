@@ -1,10 +1,8 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 import '../models/materialy_model.dart';
 
-final _dio = Dio(BaseOptions(
-  baseUrl: 'http://127.0.0.1:8001/api/v1',
-  headers: {'X-Company-Id': '1'},
-));
+final _dio = budkonDio();
 
 class MaterialyApi {
   // ---- Materiały (katalog) ------------------------------------------------
@@ -17,7 +15,8 @@ class MaterialyApi {
       if (q != null && q.isNotEmpty) 'q': q,
       if (kategoria != null) 'kategoria': kategoria,
     });
-    return (r.data as List)
+    final list = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list
         .map((e) => MaterialModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -58,7 +57,8 @@ class MaterialyApi {
       '/materialy/$materialId/historia/',
       queryParameters: {'dni': dni},
     );
-    return (r.data as List)
+    final hlist = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return hlist
         .map((e) => HistoriaCenyModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -80,7 +80,8 @@ class MaterialyApi {
       if (kosztorysId != null) 'kosztorys': kosztorysId,
       if (status != null) 'status': status,
     });
-    return (r.data as List)
+    final plist = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return plist
         .map((e) =>
             PozycjaZamowieniaModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -114,7 +115,8 @@ class MaterialyApi {
       'kosztorys_id': kosztorysId,
       'pozycje': pozycje,
     });
-    return (r.data as List)
+    final ilist = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return ilist
         .map((e) =>
             PozycjaZamowieniaModel.fromJson(e as Map<String, dynamic>))
         .toList();

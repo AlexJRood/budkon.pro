@@ -1,10 +1,9 @@
+﻿import 'package:core/platform/budkon_api_client.dart';
+import 'package:core/platform/url.dart';
 import 'package:dio/dio.dart';
 import '../models/oferty_model.dart';
 
-final _dio = Dio(BaseOptions(
-  baseUrl: 'http://127.0.0.1:8001/api/v1',
-  headers: {'X-Company-Id': '1'},
-));
+final _dio = budkonDio();
 
 class OfertyApi {
   Future<List<OfertyListItem>> lista({int? budowaId, String? status}) async {
@@ -12,7 +11,8 @@ class OfertyApi {
       if (budowaId != null) 'budowa': budowaId,
       if (status != null) 'status': status,
     });
-    return (r.data as List)
+    final list = r.data is Map ? (r.data['results'] as List? ?? []) : r.data as List? ?? [];
+    return list
         .map((e) => OfertyListItem.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -48,7 +48,7 @@ class OfertyApi {
 
   /// Zwraca URL do PDF (inline view lub download).
   String pdfUrl(int id, {bool download = false}) =>
-      'http://127.0.0.1:8001/api/v1/oferty/$id/pdf/'
+      '${URLs.baseUrl}/api/v1/oferty/$id/pdf/'
       '?X-Company-Id=1${download ? '&download=1' : ''}';
 
   /// Wyzwala (re)generowanie PDF na backendzie.
