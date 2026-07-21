@@ -1,3 +1,4 @@
+import 'package:core/user/user/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/budowa_model.dart';
 import '../services/budowa_api.dart';
@@ -58,9 +59,15 @@ class BudowaFormNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       final api = _ref.read(budowaApiProvider);
-      final result = budowa.id == 0
-          ? await api.create(budowa)
-          : await api.update(budowa.id, budowa.toJson());
+      BudowaModel result;
+      if (budowa.id == 0) {
+        final user = await _ref.read(userProvider.future);
+        final companyId = user?.company.isNotEmpty == true ? user!.company.first.id : null;
+        final createdBy = int.tryParse(user?.userId ?? '');
+        result = await api.create(budowa, companyId: companyId, createdBy: createdBy);
+      } else {
+        result = await api.update(budowa.id, budowa.toJson());
+      }
       _ref.read(budowaListProvider.notifier).updateLocal(result);
       state = const AsyncValue.data(null);
       return result;

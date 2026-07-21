@@ -25,8 +25,13 @@ class BudowaApi {
     return BudowaModel.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<BudowaModel> create(BudowaModel budowa) async {
-    final resp = await _dio.post('/budowy/', data: jsonEncode(budowa.toJson()), options: _opts);
+  Future<BudowaModel> create(BudowaModel budowa, {int? companyId, int? createdBy}) async {
+    final payload = {
+      ...budowa.toJson(),
+      if (companyId != null) 'company_id': companyId,
+      if (createdBy != null) 'created_by': createdBy,
+    };
+    final resp = await _dio.post('/budowy/', data: jsonEncode(payload), options: _opts);
     return BudowaModel.fromJson(resp.data as Map<String, dynamic>);
   }
 

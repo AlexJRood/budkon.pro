@@ -168,9 +168,17 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
       dataPlanowanegZakonczenia: _dataZakonczenia,
     );
     final result = await ref.read(budowaFormProvider.notifier).save(budowa);
-    if (result != null && mounted) {
+    if (!mounted) return;
+    if (result != null) {
       ref.invalidate(budowaListProvider);
       ref.read(navigationService).beamPop();
+    } else {
+      final err = ref.read(budowaFormProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Błąd: ${err ?? "Nie udało się zapisać"}'),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ));
     }
   }
 
