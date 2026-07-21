@@ -1,10 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/faktury_model.dart';
 import '../../data/services/faktury_api.dart';
 import '../../data/providers/faktury_provider.dart';
-import '../detail/faktura_detail_screen.dart';
 
 /// Prosty formularz nowej faktury — nabywca + VAT + termin + pozycje ręczne.
 /// Dla tworzenia z oferty używaj FakturaFormScreen(ofertaId: X).
@@ -19,6 +21,7 @@ class FakturaFormScreen extends ConsumerStatefulWidget {
 }
 
 class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _formKey = GlobalKey<FormState>();
   final _nabywcaCtrl = TextEditingController();
   final _nipCtrl = TextEditingController();
@@ -48,7 +51,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
 
-    InputDecoration _dec(String label) => InputDecoration(
+    InputDecoration dec(String label) => InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
       filled: true,
@@ -60,15 +63,10 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
       isDense: true,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text(widget.ofertaId != null ? 'FV z oferty' : 'Nowa faktura',
-            style: TextStyle(color: theme.textColor)),
-      ),
-      body: Form(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -76,7 +74,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
             _SectionLabel('Wystawca', theme: theme),
             TextFormField(
               controller: _wystawcaCtrl,
-              decoration: _dec('Nazwa firmy wystawcy *'),
+              decoration: dec('Nazwa firmy wystawcy *'),
               style: TextStyle(color: theme.textColor),
               validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
             ),
@@ -85,7 +83,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
               Expanded(
                 child: TextFormField(
                   controller: _wystawcaNipCtrl,
-                  decoration: _dec('NIP'),
+                  decoration: dec('NIP'),
                   style: TextStyle(color: theme.textColor),
                 ),
               ),
@@ -93,7 +91,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
               Expanded(
                 child: TextFormField(
                   controller: _wystawcaKontoCtrl,
-                  decoration: _dec('Nr konta (IBAN)'),
+                  decoration: dec('Nr konta (IBAN)'),
                   style: TextStyle(color: theme.textColor),
                 ),
               ),
@@ -103,7 +101,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
             _SectionLabel('Nabywca', theme: theme),
             TextFormField(
               controller: _nabywcaCtrl,
-              decoration: _dec('Nazwa nabywcy *'),
+              decoration: dec('Nazwa nabywcy *'),
               style: TextStyle(color: theme.textColor),
               validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
             ),
@@ -112,7 +110,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
               Expanded(
                 child: TextFormField(
                   controller: _nipCtrl,
-                  decoration: _dec('NIP nabywcy'),
+                  decoration: dec('NIP nabywcy'),
                   style: TextStyle(color: theme.textColor),
                 ),
               ),
@@ -122,7 +120,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
                   value: _stawkaVat,
                   dropdownColor: theme.popupcontainercolor,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('VAT %'),
+                  decoration: dec('VAT %'),
                   items: [0, 5, 8, 23]
                       .map((v) => DropdownMenuItem(
                           value: v, child: Text('$v%', style: TextStyle(color: theme.textColor))))
@@ -140,7 +138,7 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
                   value: _metoda,
                   dropdownColor: theme.popupcontainercolor,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('Metoda'),
+                  decoration: dec('Metoda'),
                   items: const [
                     DropdownMenuItem(value: 'przelew', child: Text('Przelew')),
                     DropdownMenuItem(value: 'gotowka', child: Text('Gotówka')),
@@ -253,11 +251,8 @@ class _FakturaFormScreenState extends ConsumerState<FakturaFormScreen> {
       ref.read(fakturyProvider.notifier).load();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (_) => FakturaDetailScreen(fakturaId: fv.id)),
-        );
+        ref.read(navigationService).beamPop();
+        ref.read(navigationService).pushNamedScreen('/faktury/${fv.id}');
       }
     } catch (e) {
       setState(() => _saving = false);

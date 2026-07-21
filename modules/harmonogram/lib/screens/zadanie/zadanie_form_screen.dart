@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/harmonogram_model.dart';
 import '../../data/providers/harmonogram_provider.dart';
 
@@ -23,6 +26,7 @@ class ZadanieFormScreen extends ConsumerStatefulWidget {
 }
 
 class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _formKey = GlobalKey<FormState>();
   final _nazwaCtrl = TextEditingController();
   final _opisCtrl = TextEditingController();
@@ -83,7 +87,10 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
     };
     final result = await ref.read(zadanieFormProvider.notifier).zapisz(
       budowaId: widget.budowaId, zadanieId: widget.zadanieId, payload: payload);
-    if (result != null && mounted) Navigator.pop(context, true);
+    if (result != null && mounted) {
+      ref.invalidate(timelineProvider(widget.budowaId));
+      ref.read(navigationService).beamPop();
+    }
   }
 
   @override
@@ -91,7 +98,7 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
     final theme = ref.read(themeColorsProvider);
     final formState = ref.watch(zadanieFormProvider);
 
-    InputDecoration _dec(String label) => InputDecoration(
+    InputDecoration dec(String label) => InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
       filled: true,
@@ -103,26 +110,20 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
       isDense: true,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text(widget.zadanieId == null ? 'Nowe zadanie' : 'Edytuj zadanie',
-            style: TextStyle(color: theme.textColor)),
-        actions: [
-          if (formState.isLoading)
-            Padding(padding: const EdgeInsets.all(16),
-                child: SizedBox.square(dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor)))
-          else
-            TextButton(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: formState.isLoading
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: theme.themeColor)))
+          : TextButton(
               onPressed: _submit,
               child: Text('Zapisz', style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
             ),
-        ],
-      ),
-      body: Form(
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -130,7 +131,7 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
             TextFormField(
               controller: _nazwaCtrl,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Nazwa zadania'),
+              decoration: dec('Nazwa zadania'),
               validator: (v) => (v == null || v.trim().isEmpty) ? 'Wymagane' : null,
             ),
             const SizedBox(height: 16),
@@ -139,7 +140,7 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
               controller: _opisCtrl,
               maxLines: 3,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Opis (opcjonalny)'),
+              decoration: dec('Opis (opcjonalny)'),
             ),
             const SizedBox(height: 16),
 
@@ -147,7 +148,7 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
               value: _status,
               dropdownColor: theme.popupcontainercolor,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Status'),
+              decoration: dec('Status'),
               items: StatusZadania.values.map((s) =>
                 DropdownMenuItem(value: s, child: Text(s.label, style: TextStyle(color: theme.textColor)))).toList(),
               onChanged: (v) => setState(() => _status = v!),
@@ -166,14 +167,14 @@ class _ZadanieFormScreenState extends ConsumerState<ZadanieFormScreen> {
                 controller: _dniCtrl,
                 keyboardType: TextInputType.number,
                 style: TextStyle(color: theme.textColor),
-                decoration: _dec('Czas trwania (dni)'),
+                decoration: dec('Czas trwania (dni)'),
               )),
               const SizedBox(width: 12),
               Expanded(child: TextFormField(
                 controller: _budzetCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 style: TextStyle(color: theme.textColor),
-                decoration: _dec('Budżet (PLN)'),
+                decoration: dec('Budżet (PLN)'),
               )),
             ]),
 

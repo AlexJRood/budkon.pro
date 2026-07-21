@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/podwykonawcy_model.dart';
 import '../../data/providers/podwykonawcy_provider.dart';
@@ -16,33 +19,28 @@ class KontrahentDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final k = powiazanie.kontrahent;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(k.displayName, style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          PopupMenuButton<String>(
-            iconColor: theme.textColor,
-            onSelected: (v) async {
-              if (v == 'status') await _zmienStatus(context, ref);
-              else if (v == 'usun') await _usunPowiazanie(context, ref);
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'status',
-                  child: ListTile(leading: Icon(Icons.swap_horiz), title: Text('Zmień status'), dense: true)),
-              const PopupMenuItem(value: 'usun',
-                  child: ListTile(leading: Icon(Icons.link_off, color: Colors.red),
-                      title: Text('Usuń z budowy', style: TextStyle(color: Colors.red)), dense: true)),
-            ],
-          ),
-        ],
-      ),
-      body: ListView(
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: PopupMenuButton<String>(
+          iconColor: theme.textColor,
+          onSelected: (v) async {
+            if (v == 'status') await _zmienStatus(context, ref);
+            else if (v == 'usun') await _usunPowiazanie(context, ref);
+          },
+          itemBuilder: (_) => [
+            const PopupMenuItem(value: 'status',
+                child: ListTile(leading: Icon(Icons.swap_horiz), title: Text('Zmień status'), dense: true)),
+            const PopupMenuItem(value: 'usun',
+                child: ListTile(leading: Icon(Icons.link_off, color: Colors.red),
+                    title: Text('Usuń z budowy', style: TextStyle(color: Colors.red)), dense: true)),
+          ],
+        ),
+      childPc: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _ContactCard(kontrahent: k, theme: theme),
@@ -102,7 +100,7 @@ class KontrahentDetailScreen extends ConsumerWidget {
     try {
       final updated = await podwykonawcyApi.zmienStatus(powiazanie.id, newStatus);
       ref.read(powiazaniaProvider(budowaId).notifier).update(updated);
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) ref.read(navigationService).beamPop();
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
     }
@@ -128,7 +126,7 @@ class KontrahentDetailScreen extends ConsumerWidget {
     try {
       await podwykonawcyApi.usunPowiazanie(powiazanie.id);
       ref.read(powiazaniaProvider(budowaId).notifier).remove(powiazanie.id);
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) ref.read(navigationService).beamPop();
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
     }

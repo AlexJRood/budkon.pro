@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 
 import '../../data/models/przetarg_model.dart';
 import '../../data/providers/emma_inbox_provider.dart';
@@ -17,6 +20,7 @@ class PrzetargiListScreen extends ConsumerStatefulWidget {
 }
 
 class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _searchCtrl = TextEditingController();
 
   @override
@@ -32,115 +36,125 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
     final filter = ref.watch(przetargiFilterProvider);
     final fetchState = ref.watch(fetchProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Przetargi', style: TextStyle(color: theme.textColor)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.tune_outlined, color: theme.textColor),
-            tooltip: 'Subskrypcje',
-            onPressed: () => Navigator.of(context).pushNamed('/przetargi/subskrypcje'),
-          ),
-          _FetchButton(fetchState: fetchState),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: SearchBar(
-              controller: _searchCtrl,
-              hintText: 'Szukaj przetargu...',
-              leading: const Icon(Icons.search),
-              trailing: [
-                if (_searchCtrl.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchCtrl.clear();
-                      ref.read(przetargiFilterProvider.notifier).state =
-                          filter.copyWith(q: null);
-                      ref.read(przetargiListProvider.notifier).load(
-                            filter: filter.copyWith(q: null),
-                          );
-                    },
-                  ),
-              ],
-              onChanged: (q) {
-                final f = filter.copyWith(q: q.isEmpty ? null : q);
-                ref.read(przetargiFilterProvider.notifier).state = f;
-                ref.read(przetargiListProvider.notifier).load(filter: f);
-              },
-            ),
-          ),
-
-          _StatusFilterBar(
-            current: filter.status,
-            theme: theme,
-            onChanged: (s) {
-              final f = filter.copyWith(status: s);
+    final content = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: SearchBar(
+            controller: _searchCtrl,
+            hintText: 'Szukaj przetargu...',
+            leading: const Icon(Icons.search),
+            trailing: [
+              if (_searchCtrl.text.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchCtrl.clear();
+                    ref.read(przetargiFilterProvider.notifier).state =
+                        filter.copyWith(q: null);
+                    ref.read(przetargiListProvider.notifier).load(
+                          filter: filter.copyWith(q: null),
+                        );
+                  },
+                ),
+            ],
+            onChanged: (q) {
+              final f = filter.copyWith(q: q.isEmpty ? null : q);
               ref.read(przetargiFilterProvider.notifier).state = f;
               ref.read(przetargiListProvider.notifier).load(filter: f);
             },
           ),
+        ),
 
-          Expanded(
-            child: listState.when(
-              loading: () =>
-                  Center(child: CircularProgressIndicator(color: theme.themeColor)),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 40),
-                    const SizedBox(height: 8),
-                    Text('Błąd: $e', style: TextStyle(color: theme.textColor)),
-                    TextButton(
-                      onPressed: () =>
-                          ref.read(przetargiListProvider.notifier).load(),
-                      child: Text('Spróbuj ponownie',
-                          style: TextStyle(color: theme.themeColor)),
-                    ),
-                  ],
-                ),
+        _StatusFilterBar(
+          current: filter.status,
+          theme: theme,
+          onChanged: (s) {
+            final f = filter.copyWith(status: s);
+            ref.read(przetargiFilterProvider.notifier).state = f;
+            ref.read(przetargiListProvider.notifier).load(filter: f);
+          },
+        ),
+
+        Expanded(
+          child: listState.when(
+            loading: () =>
+                Center(child: CircularProgressIndicator(color: theme.themeColor)),
+            error: (e, _) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  const SizedBox(height: 8),
+                  Text('Błąd: $e', style: TextStyle(color: theme.textColor)),
+                  TextButton(
+                    onPressed: () =>
+                        ref.read(przetargiListProvider.notifier).load(),
+                    child: Text('Spróbuj ponownie',
+                        style: TextStyle(color: theme.themeColor)),
+                  ),
+                ],
               ),
-              data: (przetargi) => przetargi.isEmpty
-                  ? _EmptyState(
-                      theme: theme,
-                      onFetch: () => ref
-                          .read(fetchProvider.notifier)
-                          .fetch(ref.read(przetargiListProvider.notifier)))
-                  : RefreshIndicator(
-                      color: theme.themeColor,
-                      onRefresh: () async {
-                        await ref.read(przetargiListProvider.notifier).load();
-                        ref.invalidate(emmaInboxProvider);
+            ),
+            data: (przetargi) => przetargi.isEmpty
+                ? _EmptyState(
+                    theme: theme,
+                    onFetch: () => ref
+                        .read(fetchProvider.notifier)
+                        .fetch(ref.read(przetargiListProvider.notifier)))
+                : RefreshIndicator(
+                    color: theme.themeColor,
+                    onRefresh: () async {
+                      await ref.read(przetargiListProvider.notifier).load();
+                      ref.invalidate(emmaInboxProvider);
+                    },
+                    child: ListView.builder(
+                      itemCount: przetargi.length + 1,
+                      itemBuilder: (ctx, i) {
+                        if (i == 0) return const EmmaInboxWidget();
+                        final p = przetargi[i - 1];
+                        return PrzetargCard(
+                          przetarg: p,
+                          onTap: () => ref.read(navigationService)
+                              .pushNamedScreen('/przetargi/${p.id}'),
+                        );
                       },
-                      child: ListView.builder(
-                        itemCount: przetargi.length + 1,
-                        itemBuilder: (ctx, i) {
-                          if (i == 0) return const EmmaInboxWidget();
-                          final p = przetargi[i - 1];
-                          return PrzetargCard(
-                            przetarg: p,
-                            onTap: () => Navigator.of(context)
-                                .pushNamed('/przetargi/${p.id}'),
-                          );
-                        },
-                      ),
                     ),
+                  ),
+          ),
+        ),
+      ],
+    );
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(Icons.tune_outlined, color: theme.textColor),
+            tooltip: 'Subskrypcje',
+            onPressed: () => ref.read(navigationService).pushNamedScreen('/przetargi/subskrypcje'),
+          ),
+          _FetchButton(fetchState: fetchState),
+        ],
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Dodaj ręcznie', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => _showAddManual(context),
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add, color: theme.buttonTextColor),
-        label: Text('Dodaj ręcznie', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () => _showAddManual(context),
       ),
     );
   }

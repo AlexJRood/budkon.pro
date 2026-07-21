@@ -1,13 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/kosztorys_model.dart';
 import '../../data/providers/kosztorysy_provider.dart';
 import '../../widgets/kosztorys_status_badge.dart';
 import '../../widgets/wartosc_chip.dart';
-import '../detail/kosztorys_detail_screen.dart';
-import '../form/kosztorys_form_screen.dart';
 
 class KosztorysyListScreen extends ConsumerWidget {
   const KosztorysyListScreen({super.key, this.budowaId});
@@ -15,61 +16,68 @@ class KosztorysyListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(kosztorysyListProvider(budowaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          budowaId != null ? 'Kosztorysy budowy' : 'Wszystkie kosztorysy',
-          style: TextStyle(color: theme.textColor),
-        ),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
+    final content = state.when(
+      loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      error: (e, _) => _ErrorView(
+        error: e,
+        theme: theme,
+        onRetry: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
+      ),
+      data: (lista) => lista.isEmpty
+          ? _EmptyState(
+              onAdd: () => ref.read(navigationService).pushNamedScreen(
+                    '/kosztorysy/new',
+                    data: {'budowaId': budowaId},
+                  ),
+              theme: theme)
+          : RefreshIndicator(
+              onRefresh: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
+              color: theme.themeColor,
+              child: ListView.separated(
+                padding: EdgeInsets.all(16.w),
+                itemCount: lista.length,
+                separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                itemBuilder: (_, i) => _KosztorysCard(
+                  item: lista[i],
+                  onTap: () => ref
+                      .read(navigationService)
+                      .pushNamedScreen('/kosztorysy/${lista[i].id}'),
+                ),
+              ),
+            ),
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              onPressed: () => ref.read(navigationService).pushNamedScreen(
+                    '/kosztorysy/new',
+                    data: {'budowaId': budowaId},
+                  ),
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Nowy kosztorys', style: TextStyle(color: theme.buttonTextColor)),
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openForm(context, ref, null),
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add, color: theme.buttonTextColor),
-        label: Text('Nowy kosztorys', style: TextStyle(color: theme.buttonTextColor)),
-      ),
-      body: state.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => _ErrorView(
-          error: e,
-          theme: theme,
-          onRetry: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
-        ),
-        data: (lista) => lista.isEmpty
-            ? _EmptyState(onAdd: () => _openForm(context, ref, null), theme: theme)
-            : RefreshIndicator(
-                onRefresh: () => ref.read(kosztorysyListProvider(budowaId).notifier).fetch(),
-                color: theme.themeColor,
-                child: ListView.separated(
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: lista.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                  itemBuilder: (_, i) => _KosztorysCard(item: lista[i], onTap: () => _openDetail(context, lista[i].id)),
-                ),
-              ),
-      ),
     );
-  }
-
-  void _openDetail(BuildContext context, int id) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => KosztorysDetailScreen(kosztorysId: id)));
-  }
-
-  void _openForm(BuildContext context, WidgetRef ref, KosztorysListItemModel? existing) {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => KosztorysFormScreen(existing: existing, defaultBudowaId: budowaId)));
   }
 }
 
@@ -99,7 +107,10 @@ class _KosztorysCard extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(item.nazwa,
-                        style: TextStyle(color: theme.textColor, fontSize: 15, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: theme.textColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600)),
                   ),
                   KosztorysStatusBadge(status: item.status),
                 ],
@@ -108,7 +119,8 @@ class _KosztorysCard extends ConsumerWidget {
                 SizedBox(height: 4.h),
                 Text(item.opis,
                     style: TextStyle(color: theme.textColor.withAlpha(140), fontSize: 12),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
               ],
               SizedBox(height: 12.h),
               Row(
@@ -143,9 +155,13 @@ class _ErrorView extends StatelessWidget {
         children: [
           Icon(Icons.cloud_off, size: 48, color: theme.textColor.withAlpha(80)),
           const SizedBox(height: 12),
-          Text('Błąd połączenia', style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Błąd połączenia',
+              style: TextStyle(
+                  color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('$error', style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12), textAlign: TextAlign.center),
+          Text('$error',
+              style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12),
+              textAlign: TextAlign.center),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: onRetry,
@@ -171,10 +187,13 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.calculate_outlined, size: 64, color: theme.textColor.withAlpha(80)),
           SizedBox(height: 16.h),
-          Text('Brak kosztorysów', style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Brak kosztorysów',
+              style: TextStyle(
+                  color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
           SizedBox(height: 8.h),
           Text('Utwórz kosztorys ręcznie lub wygeneruj przez AI',
-              style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 13), textAlign: TextAlign.center),
+              style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 13),
+              textAlign: TextAlign.center),
           SizedBox(height: 24.h),
           FilledButton.icon(
             onPressed: onAdd,

@@ -1,7 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/portal_model.dart';
+import '../../data/providers/portal_provider.dart';
 import '../../data/services/portal_api.dart';
 
 class PortalFormScreen extends ConsumerStatefulWidget {
@@ -14,6 +18,7 @@ class PortalFormScreen extends ConsumerStatefulWidget {
 }
 
 class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _formKey = GlobalKey<FormState>();
   final _nazwaCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -38,7 +43,7 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
 
-    InputDecoration _dec(String label) => InputDecoration(
+    InputDecoration dec(String label) => InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
       filled: true,
@@ -49,14 +54,10 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
           borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Nowy portal klienta', style: TextStyle(color: theme.textColor)),
-      ),
-      body: Form(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -65,7 +66,7 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
             const SizedBox(height: 10),
             TextFormField(
               controller: _nazwaCtrl,
-              decoration: _dec('Imię i nazwisko / Firma *'),
+              decoration: dec('Imię i nazwisko / Firma *'),
               style: TextStyle(color: theme.textColor),
               validator: (v) => v == null || v.trim().isEmpty ? 'Wymagane' : null,
               textCapitalization: TextCapitalization.words,
@@ -73,14 +74,14 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _emailCtrl,
-              decoration: _dec('Email (opcjonalnie)'),
+              decoration: dec('Email (opcjonalnie)'),
               style: TextStyle(color: theme.textColor),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _telefonCtrl,
-              decoration: _dec('Telefon (opcjonalnie)'),
+              decoration: dec('Telefon (opcjonalnie)'),
               style: TextStyle(color: theme.textColor),
               keyboardType: TextInputType.phone,
             ),
@@ -199,8 +200,9 @@ class _PortalFormScreenState extends ConsumerState<PortalFormScreen> {
             : null,
       );
 
-      final result = await ref.read(portalApiProvider).create(portal);
-      if (mounted) Navigator.pop(context, result);
+      await ref.read(portalApiProvider).create(portal);
+      ref.invalidate(portalListProvider(widget.budowaId));
+      if (mounted) ref.read(navigationService).beamPop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)

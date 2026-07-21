@@ -1,7 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/pracownicy_model.dart';
+import '../../data/providers/pracownicy_provider.dart';
 import '../../data/services/pracownicy_api.dart';
 
 class NowyPracownikScreen extends ConsumerStatefulWidget {
@@ -13,6 +17,7 @@ class NowyPracownikScreen extends ConsumerStatefulWidget {
 }
 
 class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _formKey = GlobalKey<FormState>();
   final _imieCtrl = TextEditingController();
   final _nazwiskoCtrl = TextEditingController();
@@ -37,7 +42,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
 
-    InputDecoration _dec(String label, {Widget? prefix, String? suffix, String? helper}) =>
+    InputDecoration dec(String label, {Widget? prefix, String? suffix, String? helper}) =>
         InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
@@ -53,15 +58,10 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
           isDense: true,
         );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Nowy pracownik',
-            style: TextStyle(color: theme.textColor)),
-      ),
-      body: Form(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -71,7 +71,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
                 child: TextFormField(
                   controller: _imieCtrl,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('Imię *'),
+                  decoration: dec('Imię *'),
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Wymagane' : null,
                 ),
@@ -81,7 +81,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
                 child: TextFormField(
                   controller: _nazwiskoCtrl,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('Nazwisko *'),
+                  decoration: dec('Nazwisko *'),
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Wymagane' : null,
                 ),
@@ -92,7 +92,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
               controller: _telefonCtrl,
               keyboardType: TextInputType.phone,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Telefon',
+              decoration: dec('Telefon',
                   prefix: Icon(Icons.phone_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -101,7 +101,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('E-mail (opcjonalnie)',
+              decoration: dec('E-mail (opcjonalnie)',
                   prefix: Icon(Icons.email_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -111,7 +111,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
               value: _spec,
               dropdownColor: theme.popupcontainercolor,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Główna specjalizacja'),
+              decoration: dec('Główna specjalizacja'),
               items: Specjalizacja.values
                   .map((s) => DropdownMenuItem(
                         value: s,
@@ -126,7 +126,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
               value: _typUmowy,
               dropdownColor: theme.popupcontainercolor,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Typ umowy'),
+              decoration: dec('Typ umowy'),
               items: const [
                 DropdownMenuItem(
                     value: 'umowa_o_prace', child: Text('Umowa o pracę')),
@@ -146,7 +146,7 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               style: TextStyle(color: theme.textColor),
-              decoration: _dec(
+              decoration: dec(
                 'Stawka godzinowa PLN/h (opcjonalnie)',
                 suffix: 'PLN/h',
                 helper: 'Można dodać później w profilu',
@@ -197,7 +197,8 @@ class _NowyPracownikScreenState extends ConsumerState<NowyPracownikScreen> {
         );
       }
 
-      if (mounted) Navigator.pop(context, true);
+      ref.invalidate(pracownicyProvider);
+      if (mounted) ref.read(navigationService).beamPop();
     } catch (e) {
       setState(() => _saving = false);
       if (mounted) {

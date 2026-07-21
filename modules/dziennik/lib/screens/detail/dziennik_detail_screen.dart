@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/dziennik_model.dart';
 import '../../data/providers/dziennik_provider.dart';
@@ -22,42 +25,37 @@ class DziennikDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(wpisDetailProvider(wpisId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Wpis dziennika', style: TextStyle(color: theme.textColor)),
-        actions: [
-          async.whenOrNull(
-            data: (wpis) => IconButton(
-              icon: Icon(Icons.edit_outlined, color: theme.textColor),
-              onPressed: () async {
-                final result = await Navigator.pushNamed(
-                  context,
-                  '/dziennik/form',
-                  arguments: {
-                    'budowaId': budowaId,
-                    'budowaNazwa': budowaNazwa,
-                    'wpisId': wpisId,
-                  },
-                );
-                if (result == true) {
-                  ref.invalidate(wpisDetailProvider(wpisId));
-                  ref.read(dziennikListProvider(budowaId).notifier).load();
-                }
+    final editButton = async.whenOrNull(
+      data: (wpis) => IconButton(
+        icon: Icon(Icons.edit_outlined, color: theme.textColor),
+        onPressed: () => ref.read(navigationService).pushNamedScreen(
+              '/dziennik/form',
+              data: {
+                'budowaId': budowaId,
+                'budowaNazwa': budowaNazwa,
+                'wpisId': wpisId,
               },
             ),
-          ) ?? const SizedBox.shrink(),
-        ],
       ),
-      body: async.when(
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: editButton,
+      childPc: async.when(
         loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-        data: (wpis) => _WpisBody(wpis: wpis, budowaId: budowaId, budowaNazwa: budowaNazwa, theme: theme),
+        error: (e, _) =>
+            Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+        data: (wpis) => _WpisBody(
+            wpis: wpis,
+            budowaId: budowaId,
+            budowaNazwa: budowaNazwa,
+            theme: theme),
       ),
     );
   }
@@ -88,10 +86,14 @@ class _WpisBody extends StatelessWidget {
             Expanded(
               child: Text(
                 _fmt.format(wpis.data),
-                style: TextStyle(color: theme.textColor, fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                    color: theme.textColor, fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
-            PogodaBadge(pogoda: wpis.pogoda, temperatura: wpis.temperatura, showLabel: true),
+            PogodaBadge(
+                pogoda: wpis.pogoda,
+                temperatura: wpis.temperatura,
+                showLabel: true),
           ],
         ),
 
@@ -103,7 +105,8 @@ class _WpisBody extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 'Pogoda uzupełniona automatycznie',
-                style: TextStyle(fontSize: 11, color: theme.textColor.withAlpha(120)),
+                style:
+                    TextStyle(fontSize: 11, color: theme.textColor.withAlpha(120)),
               ),
             ],
           ),
@@ -125,7 +128,11 @@ class _WpisBody extends StatelessWidget {
         Divider(height: 32, color: theme.bordercolor.withAlpha(60)),
 
         if (wpis.etapNazwa != null) ...[
-          _RowInfo(icon: Icons.construction, label: 'Etap', value: wpis.etapNazwa!, theme: theme),
+          _RowInfo(
+              icon: Icons.construction,
+              label: 'Etap',
+              value: wpis.etapNazwa!,
+              theme: theme),
           const SizedBox(height: 12),
         ],
 
@@ -145,7 +152,8 @@ class _WpisBody extends StatelessWidget {
           children: [
             _InfoBadge('👷 ${wpis.liczbaPracownikow} os.', theme),
             const SizedBox(width: 8),
-            _InfoBadge('⏱ ${wpis.godzinyPracy.toStringAsFixed(0)} h', theme),
+            _InfoBadge(
+                '⏱ ${wpis.godzinyPracy.toStringAsFixed(0)} h', theme),
           ],
         ),
 
@@ -158,12 +166,15 @@ class _WpisBody extends StatelessWidget {
                 radius: 16,
                 backgroundColor: theme.themeColor.withAlpha(40),
                 child: Text(o.imieNazwisko[0],
-                    style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: theme.themeColor, fontWeight: FontWeight.w700)),
               ),
               title: Text(o.imieNazwisko, style: TextStyle(color: theme.textColor)),
-              subtitle: Text(o.rola, style: TextStyle(color: theme.textColor.withAlpha(150))),
+              subtitle: Text(o.rola,
+                  style: TextStyle(color: theme.textColor.withAlpha(150))),
               trailing: Text('${o.godziny.round()} h',
-                  style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -187,7 +198,8 @@ class _WpisBody extends StatelessWidget {
                         ? Image.network(z.url, fit: BoxFit.cover)
                         : Container(
                             color: theme.secondaryWidgetColor,
-                            child: Icon(Icons.photo, color: theme.textColor.withAlpha(120)),
+                            child: Icon(Icons.photo,
+                                color: theme.textColor.withAlpha(120)),
                           ),
                   ),
                 );
@@ -212,7 +224,8 @@ class _SectionLabel extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(
           text,
-          style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700, fontSize: 12),
+          style: TextStyle(
+              color: theme.themeColor, fontWeight: FontWeight.w700, fontSize: 12),
         ),
       );
 }
@@ -239,14 +252,20 @@ class _RowInfo extends StatelessWidget {
   final String label;
   final String value;
   final ThemeColors theme;
-  const _RowInfo({required this.icon, required this.label, required this.value, required this.theme});
+  const _RowInfo(
+      {required this.icon,
+      required this.label,
+      required this.value,
+      required this.theme});
 
   @override
   Widget build(BuildContext context) => Row(
         children: [
           Icon(icon, size: 18, color: theme.textColor.withAlpha(120)),
           const SizedBox(width: 8),
-          Text('$label: ', style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 13)),
+          Text('$label: ',
+              style:
+                  TextStyle(color: theme.textColor.withAlpha(150), fontSize: 13)),
           Expanded(child: Text(value, style: TextStyle(color: theme.textColor))),
         ],
       );

@@ -1,9 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/providers/kontakty_provider.dart';
-import '../form/kontrahent_form_screen.dart';
 
 class KontrahentProfilScreen extends ConsumerWidget {
   final int kontrahentId;
@@ -11,25 +13,17 @@ class KontrahentProfilScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(kontrahentDetailProvider(kontrahentId));
 
-    return async.when(
-      loading: () => Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
-      ),
-      error: (e, _) => Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          iconTheme: IconThemeData(color: theme.textColor),
-        ),
-        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-      ),
-      data: (k) => Scaffold(
-        backgroundColor: Colors.transparent,
-        body: CustomScrollView(
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: async.when(
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+        data: (k) => CustomScrollView(
           slivers: [
             SliverAppBar(
               expandedHeight: 160,
@@ -69,17 +63,10 @@ class KontrahentProfilScreen extends ConsumerWidget {
               actions: [
                 IconButton(
                   icon: Icon(Icons.edit_outlined, color: theme.textColor),
-                  onPressed: () async {
-                    final wynik = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              KontrahentFormScreen(existing: k)),
-                    );
-                    if (wynik == true) {
-                      ref.invalidate(kontrahentDetailProvider(kontrahentId));
-                    }
-                  },
+                  onPressed: () => ref.read(navigationService).pushNamedScreen(
+                    '/kontakty/$kontrahentId/edit',
+                    data: {'existing': k},
+                  ),
                 ),
               ],
             ),

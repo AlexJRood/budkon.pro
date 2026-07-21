@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/podwykonawcy_model.dart';
 import '../../data/providers/podwykonawcy_provider.dart';
 import '../../data/services/podwykonawcy_api.dart';
 import '../../widgets/kontrahent_picker_dialog.dart';
-import '../detail/kontrahent_detail_screen.dart';
 
 class PodwykonawcyListScreen extends ConsumerStatefulWidget {
   final int budowaId;
@@ -18,6 +20,7 @@ class PodwykonawcyListScreen extends ConsumerStatefulWidget {
 }
 
 class _PodwykonawcyListScreenState extends ConsumerState<PodwykonawcyListScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   String? _filterStatus;
 
   Future<void> _dodajPodwykonawce() async {
@@ -81,70 +84,72 @@ class _PodwykonawcyListScreenState extends ConsumerState<PodwykonawcyListScreen>
         ? state.lista
         : state.lista.where((p) => p.status.name == _filterStatus).toList();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Podwykonawcy', style: TextStyle(color: theme.textColor)),
-          Text(widget.budowaNazwa, style: TextStyle(color: theme.textColor.withAlpha(160), fontSize: 11)),
+    final content = Column(children: [
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(children: [
+          _FilterChip(label: 'Wszyscy', selected: _filterStatus == null, theme: theme,
+              onTap: () => setState(() => _filterStatus = null)),
+          ...StatusPowiazania.values.map((s) => _FilterChip(
+            label: s.label, selected: _filterStatus == s.name, theme: theme,
+            onTap: () => setState(() => _filterStatus = s.name),
+          )),
         ]),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.read(powiazaniaProvider(widget.budowaId).notifier).load(),
+      ),
+      Expanded(child: Builder(builder: (_) {
+        if (state.loading && lista.isEmpty) {
+          return Center(child: CircularProgressIndicator(color: theme.themeColor));
+        }
+        if (state.error != null && lista.isEmpty) {
+          return Center(child: Text(state.error!, style: TextStyle(color: theme.textColor)));
+        }
+        if (lista.isEmpty) {
+          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.groups_outlined, size: 64, color: theme.textColor.withAlpha(80)),
+            const SizedBox(height: 16),
+            Text('Brak podwykonawców', style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text('Dodaj pierwszego podwykonawcę',
+                style: TextStyle(color: theme.textColor.withAlpha(150))),
+          ]));
+        }
+        return RefreshIndicator(
+          onRefresh: () => ref.read(powiazaniaProvider(widget.budowaId).notifier).load(),
+          color: theme.themeColor,
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+            itemCount: lista.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (ctx, i) => _PowiazanieCard(powiazanie: lista[i], budowaId: widget.budowaId, theme: theme),
+          ),
+        );
+      })),
+    ]);
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.read(powiazaniaProvider(widget.budowaId).notifier).load(),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.person_add_outlined, color: theme.buttonTextColor),
+              label: Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: _dodajPodwykonawce,
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.person_add_outlined, color: theme.buttonTextColor),
-        label: Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: _dodajPodwykonawce,
-      ),
-      body: Column(children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(children: [
-            _FilterChip(label: 'Wszyscy', selected: _filterStatus == null, theme: theme,
-                onTap: () => setState(() => _filterStatus = null)),
-            ...StatusPowiazania.values.map((s) => _FilterChip(
-              label: s.label, selected: _filterStatus == s.name, theme: theme,
-              onTap: () => setState(() => _filterStatus = s.name),
-            )),
-          ]),
-        ),
-        Expanded(child: Builder(builder: (_) {
-          if (state.loading && lista.isEmpty) {
-            return Center(child: CircularProgressIndicator(color: theme.themeColor));
-          }
-          if (state.error != null && lista.isEmpty) {
-            return Center(child: Text(state.error!, style: TextStyle(color: theme.textColor)));
-          }
-          if (lista.isEmpty) {
-            return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.groups_outlined, size: 64, color: theme.textColor.withAlpha(80)),
-              const SizedBox(height: 16),
-              Text('Brak podwykonawców', style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Text('Dodaj pierwszego podwykonawcę',
-                  style: TextStyle(color: theme.textColor.withAlpha(150))),
-            ]));
-          }
-          return RefreshIndicator(
-            onRefresh: () => ref.read(powiazaniaProvider(widget.budowaId).notifier).load(),
-            color: theme.themeColor,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-              itemCount: lista.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (ctx, i) => _PowiazanieCard(powiazanie: lista[i], budowaId: widget.budowaId, theme: theme),
-            ),
-          );
-        })),
-      ]),
     );
   }
 }
@@ -174,7 +179,7 @@ class _FilterChip extends StatelessWidget {
   );
 }
 
-class _PowiazanieCard extends StatelessWidget {
+class _PowiazanieCard extends ConsumerWidget {
   final PowiazanieModel powiazanie;
   final int budowaId;
   final ThemeColors theme;
@@ -189,7 +194,7 @@ class _PowiazanieCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final k = powiazanie.kontrahent;
     final statusColor = _statusColor(powiazanie.status);
 
@@ -201,8 +206,10 @@ class _PowiazanieCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => KontrahentDetailScreen(powiazanie: powiazanie, budowaId: budowaId))),
+        onTap: () => ref.read(navigationService).pushNamedScreen(
+          '/podwykonawcy/detail',
+          data: {'powiazanie': powiazanie, 'budowaId': budowaId},
+        ),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(children: [

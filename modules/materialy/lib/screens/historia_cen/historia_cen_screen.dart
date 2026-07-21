@@ -1,7 +1,9 @@
-﻿import 'dart:math';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
 import '../../data/models/materialy_model.dart';
 import '../../data/providers/materialy_provider.dart';
 import '../../data/services/materialy_api.dart';
@@ -14,24 +16,19 @@ class HistoriaCenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(historiaCenProvider(material.id));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(material.nazwa, style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add, color: theme.textColor),
-            tooltip: 'Dodaj cenę',
-            onPressed: () => _dodajCene(context, ref),
-          ),
-        ],
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.add, color: theme.textColor),
+        tooltip: 'Dodaj cenę',
+        onPressed: () => _dodajCene(context, ref),
       ),
-      body: async.when(
+      childPc: async.when(
         loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (historia) {

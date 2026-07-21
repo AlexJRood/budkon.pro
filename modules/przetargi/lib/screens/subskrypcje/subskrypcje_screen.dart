@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
 
 import '../../data/models/przetarg_model.dart';
 import '../../data/providers/przetargi_provider.dart';
@@ -11,38 +13,46 @@ class SubskrypcjeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(subskrypcjeProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Subskrypcje przetargów', style: TextStyle(color: theme.textColor)),
-      ),
-      body: state.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-        data: (lista) => lista.isEmpty
-            ? _EmptyState(theme: theme, onAdd: () => _showForm(context, ref, null))
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: lista.length,
-                itemBuilder: (ctx, i) => _SubskrypcjaCard(
-                  sub: lista[i],
-                  theme: theme,
-                  onEdit: () => _showForm(context, ref, lista[i]),
-                  onDelete: () => _delete(context, ref, lista[i].id),
-                  onToggle: (v) => _toggle(ref, lista[i], v),
-                ),
+    final body = state.when(
+      loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+      data: (lista) => lista.isEmpty
+          ? _EmptyState(theme: theme, onAdd: () => _showForm(context, ref, null))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: lista.length,
+              itemBuilder: (ctx, i) => _SubskrypcjaCard(
+                sub: lista[i],
+                theme: theme,
+                onEdit: () => _showForm(context, ref, lista[i]),
+                onDelete: () => _delete(context, ref, lista[i].id),
+                onToggle: (v) => _toggle(ref, lista[i], v),
               ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add_alert_outlined, color: theme.buttonTextColor),
-        label: Text('Nowa subskrypcja', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () => _showForm(context, ref, null),
+            ),
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add_alert_outlined, color: theme.buttonTextColor),
+              label: Text('Nowa subskrypcja', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => _showForm(context, ref, null),
+            ),
+          ),
+        ],
       ),
     );
   }

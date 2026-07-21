@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/portal_model.dart';
 import '../../data/providers/portal_provider.dart';
 import '../../data/services/portal_api.dart';
-import '../form/portal_form_screen.dart';
 
 class PortalListaScreen extends ConsumerWidget {
   const PortalListaScreen({super.key, required this.budowaId, required this.budowaNazwa});
@@ -15,57 +17,50 @@ class PortalListaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(portalListProvider(budowaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Portale klienta',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: theme.textColor)),
-            Text(budowaNazwa,
-                style: TextStyle(fontSize: 12, color: theme.textColor.withAlpha(160))),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add_link, color: theme.buttonTextColor),
-        label: Text('Nowy link', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () => _nowyPortal(context, ref),
-      ),
-      body: state.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-        data: (portale) => portale.isEmpty
-            ? _PustaLista(onAdd: () => _nowyPortal(context, ref), theme: theme)
-            : ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                itemCount: portale.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (_, i) => _PortalKarta(
-                  portal: portale[i],
-                  budowaId: budowaId,
-                  theme: theme,
-                ),
+    final body = state.when(
+      loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+      data: (portale) => portale.isEmpty
+          ? _PustaLista(
+              onAdd: () => ref.read(navigationService).pushNamedScreen('/budowy/$budowaId/portale/nowy'),
+              theme: theme,
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              itemCount: portale.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (_, i) => _PortalKarta(
+                portal: portale[i],
+                budowaId: budowaId,
+                theme: theme,
               ),
+            ),
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add_link, color: theme.buttonTextColor),
+              label: Text('Nowy link', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => ref.read(navigationService).pushNamedScreen('/budowy/$budowaId/portale/nowy'),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  void _nowyPortal(BuildContext context, WidgetRef ref) async {
-    final result = await Navigator.push<PortalKlientaModel>(
-      context,
-      MaterialPageRoute(builder: (_) => PortalFormScreen(budowaId: budowaId)),
-    );
-    if (result != null) {
-      ref.read(portalListProvider(budowaId).notifier).addLocal(result);
-    }
   }
 }
 

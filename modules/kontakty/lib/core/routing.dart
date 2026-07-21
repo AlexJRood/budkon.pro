@@ -1,5 +1,5 @@
-﻿import 'package:core/kernel/kernel.dart' hide AppModule;
-import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/kernel/kernel.dart' hide AppModule;
+import '../data/models/kontakty_model.dart';
 import '../screens/lista/kontakty_list_screen.dart';
 import '../screens/profil/kontrahent_profil_screen.dart';
 import '../screens/form/kontrahent_form_screen.dart';
@@ -7,17 +7,22 @@ import '../screens/form/kontrahent_form_screen.dart';
 List<RouteSpec> kontaktyRoutes() => [
   RouteSpec(
     '/kontakty',
-    (context, params, data) => BarManager(appModule: AppModule.budkon, childPc: const KontaktyListScreen()),
+    (context, params, data) => const KontaktyListScreen(),
   ),
   RouteSpec(
     '/kontakty/nowy',
-    (context, params, data) => BarManager(appModule: AppModule.budkon, childPc: const KontrahentFormScreen()),
+    (context, params, data) => const KontrahentFormScreen(),
   ),
   RouteSpec(
     '/kontakty/:id',
-    (context, params, data) => BarManager(
-      appModule: AppModule.budkon,
-      childPc: KontrahentProfilScreen(kontrahentId: int.tryParse(params['id'] ?? '') ?? 0),
+    (context, params, data) => KontrahentProfilScreen(
+      kontrahentId: int.tryParse(params['id'] ?? '') ?? 0,
+    ),
+  ),
+  RouteSpec(
+    '/kontakty/:id/edit',
+    (context, params, data) => KontrahentFormScreen(
+      existing: (data as Map<String, dynamic>?)?['existing'] as KontrahentDetail?,
     ),
   ),
 ];

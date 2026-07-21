@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/harmonogram_model.dart';
 import '../../data/providers/harmonogram_provider.dart';
@@ -16,66 +19,62 @@ class HarmonogramScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(timelineProvider(budowaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Harmonogram', style: TextStyle(color: theme.textColor)),
-            Text(budowaNazwa, style: TextStyle(color: theme.textColor.withAlpha(160), fontSize: 11)),
-          ],
-        ),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.invalidate(timelineProvider(budowaId)),
+    final body = async.when(
+      loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      error: (e, _) => _ErrorView(
+        theme: theme,
+        error: e.toString(),
+        budowaId: budowaId,
+        onRetry: () => ref.invalidate(timelineProvider(budowaId)),
+        onAutoGenerate: () async {
+          await harmonogramApi.autoGeneruj(budowaId);
+          ref.invalidate(timelineProvider(budowaId));
+        },
+      ),
+      data: (data) {
+        if (data.etapy.isEmpty) {
+          return _EmptyView(
+            theme: theme,
+            budowaId: budowaId,
+            onAutoGenerate: () async {
+              await harmonogramApi.autoGeneruj(budowaId);
+              ref.invalidate(timelineProvider(budowaId));
+            },
+          );
+        }
+        return _TimelineBody(data: data, budowaId: budowaId, theme: theme);
+      },
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.invalidate(timelineProvider(budowaId)),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add_task, color: theme.buttonTextColor),
+              label: Text('Nowe zadanie', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => ref.read(navigationService).pushNamedScreen(
+                '/harmonogram/zadanie/form',
+                data: {'budowaId': budowaId, 'budowaNazwa': budowaNazwa},
+              ),
+            ),
           ),
         ],
-      ),
-      body: async.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => _ErrorView(
-          theme: theme,
-          error: e.toString(),
-          budowaId: budowaId,
-          onRetry: () => ref.invalidate(timelineProvider(budowaId)),
-          onAutoGenerate: () async {
-            await harmonogramApi.autoGeneruj(budowaId);
-            ref.invalidate(timelineProvider(budowaId));
-          },
-        ),
-        data: (data) {
-          if (data.etapy.isEmpty) {
-            return _EmptyView(
-              theme: theme,
-              budowaId: budowaId,
-              onAutoGenerate: () async {
-                await harmonogramApi.autoGeneruj(budowaId);
-                ref.invalidate(timelineProvider(budowaId));
-              },
-            );
-          }
-          return _TimelineBody(data: data, budowaId: budowaId, theme: theme);
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add_task, color: theme.buttonTextColor),
-        label: Text('Nowe zadanie', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () async {
-          final result = await Navigator.pushNamed(
-            context,
-            '/harmonogram/zadanie/form',
-            arguments: {'budowaId': budowaId, 'budowaNazwa': budowaNazwa},
-          );
-          if (result == true) ref.invalidate(timelineProvider(budowaId));
-        },
       ),
     );
   }
@@ -262,7 +261,7 @@ class _EtapHeader extends StatelessWidget {
   }
 }
 
-class _ZadanieRow extends StatelessWidget {
+class _ZadanieRow extends ConsumerWidget {
   final ZadanieModel zadanie;
   final DateTime projectStart;
   final DateTime projectEnd;
@@ -272,10 +271,12 @@ class _ZadanieRow extends StatelessWidget {
   const _ZadanieRow({required this.zadanie, required this.projectStart, required this.projectEnd, required this.budowaId, required this.theme});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/harmonogram/zadanie',
-          arguments: {'zadanieId': zadanie.id, 'budowaId': budowaId}),
+      onTap: () => ref.read(navigationService).pushNamedScreen(
+        '/harmonogram/zadanie',
+        data: {'zadanieId': zadanie.id, 'budowaId': budowaId},
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 4, 16, 4),
         child: Row(children: [

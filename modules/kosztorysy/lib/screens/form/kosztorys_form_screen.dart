@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/kosztorys_model.dart';
 import '../../data/providers/kosztorysy_provider.dart';
@@ -15,6 +18,8 @@ class KosztorysFormScreen extends ConsumerStatefulWidget {
 }
 
 class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
+
   final _formKey = GlobalKey<FormState>();
   final _nazwaCtrl = TextEditingController();
   final _opisCtrl = TextEditingController();
@@ -45,21 +50,16 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
     final theme = ref.read(themeColorsProvider);
     final saving = ref.watch(kosztorysFormProvider).isLoading;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(_isEdit ? 'Edytuj kosztorys' : 'Nowy kosztorys', style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          if (_isEdit)
-            IconButton(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: _isEdit
+          ? IconButton(
               icon: Icon(Icons.delete_outline, color: theme.textColor),
               onPressed: saving ? null : _confirmDelete,
-            ),
-        ],
-      ),
-      body: Form(
+            )
+          : null,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.all(16.w),
@@ -70,7 +70,8 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
               controller: _nazwaCtrl,
               style: TextStyle(color: theme.textColor),
               validator: (v) => (v == null || v.isEmpty) ? 'Pole wymagane' : null,
-              decoration: _inputDecoration(theme, hint: 'np. Kosztorys — remont łazienki'),
+              decoration: _inputDecoration(theme,
+                  hint: 'np. Kosztorys — remont łazienki'),
             ),
             SizedBox(height: 12.h),
             _label(theme, 'Opis / zakres robót'),
@@ -79,24 +80,33 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
               controller: _opisCtrl,
               maxLines: 4,
               style: TextStyle(color: theme.textColor),
-              decoration: _inputDecoration(theme, hint: 'Krótki opis zakresu — AI użyje tego do generowania pozycji'),
+              decoration: _inputDecoration(theme,
+                  hint: 'Krótki opis zakresu — AI użyje tego do generowania pozycji'),
             ),
             SizedBox(height: 16.h),
             _label(theme, 'Status'),
             SizedBox(height: 6.h),
             SegmentedButton<StatusKosztorysu>(
-              segments: StatusKosztorysu.values.map((s) => ButtonSegment(value: s, label: Text(s.label))).toList(),
+              segments: StatusKosztorysu.values
+                  .map((s) => ButtonSegment(value: s, label: Text(s.label)))
+                  .toList(),
               selected: {_status},
               onSelectionChanged: (v) => setState(() => _status = v.first),
-              style: ButtonStyle(textStyle: WidgetStateProperty.all(TextStyle(fontSize: 12.sp))),
+              style:
+                  ButtonStyle(textStyle: WidgetStateProperty.all(TextStyle(fontSize: 12.sp))),
             ),
             SizedBox(height: 32.h),
             FilledButton(
               onPressed: saving ? null : _save,
               style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
               child: saving
-                  ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
-                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz kosztorys', style: TextStyle(color: theme.buttonTextColor)),
+                  ? SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: theme.buttonTextColor))
+                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz kosztorys',
+                      style: TextStyle(color: theme.buttonTextColor)),
             ),
           ],
         ),
@@ -104,16 +114,23 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
     );
   }
 
-  Widget _label(ThemeColors theme, String text) =>
-      Text(text, style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500));
+  Widget _label(ThemeColors theme, String text) => Text(text,
+      style: TextStyle(
+          color: theme.textColor.withAlpha(180),
+          fontSize: 12,
+          fontWeight: FontWeight.w500));
 
   InputDecoration _inputDecoration(ThemeColors theme, {String? hint}) => InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: theme.textColor.withAlpha(80)),
         filled: true,
         fillColor: theme.textFieldColor,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r), borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r), borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: BorderSide(color: theme.bordercolor.withAlpha(60))),
         isDense: true,
       );
 
@@ -125,8 +142,16 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
       'status': _status.apiValue,
       if (widget.defaultBudowaId != null) 'budowa_id': widget.defaultBudowaId,
     };
-    final result = await ref.read(kosztorysFormProvider.notifier).save(data, existingId: widget.existing?.id);
-    if (result != null && mounted) Navigator.of(context).pop(result);
+    final result = await ref
+        .read(kosztorysFormProvider.notifier)
+        .save(data, existingId: widget.existing?.id);
+    if (result != null && mounted) {
+      ref.invalidate(kosztorysyListProvider(widget.defaultBudowaId));
+      if (widget.existing != null) {
+        ref.invalidate(kosztorysDetailProvider(widget.existing!.id));
+      }
+      ref.read(navigationService).beamPop();
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -134,9 +159,11 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Usuń kosztorys'),
-        content: Text('Czy na pewno chcesz usunąć "${widget.existing!.nazwa}"?\nWszystkie pozycje zostaną utracone.'),
+        content: Text(
+            'Czy na pewno chcesz usunąć "${widget.existing!.nazwa}"?\nWszystkie pozycje zostaną utracone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Anuluj')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false), child: const Text('Anuluj')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -147,7 +174,10 @@ class _KosztorysFormScreenState extends ConsumerState<KosztorysFormScreen> {
     );
     if (ok == true && mounted) {
       await ref.read(kosztorysFormProvider.notifier).delete(widget.existing!.id);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        ref.invalidate(kosztorysyListProvider(widget.defaultBudowaId));
+        ref.read(navigationService).beamPop();
+      }
     }
   }
 }

@@ -1,89 +1,92 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/budowa_model.dart';
 import '../../data/providers/budowa_provider.dart';
 import '../../widgets/budowa_status_badge.dart';
 import '../../widgets/postep_bar.dart';
-import '../detail/budowa_detail_screen.dart';
-import '../form/budowa_form_screen.dart';
 
 class BudowaListScreen extends ConsumerWidget {
   const BudowaListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(budowaListProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text('Budowy', style: TextStyle(color: theme.textColor)),
-        backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.read(budowaListProvider.notifier).fetch(),
+    final content = state.when(
+      loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      error: (e, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off, size: 48, color: theme.textColor.withAlpha(80)),
+            const SizedBox(height: 12),
+            Text('Błąd połączenia',
+                style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text('$e', style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12)),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => ref.read(budowaListProvider.notifier).fetch(),
+              style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
+              child: Text('Spróbuj ponownie', style: TextStyle(color: theme.buttonTextColor)),
+            ),
+          ],
+        ),
+      ),
+      data: (budowy) => budowy.isEmpty
+          ? _EmptyState(
+              onAdd: () => ref.read(navigationService).pushNamedScreen('/budowa/new'))
+          : RefreshIndicator(
+              onRefresh: () => ref.read(budowaListProvider.notifier).fetch(),
+              color: theme.themeColor,
+              child: ListView.separated(
+                padding: EdgeInsets.all(16.w),
+                itemCount: budowy.length,
+                separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                itemBuilder: (context, i) => _BudowaCard(
+                  budowa: budowy[i],
+                  onTap: () => ref
+                      .read(navigationService)
+                      .pushNamedScreen('/budowa/${budowy[i].id}'),
+                  onEdit: () => ref.read(navigationService).pushNamedScreen(
+                        '/budowa/${budowy[i].id}/edit',
+                        data: {'existing': budowy[i]},
+                      ),
+                ),
+              ),
+            ),
+    );
+
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.read(budowaListProvider.notifier).fetch(),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              onPressed: () => ref.read(navigationService).pushNamedScreen('/budowa/new'),
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Nowa budowa', style: TextStyle(color: theme.buttonTextColor)),
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openForm(context, ref, null),
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add, color: theme.buttonTextColor),
-        label: Text('Nowa budowa', style: TextStyle(color: theme.buttonTextColor)),
-      ),
-      body: state.when(
-        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.cloud_off, size: 48, color: theme.textColor.withAlpha(80)),
-              const SizedBox(height: 12),
-              Text('Błąd połączenia', style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Text('$e', style: TextStyle(color: theme.textColor.withAlpha(150), fontSize: 12)),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.read(budowaListProvider.notifier).fetch(),
-                style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
-                child: Text('Spróbuj ponownie', style: TextStyle(color: theme.buttonTextColor)),
-              ),
-            ],
-          ),
-        ),
-        data: (budowy) => budowy.isEmpty
-            ? _EmptyState(onAdd: () => _openForm(context, ref, null))
-            : RefreshIndicator(
-                onRefresh: () => ref.read(budowaListProvider.notifier).fetch(),
-                color: theme.themeColor,
-                child: ListView.separated(
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: budowy.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                  itemBuilder: (context, i) => _BudowaCard(
-                    budowa: budowy[i],
-                    onTap: () => _openDetail(context, budowy[i].id),
-                    onEdit: () => _openForm(context, ref, budowy[i]),
-                  ),
-                ),
-              ),
-      ),
-    );
-  }
-
-  void _openDetail(BuildContext context, int id) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => BudowaDetailScreen(budowaId: id)),
-    );
-  }
-
-  void _openForm(BuildContext context, WidgetRef ref, BudowaModel? existing) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => BudowaFormScreen(existing: existing)),
     );
   }
 }
@@ -131,7 +134,8 @@ class _BudowaCard extends ConsumerWidget {
                   BudowaStatusBadge(status: budowa.status),
                   SizedBox(width: 8.w),
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 18, color: theme.textColor.withAlpha(150)),
+                    icon: Icon(Icons.edit_outlined,
+                        size: 18, color: theme.textColor.withAlpha(150)),
                     onPressed: onEdit,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -142,7 +146,8 @@ class _BudowaCard extends ConsumerWidget {
                 SizedBox(height: 4.h),
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined, size: 14, color: theme.textColor.withAlpha(120)),
+                    Icon(Icons.location_on_outlined,
+                        size: 14, color: theme.textColor.withAlpha(120)),
                     SizedBox(width: 4.w),
                     Expanded(
                       child: Text(
@@ -218,7 +223,9 @@ class _EmptyState extends ConsumerWidget {
         children: [
           Icon(Icons.domain_add_outlined, size: 64, color: theme.textColor.withAlpha(80)),
           SizedBox(height: 16.h),
-          Text('Brak budów', style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Brak budów',
+              style: TextStyle(
+                  color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600)),
           SizedBox(height: 8.h),
           Text(
             'Dodaj pierwszy projekt budowlany',

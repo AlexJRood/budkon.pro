@@ -1,11 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/faktury_model.dart';
 import '../../data/providers/faktury_provider.dart';
-import '../detail/faktura_detail_screen.dart';
-import '../form/faktura_form_screen.dart';
 
 class FakturyListScreen extends ConsumerStatefulWidget {
   final int? budowaId;
@@ -16,6 +17,7 @@ class FakturyListScreen extends ConsumerStatefulWidget {
 }
 
 class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   static final _dateFmt = DateFormat('dd.MM.yyyy', 'pl_PL');
   StatusFaktury? _filterStatus;
 
@@ -27,84 +29,87 @@ class _FakturyListScreenState extends ConsumerState<FakturyListScreen> {
         ? state.lista
         : state.lista.where((f) => f.status == _filterStatus).toList();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text('Faktury', style: TextStyle(color: theme.textColor)),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add, color: theme.buttonTextColor),
-        label: Text('Nowa faktura', style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () async {
-          final wynik = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-                builder: (_) => FakturaFormScreen(budowaId: widget.budowaId)),
-          );
-          if (wynik == true) ref.read(fakturyProvider.notifier).load();
-        },
-      ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 46,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              children: [
-                _StatusChip(
-                  label: 'Wszystkie',
-                  color: theme.textColor.withAlpha(150),
-                  selected: _filterStatus == null,
-                  onTap: () => setState(() => _filterStatus = null),
-                  theme: theme,
-                ),
-                ...StatusFaktury.values.map((s) => _StatusChip(
-                      label: s.label,
-                      color: s.color,
-                      selected: _filterStatus == s,
-                      onTap: () => setState(() => _filterStatus = s),
-                      theme: theme,
-                    )),
-              ],
-            ),
+    final content = Column(
+      children: [
+        SizedBox(
+          height: 46,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            children: [
+              _StatusChip(
+                label: 'Wszystkie',
+                color: theme.textColor.withAlpha(150),
+                selected: _filterStatus == null,
+                onTap: () => setState(() => _filterStatus = null),
+                theme: theme,
+              ),
+              ...StatusFaktury.values.map((s) => _StatusChip(
+                    label: s.label,
+                    color: s.color,
+                    selected: _filterStatus == s,
+                    onTap: () => setState(() => _filterStatus = s),
+                    theme: theme,
+                  )),
+            ],
           ),
-          const SizedBox(height: 4),
+        ),
+        const SizedBox(height: 4),
 
-          Expanded(
-            child: Builder(builder: (_) {
-              if (state.loading && lista.isEmpty) {
-                return Center(child: CircularProgressIndicator(color: theme.themeColor));
-              }
-              if (lista.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.receipt_long_outlined,
-                          size: 56, color: theme.textColor.withAlpha(80)),
-                      const SizedBox(height: 12),
-                      Text('Brak faktur', style: TextStyle(color: theme.textColor)),
-                    ],
-                  ),
-                );
-              }
-              return RefreshIndicator(
-                color: theme.themeColor,
-                onRefresh: () =>
-                    ref.read(fakturyProvider.notifier).load(budowaId: widget.budowaId),
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                  itemCount: lista.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 6),
-                  itemBuilder: (ctx, i) => _FakturaTile(
-                      faktura: lista[i], dateFmt: _dateFmt, theme: theme),
+        Expanded(
+          child: Builder(builder: (_) {
+            if (state.loading && lista.isEmpty) {
+              return Center(child: CircularProgressIndicator(color: theme.themeColor));
+            }
+            if (lista.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.receipt_long_outlined,
+                        size: 56, color: theme.textColor.withAlpha(80)),
+                    const SizedBox(height: 12),
+                    Text('Brak faktur', style: TextStyle(color: theme.textColor)),
+                  ],
                 ),
               );
-            }),
+            }
+            return RefreshIndicator(
+              color: theme.themeColor,
+              onRefresh: () =>
+                  ref.read(fakturyProvider.notifier).load(budowaId: widget.budowaId),
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                itemCount: lista.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 6),
+                itemBuilder: (ctx, i) => _FakturaTile(
+                    faktura: lista[i], dateFmt: _dateFmt, theme: theme),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Nowa faktura', style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => ref.read(navigationService).pushNamedScreen(
+                '/faktury/nowa',
+                data: {'budowaId': widget.budowaId},
+              ),
+            ),
           ),
         ],
       ),
@@ -143,14 +148,14 @@ class _StatusChip extends StatelessWidget {
       );
 }
 
-class _FakturaTile extends StatelessWidget {
+class _FakturaTile extends ConsumerWidget {
   final FakturaListItem faktura;
   final DateFormat dateFmt;
   final ThemeColors theme;
   const _FakturaTile({required this.faktura, required this.dateFmt, required this.theme});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final statusColor = faktura.jestPrzeterminowana
         ? const Color(0xFFEF5350)
         : faktura.status.color;
@@ -167,11 +172,7 @@ class _FakturaTile extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => FakturaDetailScreen(fakturaId: faktura.id)),
-        ),
+        onTap: () => ref.read(navigationService).pushNamedScreen('/faktury/${faktura.id}'),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(

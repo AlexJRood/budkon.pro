@@ -1,11 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/pracownicy_model.dart';
 import '../../data/providers/pracownicy_provider.dart';
 import '../../widgets/skill_matrix.dart';
-import '../profil/pracownik_profil_screen.dart';
-import '../umiejetnosci/nowy_pracownik_screen.dart';
 
 class PracownicyListScreen extends ConsumerStatefulWidget {
   final int? budowaId;
@@ -23,6 +24,7 @@ class PracownicyListScreen extends ConsumerStatefulWidget {
 }
 
 class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   Specjalizacja? _filterSpec;
 
   @override
@@ -36,115 +38,99 @@ class _PracownicyListScreenState extends ConsumerState<PracownicyListScreen> {
                 .any((s) => s['specjalizacja'] == _filterSpec!.value))
             .toList();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Zespół', style: TextStyle(color: theme.textColor)),
-            if (widget.budowaId != null)
-              Text(
-                widget.budowaNazwa,
-                style: TextStyle(
-                    color: theme.textColor.withAlpha(160), fontSize: 12),
+    final content = Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              _SpecFilter(
+                label: 'Wszyscy',
+                selected: _filterSpec == null,
+                theme: theme,
+                onTap: () => setState(() => _filterSpec = null),
               ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () =>
-                ref.read(pracownicyProvider.notifier).load(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.person_add_outlined, color: theme.buttonTextColor),
-        label: Text('Dodaj pracownika',
-            style: TextStyle(color: theme.buttonTextColor)),
-        onPressed: () async {
-          final wynik = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-                builder: (_) => const NowyPracownikScreen()),
-          );
-          if (wynik == true) {
-            ref.read(pracownicyProvider.notifier).load();
-          }
-        },
-      ),
-      body: Column(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                _SpecFilter(
-                  label: 'Wszyscy',
-                  selected: _filterSpec == null,
+              ...Specjalizacja.values.map(
+                (s) => _SpecFilter(
+                  label: '${s.emoji} ${s.label.split('/').first}',
+                  selected: _filterSpec == s,
                   theme: theme,
-                  onTap: () => setState(() => _filterSpec = null),
+                  onTap: () => setState(() => _filterSpec = s),
                 ),
-                ...Specjalizacja.values.map(
-                  (s) => _SpecFilter(
-                    label: '${s.emoji} ${s.label.split('/').first}',
-                    selected: _filterSpec == s,
-                    theme: theme,
-                    onTap: () => setState(() => _filterSpec = s),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
 
-          Expanded(
-            child: Builder(builder: (_) {
-              if (state.loading && lista.isEmpty) {
-                return Center(
-                    child: CircularProgressIndicator(color: theme.themeColor));
-              }
-              if (state.error != null && lista.isEmpty) {
-                return Center(
-                    child: Text(state.error!,
-                        style: TextStyle(color: theme.textColor)));
-              }
-              if (lista.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.groups_outlined,
-                          size: 56,
-                          color: theme.textColor.withAlpha(80)),
-                      const SizedBox(height: 16),
-                      Text('Brak pracowników',
-                          style: TextStyle(color: theme.textColor)),
-                    ],
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                color: theme.themeColor,
-                onRefresh: () =>
-                    ref.read(pracownicyProvider.notifier).load(),
-                child: ListView.separated(
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                  itemCount: lista.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
-                  itemBuilder: (ctx, i) =>
-                      _PracownikCard(pracownik: lista[i], theme: theme),
+        Expanded(
+          child: Builder(builder: (_) {
+            if (state.loading && lista.isEmpty) {
+              return Center(
+                  child: CircularProgressIndicator(color: theme.themeColor));
+            }
+            if (state.error != null && lista.isEmpty) {
+              return Center(
+                  child: Text(state.error!,
+                      style: TextStyle(color: theme.textColor)));
+            }
+            if (lista.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.groups_outlined,
+                        size: 56,
+                        color: theme.textColor.withAlpha(80)),
+                    const SizedBox(height: 16),
+                    Text('Brak pracowników',
+                        style: TextStyle(color: theme.textColor)),
+                  ],
                 ),
               );
-            }),
+            }
+
+            return RefreshIndicator(
+              color: theme.themeColor,
+              onRefresh: () =>
+                  ref.read(pracownicyProvider.notifier).load(),
+              child: ListView.separated(
+                padding:
+                    const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                itemCount: lista.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: 8),
+                itemBuilder: (ctx, i) =>
+                    _PracownikCard(pracownik: lista[i], theme: theme),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.read(pracownicyProvider.notifier).load(),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.person_add_outlined, color: theme.buttonTextColor),
+              label: Text('Dodaj pracownika',
+                  style: TextStyle(color: theme.buttonTextColor)),
+              onPressed: () => ref.read(navigationService).pushNamedScreen('/pracownicy/nowy'),
+            ),
           ),
         ],
       ),
@@ -182,13 +168,13 @@ class _SpecFilter extends StatelessWidget {
       );
 }
 
-class _PracownikCard extends StatelessWidget {
+class _PracownikCard extends ConsumerWidget {
   final PracownikListItem pracownik;
   final ThemeColors theme;
   const _PracownikCard({required this.pracownik, required this.theme});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: theme.userTile,
@@ -197,13 +183,7 @@ class _PracownikCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                PracownikProfilScreen(pracownikId: pracownik.id),
-          ),
-        ),
+        onTap: () => ref.read(navigationService).pushNamedScreen('/pracownicy/${pracownik.id}'),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(

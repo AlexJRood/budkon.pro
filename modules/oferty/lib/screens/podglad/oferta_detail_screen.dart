@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/oferty_model.dart';
 import '../../data/providers/oferty_provider.dart';
@@ -17,6 +20,7 @@ class OfertyDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _OfertyDetailScreenState extends ConsumerState<OfertyDetailScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   bool _generujePdf = false;
   bool _pdfGotowy = false;
 
@@ -74,9 +78,10 @@ class _OfertyDetailScreenState extends ConsumerState<OfertyDetailScreen> {
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(ofertaDetailProvider(widget.ofertaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: async.when(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: async.when(
         loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (oferta) => _Body(
@@ -91,12 +96,14 @@ class _OfertyDetailScreenState extends ConsumerState<OfertyDetailScreen> {
           onDuplikuj: () async {
             try {
               final nowa = await ofertyApi.duplikuj(oferta.id);
-              if (context.mounted) {
-                Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => OfertyDetailScreen(ofertaId: nowa.id)));
+              if (mounted) {
+                ref.read(navigationService).pushNamedScreen(
+                  '/oferty/detail',
+                  data: {'ofertaId': nowa.id},
+                );
               }
             } catch (e) {
-              if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
             }
           },
         ),

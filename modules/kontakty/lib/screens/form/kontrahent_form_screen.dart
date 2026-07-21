@@ -1,7 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/kontakty_model.dart';
+import '../../data/providers/kontakty_provider.dart';
 import '../../data/services/kontakty_api.dart';
 
 class KontrahentFormScreen extends ConsumerStatefulWidget {
@@ -14,6 +18,7 @@ class KontrahentFormScreen extends ConsumerStatefulWidget {
 }
 
 class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _firmaCtrl;
   late final TextEditingController _imieCtrl;
@@ -58,7 +63,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
 
-    InputDecoration _dec(String label, {Widget? prefix}) => InputDecoration(
+    InputDecoration dec(String label, {Widget? prefix}) => InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: theme.textColor.withAlpha(160)),
       filled: true,
@@ -71,15 +76,10 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
       isDense: true,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text(_editing ? 'Edytuj kontakt' : 'Nowy kontakt',
-            style: TextStyle(color: theme.textColor)),
-      ),
-      body: Form(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -87,7 +87,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
             TextFormField(
               controller: _firmaCtrl,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Nazwa firmy',
+              decoration: dec('Nazwa firmy',
                   prefix: Icon(Icons.business_outlined,
                       color: theme.textColor.withAlpha(150))).copyWith(
                 helperText: 'Zostaw puste jeśli osoba prywatna',
@@ -99,7 +99,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
                 child: TextFormField(
                   controller: _imieCtrl,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('Imię'),
+                  decoration: dec('Imię'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -107,7 +107,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
                 child: TextFormField(
                   controller: _nazwiskoCtrl,
                   style: TextStyle(color: theme.textColor),
-                  decoration: _dec('Nazwisko'),
+                  decoration: dec('Nazwisko'),
                 ),
               ),
             ]),
@@ -117,7 +117,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               value: _branza,
               dropdownColor: theme.popupcontainercolor,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Branża'),
+              decoration: dec('Branża'),
               items: [
                 const DropdownMenuItem(value: null, child: Text('— brak —')),
                 ...Branza.values.map((b) => DropdownMenuItem(
@@ -133,7 +133,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               controller: _telefonCtrl,
               keyboardType: TextInputType.phone,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Telefon',
+              decoration: dec('Telefon',
                   prefix: Icon(Icons.phone_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -143,7 +143,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('E-mail',
+              decoration: dec('E-mail',
                   prefix: Icon(Icons.email_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -153,7 +153,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               controller: _nipCtrl,
               keyboardType: TextInputType.number,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('NIP',
+              decoration: dec('NIP',
                   prefix: Icon(Icons.badge_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -163,7 +163,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               controller: _adresCtrl,
               maxLines: 2,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Adres',
+              decoration: dec('Adres',
                   prefix: Icon(Icons.location_on_outlined,
                       color: theme.textColor.withAlpha(150))),
             ),
@@ -173,7 +173,7 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
               controller: _uwagiCtrl,
               maxLines: 3,
               style: TextStyle(color: theme.textColor),
-              decoration: _dec('Uwagi').copyWith(alignLabelWithHint: true),
+              decoration: dec('Uwagi').copyWith(alignLabelWithHint: true),
             ),
 
             const SizedBox(height: 24),
@@ -225,11 +225,13 @@ class _KontrahentFormScreenState extends ConsumerState<KontrahentFormScreen> {
 
       if (_editing) {
         await kontaktyApi.edytuj(widget.existing!.id, payload);
+        ref.invalidate(kontrahentDetailProvider(widget.existing!.id));
       } else {
         await kontaktyApi.utworz(payload);
       }
 
-      if (mounted) Navigator.pop(context, true);
+      ref.invalidate(kontaktyProvider);
+      if (mounted) ref.read(navigationService).beamPop();
     } catch (e) {
       setState(() => _saving = false);
       if (mounted) {

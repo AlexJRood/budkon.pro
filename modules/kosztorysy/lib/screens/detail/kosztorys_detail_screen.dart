@@ -1,13 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/kosztorys_model.dart';
 import '../../data/providers/kosztorysy_provider.dart';
 import '../../widgets/kosztorys_status_badge.dart';
 import '../../widgets/pozycja_tile.dart';
 import '../../widgets/wartosc_chip.dart';
-import '../form/kosztorys_form_screen.dart';
 
 class KosztorysDetailScreen extends ConsumerWidget {
   const KosztorysDetailScreen({super.key, required this.kosztorysId});
@@ -15,20 +17,19 @@ class KosztorysDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(kosztorysDetailProvider(kosztorysId));
 
-    return state.when(
-      loading: () => Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: state.when(
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) =>
+            Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+        data: (k) => _KosztorysDetail(kosztorys: k),
       ),
-      error: (e, _) => Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(backgroundColor: Colors.transparent),
-        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-      ),
-      data: (k) => _KosztorysDetail(kosztorys: k),
     );
   }
 }
@@ -42,20 +43,18 @@ class _KosztorysDetail extends ConsumerWidget {
     final theme = ref.read(themeColorsProvider);
     final generating = ref.watch(aiGenerateProvider).isLoading;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            title: Text(kosztorys.nazwa, style: TextStyle(color: theme.textColor)),
-            backgroundColor: Colors.transparent,
-            actions: [
-              IconButton(
-                icon: Icon(Icons.edit_outlined, color: theme.textColor),
-                onPressed: () => _openEdit(context, ref),
-              ),
-            ],
-          ),
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar.large(
+          title: Text(kosztorys.nazwa, style: TextStyle(color: theme.textColor)),
+          backgroundColor: Colors.transparent,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.edit_outlined, color: theme.textColor),
+              onPressed: () => _openEdit(context, ref),
+            ),
+          ],
+        ),
 
           SliverToBoxAdapter(
             child: Padding(
@@ -147,8 +146,7 @@ class _KosztorysDetail extends ConsumerWidget {
 
           SliverToBoxAdapter(child: SizedBox(height: 80.h)),
         ],
-      ),
-    );
+      );
   }
 
   void _openEdit(BuildContext context, WidgetRef ref) {
@@ -162,7 +160,10 @@ class _KosztorysDetail extends ConsumerWidget {
       pozycjeCount: kosztorys.dzialy.fold(0, (s, d) => s + d.pozycje.length),
       updatedAt: kosztorys.updatedAt,
     );
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => KosztorysFormScreen(existing: listItem)));
+    ref.read(navigationService).pushNamedScreen(
+          '/kosztorysy/${kosztorys.id}/edit',
+          data: {'existing': listItem},
+        );
   }
 }
 

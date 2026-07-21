@@ -2,6 +2,8 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
 import 'package:latlong2/latlong.dart';
 import '../../data/models/dziennik_model.dart';
 import '../../data/providers/dziennik_provider.dart';
@@ -18,32 +20,18 @@ class BudowaMapaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(marketyProvider(budowaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mapa budowy', style: TextStyle(color: theme.textColor)),
-            Text(
-              budowaNazwa,
-              style: TextStyle(fontSize: 11, color: theme.textColor.withAlpha(160)),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.invalidate(marketyProvider(budowaId)),
-          ),
-        ],
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.invalidate(marketyProvider(budowaId)),
       ),
-      body: async.when(
+      childPc: async.when(
         loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(
           child: Column(

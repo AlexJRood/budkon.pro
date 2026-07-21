@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/materialy_model.dart';
 import '../../data/providers/materialy_provider.dart';
 import '../../data/services/materialy_api.dart';
 import '../../widgets/sparkline.dart';
-import '../historia_cen/historia_cen_screen.dart';
 
 class MaterialyListScreen extends ConsumerStatefulWidget {
   final int budowaId;
@@ -18,6 +20,7 @@ class MaterialyListScreen extends ConsumerStatefulWidget {
 }
 
 class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen> with SingleTickerProviderStateMixin {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   late final TabController _tabs;
 
   @override
@@ -43,27 +46,9 @@ class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen> with 
         p.status == StatusPozycji.zamowione || p.status == StatusPozycji.wDostawie).toList();
     final dostarczone = state.lista.where((p) => p.status == StatusPozycji.dostarczone).toList();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Materiały', style: TextStyle(color: theme.textColor)),
-          Text(widget.budowaNazwa, style: TextStyle(color: theme.textColor.withAlpha(160), fontSize: 11)),
-        ]),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.trending_up, color: theme.textColor),
-            tooltip: 'Trendy cen',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrendyCenScreen())),
-          ),
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.read(pozycjeProvider(widget.budowaId).notifier).load(),
-          ),
-        ],
-        bottom: TabBar(
+    final content = Column(
+      children: [
+        TabBar(
           controller: _tabs,
           labelColor: theme.themeColor,
           unselectedLabelColor: theme.textColor.withAlpha(150),
@@ -74,25 +59,55 @@ class _MaterialyListScreenState extends ConsumerState<MaterialyListScreen> with 
             const Tab(text: 'Dostarczone'),
           ],
         ),
+        Expanded(
+          child: state.loading && state.lista.isEmpty
+              ? Center(child: CircularProgressIndicator(color: theme.themeColor))
+              : TabBarView(controller: _tabs, children: [
+                  _ListaTab(pozycje: doZamowienia, budowaId: widget.budowaId, theme: theme,
+                      emptyLabel: 'Brak materiałów do zamówienia', emptyIcon: Icons.check_circle_outline),
+                  _ListaTab(pozycje: wTrakcie, budowaId: widget.budowaId, theme: theme,
+                      emptyLabel: 'Brak zamówionych materiałów', emptyIcon: Icons.local_shipping_outlined),
+                  _ListaTab(pozycje: dostarczone, budowaId: widget.budowaId, theme: theme,
+                      emptyLabel: 'Brak dostarczonych materiałów', emptyIcon: Icons.inventory_2_outlined),
+                ]),
+        ),
+      ],
+    );
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(Icons.trending_up, color: theme.textColor),
+            tooltip: 'Trendy cen',
+            onPressed: () => ref.read(navigationService).pushNamedScreen('/materialy/trendy'),
+          ),
+          IconButton(
+            icon: Icon(Icons.refresh, color: theme.textColor),
+            onPressed: () => ref.read(pozycjeProvider(widget.budowaId).notifier).load(),
+          ),
+        ],
       ),
-      body: state.loading && state.lista.isEmpty
-          ? Center(child: CircularProgressIndicator(color: theme.themeColor))
-          : TabBarView(controller: _tabs, children: [
-              _ListaTab(pozycje: doZamowienia, budowaId: widget.budowaId, theme: theme,
-                  emptyLabel: 'Brak materiałów do zamówienia', emptyIcon: Icons.check_circle_outline),
-              _ListaTab(pozycje: wTrakcie, budowaId: widget.budowaId, theme: theme,
-                  emptyLabel: 'Brak zamówionych materiałów', emptyIcon: Icons.local_shipping_outlined),
-              _ListaTab(pozycje: dostarczone, budowaId: widget.budowaId, theme: theme,
-                  emptyLabel: 'Brak dostarczonych materiałów', emptyIcon: Icons.inventory_2_outlined),
-            ]),
-      floatingActionButton: _tabs.index == 0
-          ? FloatingActionButton.extended(
-              backgroundColor: theme.themeColor,
-              icon: Icon(Icons.add, color: theme.buttonTextColor),
-              label: Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
-              onPressed: () => _dodajPozycje(context, theme),
-            )
-          : null,
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          if (_tabs.index == 0)
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: FloatingActionButton.extended(
+                backgroundColor: theme.themeColor,
+                icon: Icon(Icons.add, color: theme.buttonTextColor),
+                label: Text('Dodaj', style: TextStyle(color: theme.buttonTextColor)),
+                onPressed: () => _dodajPozycje(context, theme),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -216,8 +231,10 @@ class _PozycjaCard extends ConsumerWidget {
               TextButton.icon(
                 icon: Icon(Icons.show_chart, size: 16, color: theme.themeColor),
                 label: Text('Historia cen', style: TextStyle(color: theme.themeColor)),
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => HistoriaCenScreen(material: mat))),
+                onPressed: () => ref.read(navigationService).pushNamedScreen(
+                  '/materialy/historia',
+                  data: {'material': mat},
+                ),
               ),
             ]),
           ]),
@@ -434,17 +451,14 @@ class TrendyCenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(trendyProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text('Trendy cen materiałów', style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-      ),
-      body: async.when(
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: async.when(
         loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
         data: (trendy) {

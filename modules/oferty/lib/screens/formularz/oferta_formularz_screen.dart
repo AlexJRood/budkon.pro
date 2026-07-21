@@ -1,9 +1,11 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/services/oferty_api.dart';
-import '../podglad/oferta_detail_screen.dart';
 
 class OfertyFormularzScreen extends ConsumerStatefulWidget {
   final int? budowaId;
@@ -22,6 +24,7 @@ class OfertyFormularzScreen extends ConsumerStatefulWidget {
 }
 
 class _OfertyFormularzScreenState extends ConsumerState<OfertyFormularzScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   final _pageCtrl = PageController();
   int _step = 0;
   bool _saving = false;
@@ -89,7 +92,7 @@ class _OfertyFormularzScreenState extends ConsumerState<OfertyFormularzScreen> {
       setState(() => _step--);
       _pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
-      Navigator.pop(context);
+      ref.read(navigationService).beamPop();
     }
   }
 
@@ -123,8 +126,11 @@ class _OfertyFormularzScreenState extends ConsumerState<OfertyFormularzScreen> {
       });
 
       if (!mounted) return;
-      Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (_) => OfertyDetailScreen(ofertaId: oferta.id, autoPdf: true)));
+      ref.read(navigationService).beamPop();
+      ref.read(navigationService).pushNamedScreen(
+        '/oferty/detail',
+        data: {'ofertaId': oferta.id, 'autoPdf': true},
+      );
     } catch (e) {
       setState(() => _saving = false);
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd: $e')));
@@ -134,75 +140,89 @@ class _OfertyFormularzScreenState extends ConsumerState<OfertyFormularzScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        leading: BackButton(onPressed: _prevStep),
-        title: Text(
-          ['Kosztorys', 'Dane klienta', 'Ustawienia'][_step],
-          style: TextStyle(color: theme.textColor),
+
+    final content = Column(
+      children: [
+        LinearProgressIndicator(
+          value: (_step + 1) / 3,
+          backgroundColor: theme.textColor.withAlpha(40),
+          valueColor: AlwaysStoppedAnimation(theme.themeColor),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: (_step + 1) / 3,
-            backgroundColor: theme.textColor.withAlpha(40),
-            valueColor: AlwaysStoppedAnimation(theme.themeColor),
-          ),
-        ),
-      ),
-      body: PageView(
-        controller: _pageCtrl,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          _KrokKosztorys(
-            budowaId: widget.budowaId,
-            selected: _kosztorysId,
-            theme: theme,
-            onSelect: (id, nazwa) => setState(() { _kosztorysId = id; _kosztorysNazwa = nazwa; }),
-          ),
-          _KrokKlient(
-            theme: theme,
-            nazwaCtrl: _klientNazwaCtrl,
-            adresCtrl: _klientAdresCtrl,
-            nipCtrl: _klientNipCtrl,
-            emailCtrl: _klientEmailCtrl,
-            telCtrl: _klientTelCtrl,
-          ),
-          _KrokUstawienia(
-            theme: theme,
-            tytulCtrl: _tytulCtrl,
-            tytulHint: _kosztorysNazwa,
-            wstepCtrl: _wstepCtrl,
-            warunkiCtrl: _warunkiCtrl,
-            wystawcaNazwaCtrl: _wystawcaNazwaCtrl,
-            wystawcaNipCtrl: _wystawcaNipCtrl,
-            wystawcaEmailCtrl: _wystawcaEmailCtrl,
-            wystawcaTelCtrl: _wystawcaTelCtrl,
-            vatProcent: _vatProcent,
-            rabatProcent: _rabatProcent,
-            onVatChanged: (v) => setState(() => _vatProcent = v),
-            onRabatChanged: (v) => setState(() => _rabatProcent = v),
-            onWaznaDoChanged: (v) => setState(() => _waznaDo = v),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: FilledButton(
-            onPressed: (_canProceed && !_saving) ? _nextStep : null,
-            style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
-            child: _saving
-                ? SizedBox.square(dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
-                : Text(_step < 2 ? 'Dalej' : 'Generuj ofertę',
-                    style: TextStyle(color: theme.buttonTextColor)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back, color: theme.textColor),
+                onPressed: _prevStep,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                ['Kosztorys', 'Dane klienta', 'Ustawienia'][_step],
+                style: TextStyle(color: theme.textColor, fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ),
-      ),
+        Expanded(
+          child: PageView(
+            controller: _pageCtrl,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _KrokKosztorys(
+                budowaId: widget.budowaId,
+                selected: _kosztorysId,
+                theme: theme,
+                onSelect: (id, nazwa) => setState(() { _kosztorysId = id; _kosztorysNazwa = nazwa; }),
+              ),
+              _KrokKlient(
+                theme: theme,
+                nazwaCtrl: _klientNazwaCtrl,
+                adresCtrl: _klientAdresCtrl,
+                nipCtrl: _klientNipCtrl,
+                emailCtrl: _klientEmailCtrl,
+                telCtrl: _klientTelCtrl,
+              ),
+              _KrokUstawienia(
+                theme: theme,
+                tytulCtrl: _tytulCtrl,
+                tytulHint: _kosztorysNazwa,
+                wstepCtrl: _wstepCtrl,
+                warunkiCtrl: _warunkiCtrl,
+                wystawcaNazwaCtrl: _wystawcaNazwaCtrl,
+                wystawcaNipCtrl: _wystawcaNipCtrl,
+                wystawcaEmailCtrl: _wystawcaEmailCtrl,
+                wystawcaTelCtrl: _wystawcaTelCtrl,
+                vatProcent: _vatProcent,
+                rabatProcent: _rabatProcent,
+                onVatChanged: (v) => setState(() => _vatProcent = v),
+                onRabatChanged: (v) => setState(() => _rabatProcent = v),
+                onWaznaDoChanged: (v) => setState(() => _waznaDo = v),
+              ),
+            ],
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: FilledButton(
+              onPressed: (_canProceed && !_saving) ? _nextStep : null,
+              style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
+              child: _saving
+                  ? SizedBox.square(dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
+                  : Text(_step < 2 ? 'Dalej' : 'Generuj ofertę',
+                      style: TextStyle(color: theme.buttonTextColor)),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: content,
     );
   }
 }

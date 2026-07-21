@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
 import '../../data/models/pracownicy_model.dart';
 import '../../data/providers/pracownicy_provider.dart';
 import '../../data/services/pracownicy_api.dart';
@@ -12,12 +14,14 @@ class PracownikProfilScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(pracownikDetailProvider(pracownikId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: async.when(
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: async.when(
         loading: () => Center(
             child: CircularProgressIndicator(color: theme.themeColor)),
         error: (e, _) => Center(
@@ -81,7 +85,7 @@ class _ProfilBody extends ConsumerWidget {
           actions: [
             IconButton(
               icon: Icon(Icons.edit_outlined, color: theme.textColor),
-              onPressed: () => _edytuj(context, ref),
+              onPressed: () => _edytuj(context),
             ),
           ],
         ),
@@ -292,7 +296,7 @@ class _ProfilBody extends ConsumerWidget {
     }
   }
 
-  Future<void> _edytuj(BuildContext context, WidgetRef ref) async {
+  void _edytuj(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Edycja w przygotowaniu')),
     );

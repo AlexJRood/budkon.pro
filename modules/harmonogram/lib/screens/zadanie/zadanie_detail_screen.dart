@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/harmonogram_model.dart';
 import '../../data/providers/harmonogram_provider.dart';
@@ -17,6 +20,7 @@ class ZadanieDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ZadanieDetailScreenState extends ConsumerState<ZadanieDetailScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   ZadanieModel? _zadanie;
   bool _loading = true;
   int _sliderValue = 0;
@@ -51,40 +55,36 @@ class _ZadanieDetailScreenState extends ConsumerState<ZadanieDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
+
     if (_loading) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+      return BarManager(
+        sideMenuKey: _sideMenuKey,
+        appModule: AppModule.budkon,
+        childPc: Center(child: CircularProgressIndicator(color: theme.themeColor)),
       );
     }
+
     if (_zadanie == null) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(backgroundColor: Colors.transparent, title: Text('Zadanie', style: TextStyle(color: theme.textColor))),
-        body: Center(child: Text('Błąd ładowania', style: TextStyle(color: theme.textColor))),
+      return BarManager(
+        sideMenuKey: _sideMenuKey,
+        appModule: AppModule.budkon,
+        childPc: Center(child: Text('Błąd ładowania', style: TextStyle(color: theme.textColor))),
       );
     }
 
     final z = _zadanie!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text('Zadanie', style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit_outlined, color: theme.textColor),
-            onPressed: () async {
-              final result = await Navigator.pushNamed(context, '/harmonogram/zadanie/form',
-                  arguments: {'budowaId': widget.budowaId, 'zadanieId': widget.zadanieId});
-              if (result == true) _load();
-            },
-          ),
-        ],
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.edit_outlined, color: theme.textColor),
+        onPressed: () => ref.read(navigationService).pushNamedScreen(
+          '/harmonogram/zadanie/form',
+          data: {'budowaId': widget.budowaId, 'zadanieId': widget.zadanieId},
+        ),
       ),
-      body: ListView(
+      childPc: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [

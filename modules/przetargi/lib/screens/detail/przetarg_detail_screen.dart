@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/przetarg_model.dart';
@@ -15,23 +18,18 @@ class PrzetargDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuKey = GlobalKey<SideMenuState>();
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(przetargDetailProvider(przetargId));
 
-    return state.when(
-      loading: () => Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(child: CircularProgressIndicator(color: theme.themeColor)),
+    return BarManager(
+      sideMenuKey: sideMenuKey,
+      appModule: AppModule.budkon,
+      childPc: state.when(
+        loading: () => Center(child: CircularProgressIndicator(color: theme.themeColor)),
+        error: (e, _) => Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
+        data: (p) => _PrzetargDetailView(przetarg: p, przetargId: przetargId, theme: theme),
       ),
-      error: (e, _) => Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          iconTheme: IconThemeData(color: theme.textColor),
-        ),
-        body: Center(child: Text('Błąd: $e', style: TextStyle(color: theme.textColor))),
-      ),
-      data: (p) => _PrzetargDetailView(przetarg: p, przetargId: przetargId, theme: theme),
     );
   }
 }
@@ -48,143 +46,140 @@ class _PrzetargDetailView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = przetarg;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 160,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            iconTheme: IconThemeData(color: theme.textColor),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: Text(
-                p.tytul,
-                style: TextStyle(fontSize: 14, color: theme.textColor),
-                maxLines: 2,
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [theme.sidebar, theme.themeColor.withAlpha(80)],
-                  ),
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 160,
+          pinned: true,
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: theme.textColor),
+          flexibleSpace: FlexibleSpaceBar(
+            titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Text(
+              p.tytul,
+              style: TextStyle(fontSize: 14, color: theme.textColor),
+              maxLines: 2,
+            ),
+            background: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [theme.sidebar, theme.themeColor.withAlpha(80)],
                 ),
               ),
             ),
-            actions: [
-              _StatusMenu(przetarg: p, przetargId: przetargId),
-            ],
           ),
+          actions: [
+            _StatusMenu(przetarg: p, przetargId: przetargId),
+          ],
+        ),
 
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Row(
-                  children: [
-                    PrzetargStatusBadge(p.status),
-                    const SizedBox(width: 8),
-                    if (p.aiScore != null) AiScoreBadge(score: p.aiScore!),
-                    const Spacer(),
-                    if (p.dniDoTerminu != null) _DniChip(dni: p.dniDoTerminu!, theme: theme),
-                  ],
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              Row(
+                children: [
+                  PrzetargStatusBadge(p.status),
+                  const SizedBox(width: 8),
+                  if (p.aiScore != null) AiScoreBadge(score: p.aiScore!),
+                  const Spacer(),
+                  if (p.dniDoTerminu != null) _DniChip(dni: p.dniDoTerminu!, theme: theme),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              _InfoCard(theme: theme, children: [
+                _InfoRow(
+                  icon: Icons.business_outlined,
+                  label: 'Zamawiający',
+                  value: p.zamawiajacy,
+                  theme: theme,
                 ),
-                const SizedBox(height: 20),
-
-                _InfoCard(theme: theme, children: [
+                if (p.wartoscSzacunkowa != null)
                   _InfoRow(
-                    icon: Icons.business_outlined,
-                    label: 'Zamawiający',
-                    value: p.zamawiajacy,
+                    icon: Icons.payments_outlined,
+                    label: 'Wartość szacunkowa',
+                    value: p.wartoscFormatted,
+                    highlight: true,
                     theme: theme,
                   ),
-                  if (p.wartoscSzacunkowa != null)
-                    _InfoRow(
-                      icon: Icons.payments_outlined,
-                      label: 'Wartość szacunkowa',
-                      value: p.wartoscFormatted,
-                      highlight: true,
-                      theme: theme,
-                    ),
-                  if (p.lokalizacja.isNotEmpty)
-                    _InfoRow(
-                      icon: Icons.location_on_outlined,
-                      label: 'Lokalizacja',
-                      value: p.lokalizacja,
-                      theme: theme,
-                    ),
-                  if (p.terminSkladania != null)
-                    _InfoRow(
-                      icon: Icons.event_outlined,
-                      label: 'Termin składania',
-                      value: DateFormat('d MMMM yyyy, HH:mm', 'pl_PL')
-                          .format(p.terminSkladania!.toLocal()),
-                      theme: theme,
-                    ),
-                  if (p.terminRealizacji != null)
-                    _InfoRow(
-                      icon: Icons.construction_outlined,
-                      label: 'Termin realizacji',
-                      value: p.terminRealizacji!,
-                      theme: theme,
-                    ),
-                  if (p.zrodloUrl.isNotEmpty)
-                    _InfoRow(
-                      icon: Icons.link,
-                      label: 'Źródło',
-                      value: p.zrodloUrl,
-                      isLink: true,
-                      theme: theme,
-                    ),
-                ]),
-                const SizedBox(height: 16),
-
-                if (p.aiScore != null) ...[
-                  _AiOcenaCard(przetarg: p, theme: theme),
-                  const SizedBox(height: 16),
-                ],
-
-                if (p.opis.isNotEmpty) ...[
-                  Text('Opis',
-                      style: TextStyle(
-                          color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
-                  const SizedBox(height: 8),
-                  Text(p.opis, style: TextStyle(color: theme.textColor)),
-                  const SizedBox(height: 16),
-                ],
-
-                if (p.cpvKody.isNotEmpty) ...[
-                  Text('Kody CPV',
-                      style: TextStyle(
-                          color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    children: p.cpvKody
-                        .map(
-                          (k) => Chip(
-                            label: Text(k,
-                                style: TextStyle(fontSize: 12, color: theme.textColor)),
-                            backgroundColor: theme.secondaryWidgetColor,
-                            side: BorderSide(color: theme.bordercolor.withAlpha(60)),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        )
-                        .toList(),
+                if (p.lokalizacja.isNotEmpty)
+                  _InfoRow(
+                    icon: Icons.location_on_outlined,
+                    label: 'Lokalizacja',
+                    value: p.lokalizacja,
+                    theme: theme,
                   ),
-                  const SizedBox(height: 16),
-                ],
-
-                _AkcjeBar(przetarg: p, przetargId: przetargId),
-                const SizedBox(height: 40),
+                if (p.terminSkladania != null)
+                  _InfoRow(
+                    icon: Icons.event_outlined,
+                    label: 'Termin składania',
+                    value: DateFormat('d MMMM yyyy, HH:mm', 'pl_PL')
+                        .format(p.terminSkladania!.toLocal()),
+                    theme: theme,
+                  ),
+                if (p.terminRealizacji != null)
+                  _InfoRow(
+                    icon: Icons.construction_outlined,
+                    label: 'Termin realizacji',
+                    value: p.terminRealizacji!,
+                    theme: theme,
+                  ),
+                if (p.zrodloUrl.isNotEmpty)
+                  _InfoRow(
+                    icon: Icons.link,
+                    label: 'Źródło',
+                    value: p.zrodloUrl,
+                    isLink: true,
+                    theme: theme,
+                  ),
               ]),
-            ),
+              const SizedBox(height: 16),
+
+              if (p.aiScore != null) ...[
+                _AiOcenaCard(przetarg: p, theme: theme),
+                const SizedBox(height: 16),
+              ],
+
+              if (p.opis.isNotEmpty) ...[
+                Text('Opis',
+                    style: TextStyle(
+                        color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
+                const SizedBox(height: 8),
+                Text(p.opis, style: TextStyle(color: theme.textColor)),
+                const SizedBox(height: 16),
+              ],
+
+              if (p.cpvKody.isNotEmpty) ...[
+                Text('Kody CPV',
+                    style: TextStyle(
+                        color: theme.textColor, fontWeight: FontWeight.w600, fontSize: 14)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  children: p.cpvKody
+                      .map(
+                        (k) => Chip(
+                          label: Text(k,
+                              style: TextStyle(fontSize: 12, color: theme.textColor)),
+                          backgroundColor: theme.secondaryWidgetColor,
+                          side: BorderSide(color: theme.bordercolor.withAlpha(60)),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              _AkcjeBar(przetarg: p, przetargId: przetargId),
+              const SizedBox(height: 40),
+            ]),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -315,8 +310,7 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
           OutlinedButton.icon(
             icon: const Icon(Icons.description_outlined),
             label: const Text('Otwórz kosztorys'),
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/kosztorysy/${p.kosztorysId}'),
+            onPressed: () => ref.read(navigationService).pushNamedScreen('/kosztorysy/${p.kosztorysId}'),
             style: OutlinedButton.styleFrom(
                 foregroundColor: theme.themeColor,
                 side: BorderSide(color: theme.bordercolor.withAlpha(80))),
@@ -364,7 +358,7 @@ class _AkcjeBarState extends ConsumerState<_AkcjeBar> {
             action: SnackBarAction(
               label: 'Otwórz',
               onPressed: () =>
-                  Navigator.of(context).pushNamed('/kosztorysy/$kosztorysId'),
+                  ref.read(navigationService).pushNamedScreen('/kosztorysy/$kosztorysId'),
             ),
             behavior: SnackBarBehavior.floating,
           ),

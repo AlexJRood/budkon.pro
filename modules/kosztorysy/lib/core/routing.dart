@@ -1,21 +1,38 @@
 import 'package:core/kernel/kernel.dart' hide AppModule;
-import 'package:core/shell/manager/bar_manager.dart';
 import '../screens/list/kosztorysy_list_screen.dart';
 import '../screens/detail/kosztorys_detail_screen.dart';
+import '../screens/form/kosztorys_form_screen.dart';
+import '../data/models/kosztorys_model.dart';
 
 List<RouteSpec> kosztorysyRoutes() => [
   RouteSpec(
     '/kosztorysy',
-    (context, params, data) => BarManager(appModule: AppModule.budkon, childPc: KosztorysyListScreen(
-        budowaId: (data as Map<String, dynamic>?)?['budowaId'] as int?,
-      ),
-    ),
+    (context, params, data) {
+      final args = data as Map?;
+      return KosztorysyListScreen(
+        budowaId: args?['budowaId'] as int?,
+      );
+    },
+  ),
+  RouteSpec(
+    '/kosztorysy/new',
+    (context, params, data) {
+      final args = data as Map?;
+      return KosztorysFormScreen(
+        defaultBudowaId: args?['budowaId'] as int?,
+      );
+    },
   ),
   RouteSpec(
     '/kosztorysy/:id',
-    (context, params, data) => BarManager(appModule: AppModule.budkon, childPc: KosztorysDetailScreen(
-        kosztorysId: int.tryParse(params['id'] ?? '') ?? 0,
-      ),
+    (context, params, data) => KosztorysDetailScreen(
+      kosztorysId: int.tryParse(params['id'] ?? '') ?? 0,
+    ),
+  ),
+  RouteSpec(
+    '/kosztorysy/:id/edit',
+    (context, params, data) => KosztorysFormScreen(
+      existing: (data as Map<String, dynamic>?)?['existing'] as KosztorysListItemModel?,
     ),
   ),
 ];

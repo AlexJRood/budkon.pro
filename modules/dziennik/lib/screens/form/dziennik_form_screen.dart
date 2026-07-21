@@ -1,6 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/dziennik_model.dart';
 import '../../data/providers/dziennik_provider.dart';
@@ -23,6 +26,8 @@ class DziennikFormScreen extends ConsumerStatefulWidget {
 }
 
 class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
+
   final _formKey = GlobalKey<FormState>();
   final _opisCtrl = TextEditingController();
   final _uwagiCtrl = TextEditingController();
@@ -84,7 +89,9 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
         .zapisz(budowaId: widget.budowaId, wpisId: widget.wpisId, payload: payload);
 
     if (result != null && mounted) {
-      Navigator.pop(context, true);
+      ref.invalidate(dziennikListProvider(widget.budowaId));
+      if (widget.wpisId != null) ref.invalidate(wpisDetailProvider(widget.wpisId!));
+      ref.read(navigationService).beamPop();
     }
   }
 
@@ -96,31 +103,24 @@ class _DziennikFormScreenState extends ConsumerState<DziennikFormScreen> {
 
     autoAsync.whenData(_applyAutoData);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: theme.textColor),
-        title: Text(widget.wpisId == null ? 'Nowy wpis' : 'Edytuj wpis',
-            style: TextStyle(color: theme.textColor)),
-        actions: [
-          if (formState.isLoading)
-            const Padding(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: formState.isLoading
+          ? const Padding(
               padding: EdgeInsets.all(16),
               child: SizedBox.square(
                 dimension: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             )
-          else
-            TextButton(
+          : TextButton(
               onPressed: _submit,
               child: Text('Zapisz',
-                  style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
+                  style:
+                      TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
             ),
-        ],
-      ),
-      body: Form(
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),

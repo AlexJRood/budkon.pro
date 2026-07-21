@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/budowa_model.dart';
 import '../../data/providers/budowa_provider.dart';
@@ -14,6 +17,8 @@ class BudowaFormScreen extends ConsumerStatefulWidget {
 }
 
 class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
+
   final _formKey = GlobalKey<FormState>();
   final _nazwaCtrl = TextEditingController();
   final _adresCtrl = TextEditingController();
@@ -52,42 +57,52 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
     final theme = ref.read(themeColorsProvider);
     final saving = ref.watch(budowaFormProvider).isLoading;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(_isEdit ? 'Edytuj budowę' : 'Nowa budowa', style: TextStyle(color: theme.textColor)),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          if (_isEdit)
-            IconButton(
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: _isEdit
+          ? IconButton(
               icon: Icon(Icons.delete_outline, color: theme.textColor),
               tooltip: 'Usuń',
               onPressed: saving ? null : _confirmDelete,
-            ),
-        ],
-      ),
-      body: Form(
+            )
+          : null,
+      childPc: Form(
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.all(16.w),
           children: [
-            _Field(label: 'Nazwa projektu *', controller: _nazwaCtrl,
-              validator: (v) => (v == null || v.isEmpty) ? 'Pole wymagane' : null,
-              hint: 'np. Dom jednorodzinny Kowalski', theme: theme),
-            SizedBox(height: 12.h),
-            _Field(label: 'Adres', controller: _adresCtrl, hint: 'ul. Leśna 5, Kraków', theme: theme),
+            _Field(
+                label: 'Nazwa projektu *',
+                controller: _nazwaCtrl,
+                validator: (v) => (v == null || v.isEmpty) ? 'Pole wymagane' : null,
+                hint: 'np. Dom jednorodzinny Kowalski',
+                theme: theme),
             SizedBox(height: 12.h),
             _Field(
-              label: 'Budżet (zł)', controller: _budzetCtrl, hint: '450000',
-              keyboardType: TextInputType.number, theme: theme,
+                label: 'Adres',
+                controller: _adresCtrl,
+                hint: 'ul. Leśna 5, Kraków',
+                theme: theme),
+            SizedBox(height: 12.h),
+            _Field(
+              label: 'Budżet (zł)',
+              controller: _budzetCtrl,
+              hint: '450000',
+              keyboardType: TextInputType.number,
+              theme: theme,
               validator: (v) {
-                if (v != null && v.isNotEmpty && double.tryParse(v) == null) return 'Podaj liczbę';
+                if (v != null && v.isNotEmpty && double.tryParse(v) == null)
+                  return 'Podaj liczbę';
                 return null;
               },
             ),
             SizedBox(height: 16.h),
-            Text('Status', style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
+            Text('Status',
+                style: TextStyle(
+                    color: theme.textColor.withAlpha(180),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500)),
             SizedBox(height: 6.h),
             SegmentedButton<StatusBudowy>(
               segments: StatusBudowy.values
@@ -105,14 +120,18 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
               children: [
                 Expanded(
                   child: _DatePicker(
-                    label: 'Data rozpoczęcia', value: _dataRozpoczecia, theme: theme,
+                    label: 'Data rozpoczęcia',
+                    value: _dataRozpoczecia,
+                    theme: theme,
                     onChanged: (d) => setState(() => _dataRozpoczecia = d),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: _DatePicker(
-                    label: 'Planowane zakończenie', value: _dataZakonczenia, theme: theme,
+                    label: 'Planowane zakończenie',
+                    value: _dataZakonczenia,
+                    theme: theme,
                     onChanged: (d) => setState(() => _dataZakonczenia = d),
                   ),
                 ),
@@ -123,8 +142,13 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
               onPressed: saving ? null : _save,
               style: FilledButton.styleFrom(backgroundColor: theme.themeColor),
               child: saving
-                  ? SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: theme.buttonTextColor))
-                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz budowę', style: TextStyle(color: theme.buttonTextColor)),
+                  ? SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: theme.buttonTextColor))
+                  : Text(_isEdit ? 'Zapisz zmiany' : 'Utwórz budowę',
+                      style: TextStyle(color: theme.buttonTextColor)),
             ),
           ],
         ),
@@ -144,7 +168,10 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
       dataPlanowanegZakonczenia: _dataZakonczenia,
     );
     final result = await ref.read(budowaFormProvider.notifier).save(budowa);
-    if (result != null && mounted) Navigator.of(context).pop();
+    if (result != null && mounted) {
+      ref.invalidate(budowaListProvider);
+      ref.read(navigationService).beamPop();
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -154,7 +181,8 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
         title: const Text('Usuń budowę'),
         content: Text('Czy na pewno chcesz usunąć "${widget.existing!.nazwa}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Anuluj')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false), child: const Text('Anuluj')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -165,14 +193,22 @@ class _BudowaFormScreenState extends ConsumerState<BudowaFormScreen> {
     );
     if (ok == true && mounted) {
       await ref.read(budowaFormProvider.notifier).delete(widget.existing!.id);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        ref.invalidate(budowaListProvider);
+        ref.read(navigationService).beamPop();
+      }
     }
   }
 }
 
 class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.controller, required this.theme,
-    this.hint, this.validator, this.keyboardType});
+  const _Field(
+      {required this.label,
+      required this.controller,
+      required this.theme,
+      this.hint,
+      this.validator,
+      this.keyboardType});
 
   final String label;
   final TextEditingController controller;
@@ -186,7 +222,11 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(label,
+            style: TextStyle(
+                color: theme.textColor.withAlpha(180),
+                fontSize: 12,
+                fontWeight: FontWeight.w500)),
         SizedBox(height: 6.h),
         TextFormField(
           controller: controller,
@@ -215,7 +255,11 @@ class _Field extends StatelessWidget {
 }
 
 class _DatePicker extends StatelessWidget {
-  const _DatePicker({required this.label, this.value, required this.onChanged, required this.theme});
+  const _DatePicker(
+      {required this.label,
+      this.value,
+      required this.onChanged,
+      required this.theme});
   final String label;
   final DateTime? value;
   final ValueChanged<DateTime?> onChanged;
@@ -226,7 +270,11 @@ class _DatePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: theme.textColor.withAlpha(180), fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(label,
+            style: TextStyle(
+                color: theme.textColor.withAlpha(180),
+                fontSize: 12,
+                fontWeight: FontWeight.w500)),
         SizedBox(height: 6.h),
         OutlinedButton.icon(
           onPressed: () async {
@@ -240,7 +288,9 @@ class _DatePicker extends StatelessWidget {
           },
           icon: Icon(Icons.calendar_today, size: 16, color: theme.themeColor),
           label: Text(
-            value != null ? '${value!.day}.${value!.month}.${value!.year}' : 'Wybierz datę',
+            value != null
+                ? '${value!.day}.${value!.month}.${value!.year}'
+                : 'Wybierz datę',
             style: TextStyle(fontSize: 13.sp, color: theme.textColor),
           ),
           style: OutlinedButton.styleFrom(

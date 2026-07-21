@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
+import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import 'package:core/shell/manager/bar_manager.dart';
+import 'package:core/platform/navigation_service.dart';
 import '../../data/models/oferty_model.dart';
 import '../../data/providers/oferty_provider.dart';
-import '../formularz/oferta_formularz_screen.dart';
-import '../podglad/oferta_detail_screen.dart';
 
 class OfertyListScreen extends ConsumerStatefulWidget {
   final int? budowaId;
@@ -17,6 +18,7 @@ class OfertyListScreen extends ConsumerStatefulWidget {
 }
 
 class _OfertyListScreenState extends ConsumerState<OfertyListScreen> with SingleTickerProviderStateMixin {
+  late final _sideMenuKey = GlobalKey<SideMenuState>();
   late final TabController _tabs;
   static const _statusTabs = [null, StatusOferty.roboczy, StatusOferty.wyslana, StatusOferty.zaakceptowana, StatusOferty.odrzucona];
 
@@ -37,26 +39,9 @@ class _OfertyListScreenState extends ConsumerState<OfertyListScreen> with Single
     final theme = ref.read(themeColorsProvider);
     final state = ref.watch(ofertyProvider(widget.budowaId));
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Oferty', style: TextStyle(color: theme.textColor)),
-            if (widget.budowaId != null)
-              Text(widget.budowaNazwa, style: TextStyle(color: theme.textColor.withAlpha(160), fontSize: 11)),
-          ],
-        ),
-        iconTheme: IconThemeData(color: theme.textColor),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: theme.textColor),
-            onPressed: () => ref.read(ofertyProvider(widget.budowaId).notifier).load(),
-          ),
-        ],
-        bottom: TabBar(
+    final content = Column(
+      children: [
+        TabBar(
           controller: _tabs,
           isScrollable: true,
           labelColor: theme.themeColor,
@@ -64,30 +49,47 @@ class _OfertyListScreenState extends ConsumerState<OfertyListScreen> with Single
           indicatorColor: theme.themeColor,
           tabs: const [Tab(text: 'Wszystkie'), Tab(text: 'Robocze'), Tab(text: 'Wysłane'), Tab(text: 'Zaakceptowane'), Tab(text: 'Odrzucone')],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _nowaOferta(context),
-        backgroundColor: theme.themeColor,
-        icon: Icon(Icons.add, color: theme.buttonTextColor),
-        label: Text('Nowa oferta', style: TextStyle(color: theme.buttonTextColor)),
-      ),
-      body: state.loading && state.lista.isEmpty
-          ? Center(child: CircularProgressIndicator(color: theme.themeColor))
-          : TabBarView(
-              controller: _tabs,
-              children: _statusTabs.map((filterStatus) {
-                final filtered = filterStatus == null ? state.lista : state.lista.where((o) => o.status == filterStatus).toList();
-                return _OfertyTabView(oferty: filtered, budowaId: widget.budowaId, error: state.error, theme: theme);
-              }).toList(),
-            ),
+        Expanded(
+          child: state.loading && state.lista.isEmpty
+              ? Center(child: CircularProgressIndicator(color: theme.themeColor))
+              : TabBarView(
+                  controller: _tabs,
+                  children: _statusTabs.map((filterStatus) {
+                    final filtered = filterStatus == null ? state.lista : state.lista.where((o) => o.status == filterStatus).toList();
+                    return _OfertyTabView(oferty: filtered, budowaId: widget.budowaId, error: state.error, theme: theme);
+                  }).toList(),
+                ),
+        ),
+      ],
     );
-  }
 
-  Future<void> _nowaOferta(BuildContext context) async {
-    final wynik = await Navigator.push<bool>(context, MaterialPageRoute(
-      builder: (_) => OfertyFormularzScreen(budowaId: widget.budowaId, budowaNazwa: widget.budowaNazwa),
-    ));
-    if (wynik == true) ref.read(ofertyProvider(widget.budowaId).notifier).load();
+    return BarManager(
+      sideMenuKey: _sideMenuKey,
+      appModule: AppModule.budkon,
+      verticalButtonsPc: IconButton(
+        icon: Icon(Icons.refresh, color: theme.textColor),
+        onPressed: () => ref.read(ofertyProvider(widget.budowaId).notifier).load(),
+      ),
+      childPc: Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.extended(
+              onPressed: () => ref.read(navigationService).pushNamedScreen(
+                '/oferty/new',
+                data: {'budowaId': widget.budowaId, 'budowaNazwa': widget.budowaNazwa},
+              ),
+              backgroundColor: theme.themeColor,
+              icon: Icon(Icons.add, color: theme.buttonTextColor),
+              label: Text('Nowa oferta', style: TextStyle(color: theme.buttonTextColor)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -126,7 +128,7 @@ class _OfertyTabView extends ConsumerWidget {
   }
 }
 
-class _OfertyCard extends StatelessWidget {
+class _OfertyCard extends ConsumerWidget {
   final OfertyListItem oferta;
   final ThemeColors theme;
   const _OfertyCard({required this.oferta, required this.theme});
@@ -140,7 +142,7 @@ class _OfertyCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final color = _statusColor(oferta.status);
     return Container(
       decoration: BoxDecoration(
@@ -150,7 +152,10 @@ class _OfertyCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OfertyDetailScreen(ofertaId: oferta.id))),
+        onTap: () => ref.read(navigationService).pushNamedScreen(
+          '/oferty/detail',
+          data: {'ofertaId': oferta.id},
+        ),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
