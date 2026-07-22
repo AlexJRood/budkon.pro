@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
@@ -82,7 +82,7 @@ class _KontrahentPickerDialogState
       setState(() => _saving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Błąd: $e')),
+          SnackBar(content: Text('BĹ‚Ä…d: $e')),
         );
       }
     }
@@ -104,7 +104,7 @@ class _KontrahentPickerDialogState
                 children: [
                   Expanded(
                     child: Text(
-                      'Dodaj podwykonawcę',
+                      'Dodaj podwykonawcÄ™',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -116,7 +116,7 @@ class _KontrahentPickerDialogState
               ),
             ),
 
-            // Tabs — wybierz / nowy
+            // Tabs â€” wybierz / nowy
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: SegmentedButton<_Mode>(
@@ -188,7 +188,7 @@ class _KontrahentPickerDialogState
                           )
                         : Text(_mode == _Mode.pickExisting
                             ? 'Dodaj'
-                            : 'Utwórz i dodaj'),
+                            : 'UtwĂłrz i dodaj'),
                   ),
                 ],
               ),
@@ -218,7 +218,7 @@ class _PickExistingBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(kontrahentPickerProvider);
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
 
     return Column(
       children: [
@@ -241,12 +241,12 @@ class _PickExistingBody extends ConsumerWidget {
           child: async.when(
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Błąd: $e')),
+            error: (e, _) => Center(child: Text('BĹ‚Ä…d: $e')),
             data: (lista) {
               if (lista.isEmpty && searchCtrl.text.isEmpty) {
                 return Center(
                   child: Text(
-                    'Wpisz nazwę lub telefon podwykonawcy',
+                    'Wpisz nazwÄ™ lub telefon podwykonawcy',
                     style: TextStyle(color: theme.textColor.withAlpha(120)),
                   ),
                 );
@@ -259,7 +259,7 @@ class _PickExistingBody extends ConsumerWidget {
                       Icon(Icons.search_off,
                           size: 40, color: theme.textColor.withAlpha(100)),
                       const SizedBox(height: 8),
-                      const Text('Brak wyników'),
+                      const Text('Brak wynikĂłw'),
                     ],
                   ),
                 );
@@ -280,7 +280,7 @@ class _PickExistingBody extends ConsumerWidget {
                     subtitle: Text([
                       if (k.branza != null) k.branza!.label,
                       if (k.telefon.isNotEmpty) k.telefon,
-                    ].join('  •  ')),
+                    ].join('  â€˘  ')),
                     trailing: isSelected
                         ? Icon(Icons.check_circle,
                             color: theme.themeColor)
@@ -333,7 +333,7 @@ class _CreateNewBody extends StatelessWidget {
                 child: TextFormField(
                   controller: imieCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Imię',
+                    labelText: 'ImiÄ™',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -397,11 +397,11 @@ class _CreateNewBody extends StatelessWidget {
             DropdownButtonFormField<BranzaTyp>(
               value: branza,
               decoration: const InputDecoration(
-                labelText: 'Branża',
+                labelText: 'BranĹĽa',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
-              hint: const Text('Wybierz branżę'),
+              hint: const Text('Wybierz branĹĽÄ™'),
               items: BranzaTyp.values
                   .map((b) => DropdownMenuItem(
                         value: b,
@@ -444,3 +444,4 @@ class _KontrahentAvatar extends StatelessWidget {
     );
   }
 }
+

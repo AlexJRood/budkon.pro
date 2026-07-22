@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 import '../data/models/pracownicy_model.dart';
@@ -15,7 +15,7 @@ class SkillMatrix extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
 
     if (umiejetnosci.isEmpty) {
       return _EmptyMatrix(onDodaj: onDodaj, theme: theme);
@@ -30,7 +30,7 @@ class SkillMatrix extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 8),
             child: TextButton.icon(
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Dodaj umiejętność'),
+              label: const Text('Dodaj umiejÄ™tnoĹ›Ä‡'),
               onPressed: onDodaj,
             ),
           ),
@@ -189,14 +189,14 @@ class _EmptyMatrix extends StatelessWidget {
               size: 40, color: theme.textColor.withAlpha(100)),
           const SizedBox(height: 8),
           Text(
-            'Brak zarejestrowanych umiejętności',
+            'Brak zarejestrowanych umiejÄ™tnoĹ›ci',
             style: TextStyle(color: theme.textColor.withAlpha(120)),
           ),
           if (onDodaj != null) ...[
             const SizedBox(height: 12),
             FilledButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Dodaj pierwszą'),
+              label: const Text('Dodaj pierwszÄ…'),
               onPressed: onDodaj,
             ),
           ],
@@ -204,7 +204,7 @@ class _EmptyMatrix extends StatelessWidget {
       );
 }
 
-// ---- Mini karta umiejętności (do listy pracowników) -----------------------
+// ---- Mini karta umiejÄ™tnoĹ›ci (do listy pracownikĂłw) -----------------------
 
 class SkillChips extends ConsumerWidget {
   final List<Map<String, dynamic>> specjalizacje;
@@ -214,7 +214,7 @@ class SkillChips extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     final visible = specjalizacje.take(max).toList();
     final rest = specjalizacje.length - max;
 
@@ -277,3 +277,4 @@ class _MiniChip extends StatelessWidget {
         ),
       );
 }
+

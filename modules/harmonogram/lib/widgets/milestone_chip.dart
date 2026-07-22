@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +22,7 @@ class MilestoneChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     final color = _parseColor();
 
     return Container(
@@ -61,3 +61,4 @@ class MilestoneChip extends ConsumerWidget {
     );
   }
 }
+

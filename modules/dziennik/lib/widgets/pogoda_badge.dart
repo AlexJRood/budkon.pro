@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 import '../data/models/dziennik_model.dart';
@@ -18,7 +18,7 @@ class PogodaBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (pogoda == null) return const SizedBox.shrink();
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -34,7 +34,7 @@ class PogodaBadge extends ConsumerWidget {
           if (temperatura != null) ...[
             const SizedBox(width: 4),
             Text(
-              '${temperatura!.round()}°C',
+              '${temperatura!.round()}Â°C',
               style: TextStyle(color: theme.textColor, fontSize: 13),
             ),
           ],
@@ -50,3 +50,4 @@ class PogodaBadge extends ConsumerWidget {
     );
   }
 }
+

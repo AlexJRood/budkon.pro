@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 import '../data/models/harmonogram_model.dart';
@@ -27,7 +27,7 @@ class GanttBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     final totalDays =
         projectEnd.difference(projectStart).inDays.clamp(1, 9999).toDouble();
 
@@ -52,7 +52,7 @@ class GanttBar extends ConsumerWidget {
         height: 24,
         child: Stack(
           children: [
-            // Tło
+            // TĹ‚o
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -84,7 +84,7 @@ class GanttBar extends ConsumerWidget {
                 ),
               ),
             ),
-            // Opóźnienie marker
+            // OpĂłĹşnienie marker
             if (zadanie.isOpoznione)
               Positioned(
                 right: 4,
@@ -107,3 +107,4 @@ class GanttBar extends ConsumerWidget {
     });
   }
 }
+

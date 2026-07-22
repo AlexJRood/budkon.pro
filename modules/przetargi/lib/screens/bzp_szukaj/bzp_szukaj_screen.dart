@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:core/theme/apptheme.dart';
@@ -28,7 +28,7 @@ class _BzpSzukajScreenState extends ConsumerState<BzpSzukajScreen> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
-    // Załaduj wyniki przy otwarciu (ostatnie 30 dni)
+    // ZaĹ‚aduj wyniki przy otwarciu (ostatnie 30 dni)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(bzpSzukajProvider.notifier).szukaj();
     });
@@ -61,7 +61,7 @@ class _BzpSzukajScreenState extends ConsumerState<BzpSzukajScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     final state = ref.watch(bzpSzukajProvider);
 
     return BarManager(
@@ -83,7 +83,7 @@ class _BzpSzukajScreenState extends ConsumerState<BzpSzukajScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Znaleziono ${state.total} ogłoszeń',
+                  'Znaleziono ${state.total} ogĹ‚oszeĹ„',
                   style: TextStyle(
                     color: theme.textColor.withAlpha(150),
                     fontSize: 12.sp,
@@ -106,7 +106,7 @@ class _BzpSzukajScreenState extends ConsumerState<BzpSzukajScreen> {
 }
 
 // ------------------------------------------------------------------ //
-// Panel filtrów                                                       //
+// Panel filtrĂłw                                                       //
 // ------------------------------------------------------------------ //
 
 class _SearchPanel extends StatelessWidget {
@@ -243,7 +243,7 @@ class _SearchPanel extends StatelessWidget {
 }
 
 // ------------------------------------------------------------------ //
-// Ciało — lista wyników                                               //
+// CiaĹ‚o â€” lista wynikĂłw                                               //
 // ------------------------------------------------------------------ //
 
 class _Body extends StatelessWidget {
@@ -275,7 +275,7 @@ class _Body extends StatelessWidget {
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 12),
               Text(
-                'Błąd pobierania danych z BZP',
+                'BĹ‚Ä…d pobierania danych z BZP',
                 style: TextStyle(color: theme.textColor, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
@@ -288,7 +288,7 @@ class _Body extends StatelessWidget {
               TextButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Spróbuj ponownie'),
+                label: const Text('SprĂłbuj ponownie'),
               ),
             ],
           ),
@@ -304,12 +304,12 @@ class _Body extends StatelessWidget {
             Icon(Icons.search_off, size: 56, color: theme.textColor.withAlpha(80)),
             const SizedBox(height: 12),
             Text(
-              'Brak wyników',
+              'Brak wynikĂłw',
               style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
-              'Spróbuj zmienić frazę lub rozszerzyć zakres dat.',
+              'SprĂłbuj zmieniÄ‡ frazÄ™ lub rozszerzyÄ‡ zakres dat.',
               style: TextStyle(color: theme.textColor.withAlpha(150)),
             ),
           ],
@@ -334,7 +334,7 @@ class _Body extends StatelessWidget {
 }
 
 // ------------------------------------------------------------------ //
-// Karta ogłoszenia                                                    //
+// Karta ogĹ‚oszenia                                                    //
 // ------------------------------------------------------------------ //
 
 class _BzpCard extends StatelessWidget {
@@ -362,7 +362,7 @@ class _BzpCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Górna belka: numer + termin
+            // GĂłrna belka: numer + termin
             Row(
               children: [
                 if (wynik.noticeNumber != null) ...[
@@ -403,9 +403,9 @@ class _BzpCard extends StatelessWidget {
             ),
             SizedBox(height: 8.h),
 
-            // Tytuł
+            // TytuĹ‚
             Text(
-              wynik.tytul.isEmpty ? '(brak tytułu)' : wynik.tytul,
+              wynik.tytul.isEmpty ? '(brak tytuĹ‚u)' : wynik.tytul,
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
@@ -416,7 +416,7 @@ class _BzpCard extends StatelessWidget {
             ),
             SizedBox(height: 4.h),
 
-            // Zamawiający
+            // ZamawiajÄ…cy
             Row(
               children: [
                 Icon(Icons.business_outlined, size: 13, color: muted),
@@ -502,9 +502,9 @@ class _TerminChip extends StatelessWidget {
             ? Colors.red.withAlpha(40)
             : theme.themeColor.withAlpha(30);
     final label = expired
-        ? 'Termin minął'
+        ? 'Termin minÄ…Ĺ‚'
         : dni == 0
-            ? 'Dziś'
+            ? 'DziĹ›'
             : '$dni dni';
 
     return Container(
@@ -528,3 +528,4 @@ class _TerminChip extends StatelessWidget {
     );
   }
 }
+

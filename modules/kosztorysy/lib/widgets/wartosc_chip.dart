@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 
@@ -9,7 +9,7 @@ class WartoscChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: large ? 14 : 10,
@@ -31,8 +31,9 @@ class WartoscChip extends ConsumerWidget {
   }
 
   String _fmt(double v) {
-    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(2)} mln zł';
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)} tys. zł';
-    return '${v.toStringAsFixed(2)} zł';
+    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(2)} mln zĹ‚';
+    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)} tys. zĹ‚';
+    return '${v.toStringAsFixed(2)} zĹ‚';
   }
 }
+

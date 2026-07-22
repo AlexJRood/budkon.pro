@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
 import '../data/models/budowa_model.dart';
@@ -10,7 +10,7 @@ class EtapTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
 
     return Card(
       elevation: 0,
@@ -66,9 +66,9 @@ class EtapTile extends ConsumerWidget {
   }
 
   String _dateRange(EtapBudowyModel e) {
-    final start = e.dataStart != null ? _fmt(e.dataStart!) : '—';
-    final end = e.dataKoniec != null ? _fmt(e.dataKoniec!) : '—';
-    return '$start → $end';
+    final start = e.dataStart != null ? _fmt(e.dataStart!) : 'â€”';
+    final end = e.dataKoniec != null ? _fmt(e.dataKoniec!) : 'â€”';
+    return '$start â†’ $end';
   }
 
   String _fmt(DateTime d) => '${d.day}.${d.month}.${d.year}';
@@ -97,7 +97,7 @@ class _StatusMenu extends StatelessWidget {
     return PopupMenuButton<StatusEtapu>(
       initialValue: etap.status,
       onSelected: onStatusChange,
-      tooltip: 'Zmień status',
+      tooltip: 'ZmieĹ„ status',
       itemBuilder: (_) => StatusEtapu.values
           .map((s) => PopupMenuItem(value: s, child: Text(s.label)))
           .toList(),
@@ -105,3 +105,4 @@ class _StatusMenu extends StatelessWidget {
     );
   }
 }
+

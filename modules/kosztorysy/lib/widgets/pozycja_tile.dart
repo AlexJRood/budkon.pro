@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/theme/apptheme.dart';
@@ -50,7 +50,7 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeColorsProvider);
+    final theme = ref.watch(themeColorsProvider);
     final hasAiSuggestion = widget.pozycja.aiSuggestedPrice != null;
 
     return Card(
@@ -117,7 +117,7 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
                   children: [
                     Expanded(
                       child: _NumField(
-                        label: 'Ilość (${widget.pozycja.jednostka})',
+                        label: 'IloĹ›Ä‡ (${widget.pozycja.jednostka})',
                         controller: _iloscCtrl,
                         onSubmitted: (_) => _commit(),
                         aiValue: widget.pozycja.aiSuggestedQty,
@@ -127,7 +127,7 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _NumField(
-                        label: 'Cena jedn. (zł)',
+                        label: 'Cena jedn. (zĹ‚)',
                         controller: _cenaCtrl,
                         onSubmitted: (_) => _commit(),
                         aiValue: widget.pozycja.aiSuggestedPrice,
@@ -143,7 +143,7 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
-                      tooltip: 'Usuń pozycję',
+                      tooltip: 'UsuĹ„ pozycjÄ™',
                       color: Colors.red,
                       onPressed: widget.onDelete,
                     ),
@@ -158,8 +158,8 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
   }
 
   String _fmtWartosc(double v) {
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}k zł';
-    return '${v.toStringAsFixed(2)} zł';
+    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}k zĹ‚';
+    return '${v.toStringAsFixed(2)} zĹ‚';
   }
 }
 
@@ -210,3 +210,4 @@ class _NumField extends StatelessWidget {
     );
   }
 }
+
