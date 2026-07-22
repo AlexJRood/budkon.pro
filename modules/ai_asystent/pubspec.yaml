@@ -1,0 +1,18 @@
+name: ai_asystent
+description: "AI Asystent budowlany — dziennik glosowy, analiza zdjec, predykcja kosztow"
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  dio: ^5.7.0
+  flutter_screenutil: ^5.9.3
+  intl: ^0.19.0
+  image_picker: ^1.1.2
+  core:
+    path: ../../core
