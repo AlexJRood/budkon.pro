@@ -390,7 +390,7 @@ class _BzpCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   InkWell(
                     borderRadius: BorderRadius.circular(6),
-                    onTap: () => launchUrl(Uri.parse(wynik.url!),
+                    onTap: () => launchUrl(Uri.parse(Uri.encodeFull(wynik.url!)),
                         mode: LaunchMode.externalApplication),
                     child: Padding(
                       padding: const EdgeInsets.all(4),
