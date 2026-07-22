@@ -353,6 +353,7 @@ class _BzpCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 5.h),
       elevation: 0,
+      color: theme.userTile,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.bordercolor.withAlpha(60)),
@@ -390,7 +391,7 @@ class _BzpCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   InkWell(
                     borderRadius: BorderRadius.circular(6),
-                    onTap: () => launchUrl(Uri.parse(Uri.encodeFull(wynik.url!)),
+                    onTap: () => launchUrl(Uri.parse(wynik.url!),
                         mode: LaunchMode.externalApplication),
                     child: Padding(
                       padding: const EdgeInsets.all(4),
