@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 
 import '../data/providers/emma_inbox_provider.dart';
 
@@ -10,6 +11,7 @@ class EmmaInboxWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(emmaInboxProvider);
 
     return state.when(
@@ -29,18 +31,19 @@ class EmmaInboxWidget extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Text(
                     'Emma mówi',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
+                    style: TextStyle(
+                      color: theme.textColor.withAlpha(150),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     '${wiadomosci.length} ${_plural(wiadomosci.length)}',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                    style: TextStyle(
+                      color: theme.themeColor,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),
@@ -82,7 +85,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
   @override
   Widget build(BuildContext context) {
     final w = widget.wiadomosc;
-    final cs = Theme.of(context).colorScheme;
+    final theme = ref.read(themeColorsProvider);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -92,7 +95,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
           end: Alignment.bottomRight,
           colors: [
             _accentColor.withAlpha(18),
-            cs.surfaceContainerLow,
+            theme.userTile,
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -122,11 +125,9 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
                           // Tekst Emmy (zawsze widoczny — 2 linie)
                           Text(
                             w.tekst,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: cs.onSurface,
+                            style: TextStyle(
+                                  color: theme.textColor,
+                                  fontSize: 12,
                                   height: 1.45,
                                 ),
                             maxLines: _rozwiniety ? null : 2,
@@ -149,7 +150,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest.withOpacity(0.5),
+                      color: theme.bordercolor.withAlpha(40),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -167,7 +168,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
                           _MetaRow(
                             icon: Icons.payments_outlined,
                             text: w.wartoscLabel,
-                            color: cs.primary,
+                            color: theme.themeColor,
                           ),
                         ],
                         if (w.przetargLokalizacja.isNotEmpty)
@@ -221,7 +222,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
                       const SizedBox(width: 8),
                       IconButton(
                         icon: Icon(Icons.close,
-                            size: 18, color: cs.onSurfaceVariant),
+                            size: 18, color: theme.textColor.withAlpha(120)),
                         tooltip: 'Odrzuć',
                         onPressed: () =>
                             ref.read(emmaInboxProvider.notifier).odrzuc(w.id),
@@ -237,7 +238,7 @@ class _EmmaKartaState extends ConsumerState<_EmmaKarta> {
                     child: Icon(
                       Icons.keyboard_arrow_down,
                       size: 16,
-                      color: cs.onSurfaceVariant.withOpacity(0.5),
+                      color: theme.textColor.withAlpha(80),
                     ),
                   ),
               ],
@@ -313,15 +314,16 @@ class _ScorePill extends StatelessWidget {
   }
 }
 
-class _MetaRow extends StatelessWidget {
+class _MetaRow extends ConsumerWidget {
   final IconData icon;
   final String text;
   final Color? color;
   const _MetaRow({required this.icon, required this.text, this.color});
 
   @override
-  Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
+    final c = color ?? theme.textColor.withAlpha(120);
     return Padding(
       padding: const EdgeInsets.only(top: 3),
       child: Row(

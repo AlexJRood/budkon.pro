@@ -250,16 +250,16 @@ class _AiGenerateButton extends StatelessWidget {
   }
 }
 
-class _AiDialog extends StatefulWidget {
+class _AiDialog extends ConsumerStatefulWidget {
   const _AiDialog({required this.initialOpis, required this.onConfirm});
   final String initialOpis;
   final void Function(String opis, Map<String, dynamic> obmiar) onConfirm;
 
   @override
-  State<_AiDialog> createState() => _AiDialogState();
+  ConsumerState<_AiDialog> createState() => _AiDialogState();
 }
 
-class _AiDialogState extends State<_AiDialog> {
+class _AiDialogState extends ConsumerState<_AiDialog> {
   late final TextEditingController _opisCtrl;
   final _powCtrl = TextEditingController();
   final _kubCtrl = TextEditingController();
@@ -280,10 +280,11 @@ class _AiDialogState extends State<_AiDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeColorsProvider);
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.tertiary),
+          Icon(Icons.auto_awesome, color: theme.themeColor),
           const SizedBox(width: 8),
           const Text('AI Generate'),
         ],
@@ -328,7 +329,7 @@ class _AiDialogState extends State<_AiDialog> {
             ),
             const SizedBox(height: 8),
             Text('⚠ Generowanie zastąpi istniejące pozycje.',
-                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.error)),
+                style: TextStyle(fontSize: 11, color: Colors.red.shade400)),
           ],
         ),
       ),
