@@ -55,6 +55,7 @@ import 'package:emma/blocks/definitions/budkon/materialy_lista_block.dart';
 import 'package:emma/blocks/definitions/budkon/faktura_alert_block.dart';
 import 'package:emma/blocks/definitions/budkon/budzet_etapu_block.dart';
 import 'package:emma/blocks/definitions/budkon/aktywne_budowy_block.dart';
+import 'package:emma/blocks/definitions/budkon/analiza_zdjecia_block.dart';
 
 import 'block_definition.dart';
 import 'block_descriptor.dart';
@@ -728,6 +729,7 @@ final emmaBlockRegistryProvider = Provider<EmmaBlockRegistry>((ref) {
       FakturaAlertBlockDefinition(),
       BudzetEtapuBlockDefinition(),
       AktywenBudowyBlockDefinition(),
+      AnalizaZdjeciaBlockDefinition(),
     ],
     fallback: GenericBlockDefinition(),
   );

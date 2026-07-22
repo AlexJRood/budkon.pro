@@ -149,18 +149,4 @@ class PredykcjaKosztowModel {
       );
 }
 
-// ---- Chat z asystentem ----
-
-enum RolaCzat { user, assistant }
-
-class WiadomoscCzatModel {
-  final String tresc;
-  final RolaCzat rola;
-  final DateTime czas;
-
-  const WiadomoscCzatModel({
-    required this.tresc,
-    required this.rola,
-    required this.czas,
-  });
-}
+// Chat is handled by EmmaChatInline — no local chat models needed.

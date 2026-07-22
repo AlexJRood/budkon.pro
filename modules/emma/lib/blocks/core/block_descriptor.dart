@@ -62,6 +62,7 @@ enum EmmaBlockType {
   fakturaAlert,
   budzetEtapu,
   aktywenBudowy,
+  analizaZdjecia,
 
   unknown,
 }
@@ -222,6 +223,10 @@ class EmmaBlockDescriptor {
       case 'aktywne_budowy':
       case 'active_sites':
         return EmmaBlockType.aktywenBudowy;
+      case 'analiza_zdjecia':
+      case 'photo_analysis':
+      case 'site_photo_analysis':
+        return EmmaBlockType.analizaZdjecia;
 
       default:
         return EmmaBlockType.unknown;

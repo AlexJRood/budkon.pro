@@ -29,6 +29,14 @@ class AiAsystentApi {
     return WpisDziennikModel.fromJson(r.data);
   }
 
+  Future<WpisDziennikModel> dodajWpisTekstowy(int budowaId, String tekst) async {
+    final r = await _dio.post('/ai/dziennik/dodaj/', data: {
+      'budowa_id': budowaId,
+      'tekst': tekst,
+    });
+    return WpisDziennikModel.fromJson(r.data);
+  }
+
   // ---- Analiza zdjęć ----
 
   Future<List<AnalizaZdjeciaModel>> fetchAnalizy(int budowaId) async {
@@ -59,19 +67,6 @@ class AiAsystentApi {
     return PredykcjaKosztowModel.fromJson(r.data);
   }
 
-  // ---- Chat ----
-
-  Future<String> zapytaj(int budowaId, String pytanie,
-      List<WiadomoscCzatModel> historia) async {
-    final r = await _dio.post('/ai/czat/', data: {
-      'budowa_id': budowaId,
-      'pytanie': pytanie,
-      'historia': historia
-          .map((m) => {'rola': m.rola.name, 'tresc': m.tresc})
-          .toList(),
-    });
-    return r.data['odpowiedz'] ?? '';
-  }
 }
 
 final aiAsystentApiProvider = Provider<AiAsystentApi>(

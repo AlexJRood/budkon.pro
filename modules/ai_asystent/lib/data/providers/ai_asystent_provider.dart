@@ -23,6 +23,12 @@ class DziennikNotifier
     final wpis = await api.wyslijAudio(arg, audio);
     state = AsyncData([wpis, ...state.valueOrNull ?? []]);
   }
+
+  Future<void> dodajTekst(String tekst) async {
+    final api = ref.read(aiAsystentApiProvider);
+    final wpis = await api.dodajWpisTekstowy(arg, tekst);
+    state = AsyncData([wpis, ...state.valueOrNull ?? []]);
+  }
 }
 
 final dziennikNotifierProvider = AsyncNotifierProvider.autoDispose
@@ -78,54 +84,4 @@ final predykcjaProvider = AsyncNotifierProvider.autoDispose
   PredykcjaNotifier.new,
 );
 
-// ---- Chat ----
-
-class CzatState {
-  final List<WiadomoscCzatModel> historia;
-  final bool ladowanie;
-
-  const CzatState({this.historia = const [], this.ladowanie = false});
-
-  CzatState copyWith({List<WiadomoscCzatModel>? historia, bool? ladowanie}) =>
-      CzatState(
-        historia: historia ?? this.historia,
-        ladowanie: ladowanie ?? this.ladowanie,
-      );
-}
-
-class CzatNotifier extends AutoDisposeFamilyNotifier<CzatState, int> {
-  @override
-  CzatState build(int arg) => const CzatState();
-
-  Future<void> wyslij(String pytanie) async {
-    final wiadomoscUser = WiadomoscCzatModel(
-      tresc: pytanie,
-      rola: RolaCzat.user,
-      czas: DateTime.now(),
-    );
-    final nowaHistoria = [...state.historia, wiadomoscUser];
-    state = state.copyWith(historia: nowaHistoria, ladowanie: true);
-
-    try {
-      final odpowiedz = await ref
-          .read(aiAsystentApiProvider)
-          .zapytaj(arg, pytanie, state.historia);
-      final wiadomoscAi = WiadomoscCzatModel(
-        tresc: odpowiedz,
-        rola: RolaCzat.assistant,
-        czas: DateTime.now(),
-      );
-      state = state.copyWith(
-          historia: [...nowaHistoria, wiadomoscAi], ladowanie: false);
-    } catch (_) {
-      state = state.copyWith(ladowanie: false);
-    }
-  }
-
-  void wyczysc() => state = const CzatState();
-}
-
-final czatProvider =
-    NotifierProvider.autoDispose.family<CzatNotifier, CzatState, int>(
-  CzatNotifier.new,
-);
+// Chat is handled by EmmaChatInline — no local chat state needed.
