@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../data/models/kosztorys_model.dart';
 
-class PozycjaTile extends StatefulWidget {
+class PozycjaTile extends ConsumerStatefulWidget {
   const PozycjaTile({
     super.key,
     required this.pozycja,
@@ -15,10 +17,10 @@ class PozycjaTile extends StatefulWidget {
   final VoidCallback onDelete;
 
   @override
-  State<PozycjaTile> createState() => _PozycjaTileState();
+  ConsumerState<PozycjaTile> createState() => _PozycjaTileState();
 }
 
-class _PozycjaTileState extends State<PozycjaTile> {
+class _PozycjaTileState extends ConsumerState<PozycjaTile> {
   late final TextEditingController _iloscCtrl;
   late final TextEditingController _cenaCtrl;
   bool _expanded = false;
@@ -48,18 +50,17 @@ class _PozycjaTileState extends State<PozycjaTile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final theme = ref.read(themeColorsProvider);
     final hasAiSuggestion = widget.pozycja.aiSuggestedPrice != null;
 
     return Card(
       elevation: 0,
-      color: cs.surfaceContainerLow,
+      color: theme.userTile,
       margin: const EdgeInsets.symmetric(vertical: 2),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: hasAiSuggestion
-            ? BorderSide(color: cs.tertiary.withOpacity(0.4))
+            ? BorderSide(color: const Color(0xFF6A5ACD).withAlpha(100))
             : BorderSide.none,
       ),
       child: InkWell(
@@ -70,7 +71,6 @@ class _PozycjaTileState extends State<PozycjaTile> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Główna linia
               Row(
                 children: [
                   if (widget.pozycja.knrNumer != null)
@@ -79,21 +79,21 @@ class _PozycjaTileState extends State<PozycjaTile> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: cs.secondaryContainer,
+                        color: theme.themeColor.withAlpha(40),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         widget.pozycja.knrNumer!,
                         style: TextStyle(
                             fontSize: 10,
-                            color: cs.onSecondaryContainer,
+                            color: theme.themeColor,
                             fontWeight: FontWeight.w600),
                       ),
                     ),
                   Expanded(
                     child: Text(
                       widget.pozycja.opis,
-                      style: theme.textTheme.bodyMedium,
+                      style: TextStyle(fontSize: 14, color: theme.textColor),
                       maxLines: _expanded ? null : 2,
                       overflow:
                           _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
@@ -102,9 +102,10 @@ class _PozycjaTileState extends State<PozycjaTile> {
                   const SizedBox(width: 8),
                   Text(
                     _fmtWartosc(widget.pozycja.wartosc),
-                    style: theme.textTheme.labelLarge?.copyWith(
+                    style: TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: cs.primary,
+                      color: theme.themeColor,
                     ),
                   ),
                 ],
@@ -120,6 +121,7 @@ class _PozycjaTileState extends State<PozycjaTile> {
                         controller: _iloscCtrl,
                         onSubmitted: (_) => _commit(),
                         aiValue: widget.pozycja.aiSuggestedQty,
+                        accentColor: theme.themeColor,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -129,19 +131,20 @@ class _PozycjaTileState extends State<PozycjaTile> {
                         controller: _cenaCtrl,
                         onSubmitted: (_) => _commit(),
                         aiValue: widget.pozycja.aiSuggestedPrice,
+                        accentColor: theme.themeColor,
                       ),
                     ),
                     const SizedBox(width: 4),
                     IconButton(
                       icon: const Icon(Icons.check, size: 20),
                       tooltip: 'Zapisz',
-                      color: cs.primary,
+                      color: theme.themeColor,
                       onPressed: _commit,
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
                       tooltip: 'Usuń pozycję',
-                      color: cs.error,
+                      color: Colors.red,
                       onPressed: widget.onDelete,
                     ),
                   ],
@@ -165,21 +168,22 @@ class _NumField extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.onSubmitted,
+    required this.accentColor,
     this.aiValue,
   });
 
   final String label;
   final TextEditingController controller;
   final void Function(String) onSubmitted;
+  final Color accentColor;
   final double? aiValue;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        Text(label, style: const TextStyle(fontSize: 11)),
         const SizedBox(height: 2),
         TextFormField(
           controller: controller,
@@ -197,7 +201,7 @@ class _NumField extends StatelessWidget {
                 ? Tooltip(
                     message: 'Sugestia AI: $aiValue',
                     child: Icon(Icons.auto_awesome,
-                        size: 14, color: cs.tertiary),
+                        size: 14, color: const Color(0xFF6A5ACD)),
                   )
                 : null,
           ),

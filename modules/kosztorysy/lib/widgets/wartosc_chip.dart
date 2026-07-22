@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 
-class WartoscChip extends StatelessWidget {
+class WartoscChip extends ConsumerWidget {
   const WartoscChip({super.key, required this.wartosc, this.large = false});
   final double wartosc;
   final bool large;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: large ? 14 : 10,
         vertical: large ? 8 : 4,
       ),
       decoration: BoxDecoration(
-        color: cs.primaryContainer,
+        color: theme.themeColor.withAlpha(30),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -22,7 +24,7 @@ class WartoscChip extends StatelessWidget {
         style: TextStyle(
           fontSize: large ? 18 : 13,
           fontWeight: FontWeight.w700,
-          color: cs.onPrimaryContainer,
+          color: theme.themeColor,
         ),
       ),
     );

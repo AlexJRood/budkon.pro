@@ -1,30 +1,31 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../data/models/budowa_model.dart';
 
-class EtapTile extends StatelessWidget {
+class EtapTile extends ConsumerWidget {
   const EtapTile({super.key, required this.etap, required this.onStatusChange});
   final EtapBudowyModel etap;
   final ValueChanged<StatusEtapu> onStatusChange;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
 
     return Card(
       elevation: 0,
-      color: cs.surfaceContainerLow,
+      color: theme.userTile,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: etap.status == StatusEtapu.wToku
-            ? BorderSide(color: cs.primary, width: 1.5)
+            ? BorderSide(color: theme.themeColor, width: 1.5)
             : BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            _StatusIcon(status: etap.status),
+            _StatusIcon(status: etap.status, theme: theme),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -32,13 +33,14 @@ class EtapTile extends StatelessWidget {
                 children: [
                   Text(
                     etap.nazwa,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
+                      color: etap.status == StatusEtapu.zakonczony
+                          ? theme.textColor.withAlpha(80)
+                          : theme.textColor,
                       decoration: etap.status == StatusEtapu.zakonczony
                           ? TextDecoration.lineThrough
-                          : null,
-                      color: etap.status == StatusEtapu.zakonczony
-                          ? cs.outline
                           : null,
                     ),
                   ),
@@ -46,7 +48,10 @@ class EtapTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       _dateRange(etap),
-                      style: theme.textTheme.labelSmall?.copyWith(color: cs.outline),
+                      style: TextStyle(
+                        color: theme.textColor.withAlpha(100),
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ],
@@ -70,18 +75,16 @@ class EtapTile extends StatelessWidget {
 }
 
 class _StatusIcon extends StatelessWidget {
-  const _StatusIcon({required this.status});
+  const _StatusIcon({required this.status, required this.theme});
   final StatusEtapu status;
+  final ThemeColors theme;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return switch (status) {
-      StatusEtapu.planowany => Icon(Icons.radio_button_unchecked, size: 22, color: cs.outline),
-      StatusEtapu.wToku => Icon(Icons.pending_outlined, size: 22, color: cs.primary),
-      StatusEtapu.zakonczony => Icon(Icons.check_circle, size: 22, color: Colors.green),
-    };
-  }
+  Widget build(BuildContext context) => switch (status) {
+    StatusEtapu.planowany => Icon(Icons.radio_button_unchecked, size: 22, color: theme.textColor.withAlpha(100)),
+    StatusEtapu.wToku     => Icon(Icons.pending_outlined, size: 22, color: theme.themeColor),
+    StatusEtapu.zakonczony => const Icon(Icons.check_circle, size: 22, color: Colors.green),
+  };
 }
 
 class _StatusMenu extends StatelessWidget {
@@ -102,4 +105,3 @@ class _StatusMenu extends StatelessWidget {
     );
   }
 }
-

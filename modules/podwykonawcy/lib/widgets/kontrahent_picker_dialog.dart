@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../data/models/podwykonawcy_model.dart';
 import '../data/providers/podwykonawcy_provider.dart';
 import '../data/services/podwykonawcy_api.dart';
@@ -89,8 +90,6 @@ class _KontrahentPickerDialogState
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
@@ -219,7 +218,7 @@ class _PickExistingBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(kontrahentPickerProvider);
-    final cs = Theme.of(context).colorScheme;
+    final theme = ref.read(themeColorsProvider);
 
     return Column(
       children: [
@@ -248,9 +247,7 @@ class _PickExistingBody extends ConsumerWidget {
                 return Center(
                   child: Text(
                     'Wpisz nazwę lub telefon podwykonawcy',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: cs.outline,
-                        ),
+                    style: TextStyle(color: theme.textColor.withAlpha(120)),
                   ),
                 );
               }
@@ -260,7 +257,7 @@ class _PickExistingBody extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.search_off,
-                          size: 40, color: cs.outline),
+                          size: 40, color: theme.textColor.withAlpha(100)),
                       const SizedBox(height: 8),
                       const Text('Brak wyników'),
                     ],
@@ -275,10 +272,10 @@ class _PickExistingBody extends ConsumerWidget {
                   final isSelected = selected?.id == k.id;
                   return ListTile(
                     selected: isSelected,
-                    selectedTileColor: cs.primaryContainer.withOpacity(0.3),
+                    selectedTileColor: theme.themeColor.withAlpha(40),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
-                    leading: _KontrahentAvatar(kontrahent: k),
+                    leading: _KontrahentAvatar(kontrahent: k, theme: theme),
                     title: Text(k.displayName),
                     subtitle: Text([
                       if (k.branza != null) k.branza!.label,
@@ -286,7 +283,7 @@ class _PickExistingBody extends ConsumerWidget {
                     ].join('  •  ')),
                     trailing: isSelected
                         ? Icon(Icons.check_circle,
-                            color: cs.primary)
+                            color: theme.themeColor)
                         : null,
                     onTap: () => onSelect(k),
                   );
@@ -422,7 +419,8 @@ class _CreateNewBody extends StatelessWidget {
 
 class _KontrahentAvatar extends StatelessWidget {
   final KontrahentModel kontrahent;
-  const _KontrahentAvatar({required this.kontrahent});
+  final ThemeColors theme;
+  const _KontrahentAvatar({required this.kontrahent, required this.theme});
 
   String get _initials {
     final n = kontrahent.displayName;
@@ -440,11 +438,9 @@ class _KontrahentAvatar extends StatelessWidget {
       );
     }
     return CircleAvatar(
-      backgroundColor:
-          Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: theme.themeColor.withAlpha(60),
       child: Text(_initials,
-          style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer)),
+          style: TextStyle(color: theme.themeColor, fontWeight: FontWeight.w700)),
     );
   }
 }

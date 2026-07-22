@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../data/models/harmonogram_model.dart';
 
-class GanttBar extends StatelessWidget {
+class GanttBar extends ConsumerWidget {
   final ZadanieModel zadanie;
   final DateTime projectStart;
   final DateTime projectEnd;
@@ -13,19 +15,19 @@ class GanttBar extends StatelessWidget {
     required this.projectEnd,
   });
 
-  Color _barColor(BuildContext ctx) {
-    final cs = Theme.of(ctx).colorScheme;
+  Color _barColor(ThemeColors theme) {
     if (zadanie.isOpoznione) return Colors.orange.shade700;
     return switch (zadanie.status) {
-      StatusZadania.zakonczone => cs.secondary,
-      StatusZadania.w_toku => cs.primary,
-      StatusZadania.wstrzymane => cs.outline,
-      _ => cs.primaryContainer,
+      StatusZadania.zakonczone => Colors.green,
+      StatusZadania.w_toku    => theme.themeColor,
+      StatusZadania.wstrzymane => theme.textColor.withAlpha(100),
+      _                       => theme.themeColor.withAlpha(120),
     };
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final totalDays =
         projectEnd.difference(projectStart).inDays.clamp(1, 9999).toDouble();
 
@@ -41,6 +43,7 @@ class GanttBar extends StatelessWidget {
     final offsetFrac = offsetDays / totalDays;
     final widthFrac = durationDays / totalDays;
     final progressFrac = zadanie.postepProcent / 100;
+    final barColor = _barColor(theme);
 
     return LayoutBuilder(builder: (ctx, constraints) {
       final total = constraints.maxWidth;
@@ -53,10 +56,7 @@ class GanttBar extends StatelessWidget {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(ctx)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withOpacity(0.5),
+                  color: theme.bordercolor.withAlpha(30),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -69,7 +69,7 @@ class GanttBar extends StatelessWidget {
               child: Container(
                 width: (widthFrac * total).clamp(4.0, total),
                 decoration: BoxDecoration(
-                  color: _barColor(ctx).withOpacity(0.25),
+                  color: barColor.withAlpha(60),
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: FractionallySizedBox(
@@ -77,7 +77,7 @@ class GanttBar extends StatelessWidget {
                   widthFactor: progressFrac.clamp(0.0, 1.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: _barColor(ctx),
+                      color: barColor,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -95,7 +95,7 @@ class GanttBar extends StatelessWidget {
                     '+${zadanie.opoznienieDni}d',
                     style: TextStyle(
                       fontSize: 9,
-                      color: Colors.orange.shade900,
+                      color: Colors.orange.shade300,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -107,4 +107,3 @@ class GanttBar extends StatelessWidget {
     });
   }
 }
-

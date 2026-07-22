@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import 'package:intl/intl.dart';
 import '../data/models/harmonogram_model.dart';
 
-class MilestoneChip extends StatelessWidget {
+class MilestoneChip extends ConsumerWidget {
   final MilestoneModel milestone;
 
   const MilestoneChip({super.key, required this.milestone});
@@ -19,17 +21,18 @@ class MilestoneChip extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final color = _parseColor();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: milestone.osiagniety
-            ? color.withOpacity(0.15)
-            : color.withOpacity(0.1),
+            ? color.withAlpha(40)
+            : color.withAlpha(25),
         border: Border.all(
-          color: milestone.osiagniety ? color : color.withOpacity(0.4),
+          color: milestone.osiagniety ? color : color.withAlpha(100),
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -46,15 +49,12 @@ class MilestoneChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             milestone.nazwa,
-            style: Theme.of(context).textTheme.labelSmall,
+            style: TextStyle(color: theme.textColor, fontSize: 11),
           ),
           const SizedBox(width: 4),
           Text(
             _fmt.format(milestone.data),
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: color),
+            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
           ),
         ],
       ),

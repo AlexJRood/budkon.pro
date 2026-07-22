@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/theme/apptheme.dart';
 import '../data/models/pracownicy_model.dart';
 
-/// Macierz umiejętności pracownika — wizualna siatka spec × poziom.
-class SkillMatrix extends StatelessWidget {
+class SkillMatrix extends ConsumerWidget {
   final List<UmiejetnoscModel> umiejetnosci;
   final VoidCallback? onDodaj;
 
@@ -13,15 +14,17 @@ class SkillMatrix extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
+
     if (umiejetnosci.isEmpty) {
-      return _EmptyMatrix(onDodaj: onDodaj);
+      return _EmptyMatrix(onDodaj: onDodaj, theme: theme);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...umiejetnosci.map((u) => _SkillRow(umiejetnosc: u)),
+        ...umiejetnosci.map((u) => _SkillRow(umiejetnosc: u, theme: theme)),
         if (onDodaj != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -38,7 +41,8 @@ class SkillMatrix extends StatelessWidget {
 
 class _SkillRow extends StatelessWidget {
   final UmiejetnoscModel umiejetnosc;
-  const _SkillRow({required this.umiejetnosc});
+  final ThemeColors theme;
+  const _SkillRow({required this.umiejetnosc, required this.theme});
 
   Color _levelColor(PoziomDoswiadczenia p) => switch (p) {
         PoziomDoswiadczenia.uczen => const Color(0xFF9E9E9E),
@@ -50,7 +54,7 @@ class _SkillRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final muted = theme.textColor.withAlpha(100);
     final spec = umiejetnosc.specjalizacja;
     final poziom = umiejetnosc.poziom;
     final color = _levelColor(poziom);
@@ -69,14 +73,12 @@ class _SkillRow extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
             ),
-            // Lata doświadczenia
             if (umiejetnosc.lataDowiadczenia > 0)
               Text(
                 '${umiejetnosc.lataDowiadczenia} lat',
-                style: TextStyle(color: cs.outline, fontSize: 11),
+                style: TextStyle(color: muted, fontSize: 11),
               ),
             const SizedBox(width: 10),
-            // Badge poziomu
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -97,10 +99,8 @@ class _SkillRow extends StatelessWidget {
 
           const SizedBox(height: 5),
 
-          // Pasek poziomu — 5 kropek
           _LevelDots(rank: poziom.rank, color: color),
 
-          // Certyfikat
           if (umiejetnosc.certyfikat.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 24),
@@ -119,7 +119,7 @@ class _SkillRow extends StatelessWidget {
                   umiejetnosc.certyfikat,
                   style: TextStyle(
                     color: umiejetnosc.certyfikatWazny
-                        ? cs.outline
+                        ? muted
                         : Colors.orange,
                     fontSize: 11,
                   ),
@@ -127,20 +127,19 @@ class _SkillRow extends StatelessWidget {
                 if (umiejetnosc.certyfikatWaznyDo != null) ...[
                   Text(
                     ' (do ${umiejetnosc.certyfikatWaznyDo})',
-                    style: TextStyle(color: cs.outline, fontSize: 10),
+                    style: TextStyle(color: muted, fontSize: 10),
                   ),
                 ],
               ]),
             ),
 
-          // Stawka specjalizacji
           if (umiejetnosc.stawkaSpecjalizacji != null)
             Padding(
               padding: const EdgeInsets.only(top: 3, left: 24),
               child: Text(
                 '${umiejetnosc.stawkaSpecjalizacji!.toStringAsFixed(2)} PLN/h',
                 style: TextStyle(
-                    color: cs.primary,
+                    color: theme.themeColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w600),
               ),
@@ -180,18 +179,18 @@ class _LevelDots extends StatelessWidget {
 
 class _EmptyMatrix extends StatelessWidget {
   final VoidCallback? onDodaj;
-  const _EmptyMatrix({this.onDodaj});
+  final ThemeColors theme;
+  const _EmptyMatrix({this.onDodaj, required this.theme});
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
           Icon(Icons.psychology_outlined,
-              size: 40, color: Theme.of(context).colorScheme.outline),
+              size: 40, color: theme.textColor.withAlpha(100)),
           const SizedBox(height: 8),
           Text(
             'Brak zarejestrowanych umiejętności',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.outline),
+            style: TextStyle(color: theme.textColor.withAlpha(120)),
           ),
           if (onDodaj != null) ...[
             const SizedBox(height: 12),
@@ -207,14 +206,15 @@ class _EmptyMatrix extends StatelessWidget {
 
 // ---- Mini karta umiejętności (do listy pracowników) -----------------------
 
-class SkillChips extends StatelessWidget {
+class SkillChips extends ConsumerWidget {
   final List<Map<String, dynamic>> specjalizacje;
   final int max;
 
   const SkillChips({super.key, required this.specjalizacje, this.max = 3});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeColorsProvider);
     final visible = specjalizacje.take(max).toList();
     final rest = specjalizacje.length - max;
 
@@ -234,15 +234,13 @@ class SkillChips extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
+              color: theme.bordercolor.withAlpha(50),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '+$rest',
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: theme.textColor.withAlpha(120),
                   fontSize: 10),
             ),
           ),

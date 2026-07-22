@@ -345,18 +345,17 @@ class _BzpCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final dni = wynik.dniDoTerminu;
     final expired = dni != null && dni < 0;
     final urgent = dni != null && dni >= 0 && dni <= 7;
+    final muted = theme.textColor.withAlpha(120);
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 5.h),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: cs.outlineVariant.withOpacity(0.5)),
+        side: BorderSide(color: theme.bordercolor.withAlpha(60)),
       ),
       child: Padding(
         padding: EdgeInsets.all(14.w),
@@ -370,13 +369,13 @@ class _BzpCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: cs.primaryContainer.withOpacity(0.5),
+                      color: theme.themeColor.withAlpha(40),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       wynik.noticeNumber!,
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.primary,
+                      style: TextStyle(
+                        color: theme.themeColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 10.sp,
                       ),
@@ -386,7 +385,7 @@ class _BzpCard extends StatelessWidget {
                 ],
                 const Spacer(),
                 if (dni != null)
-                  _TerminChip(dni: dni, expired: expired, urgent: urgent),
+                  _TerminChip(dni: dni, expired: expired, urgent: urgent, theme: theme),
                 if (wynik.url != null) ...[
                   const SizedBox(width: 6),
                   InkWell(
@@ -396,7 +395,7 @@ class _BzpCard extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: Icon(Icons.open_in_new,
-                          size: 16, color: cs.primary),
+                          size: 16, color: theme.themeColor),
                     ),
                   ),
                 ],
@@ -407,7 +406,11 @@ class _BzpCard extends StatelessWidget {
             // Tytuł
             Text(
               wynik.tytul.isEmpty ? '(brak tytułu)' : wynik.tytul,
-              style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: theme.textColor,
+              ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -416,12 +419,12 @@ class _BzpCard extends StatelessWidget {
             // Zamawiający
             Row(
               children: [
-                Icon(Icons.business_outlined, size: 13, color: cs.onSurfaceVariant),
+                Icon(Icons.business_outlined, size: 13, color: muted),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     wynik.zamawiajacy,
-                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    style: TextStyle(color: muted, fontSize: 12.sp),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -433,11 +436,11 @@ class _BzpCard extends StatelessWidget {
               SizedBox(height: 2.h),
               Row(
                 children: [
-                  Icon(Icons.location_on_outlined, size: 13, color: cs.onSurfaceVariant),
+                  Icon(Icons.location_on_outlined, size: 13, color: muted),
                   const SizedBox(width: 4),
                   Text(
                     wynik.lokalizacja!,
-                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    style: TextStyle(color: muted, fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -452,13 +455,13 @@ class _BzpCard extends StatelessWidget {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: cs.secondaryContainer.withOpacity(0.5),
+                      color: theme.themeColor.withAlpha(25),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       cpv,
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.onSecondaryContainer,
+                      style: TextStyle(
+                        color: theme.themeColor,
                         fontSize: 10.sp,
                       ),
                     ),
@@ -477,22 +480,27 @@ class _TerminChip extends StatelessWidget {
   final int dni;
   final bool expired;
   final bool urgent;
+  final ThemeColors theme;
 
-  const _TerminChip({required this.dni, required this.expired, required this.urgent});
+  const _TerminChip({
+    required this.dni,
+    required this.expired,
+    required this.urgent,
+    required this.theme,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final color = expired
-        ? cs.onSurfaceVariant
+        ? theme.textColor.withAlpha(100)
         : urgent
-            ? cs.error
-            : cs.primary;
+            ? Colors.red.shade400
+            : theme.themeColor;
     final bg = expired
-        ? cs.surfaceContainerHighest
+        ? theme.bordercolor.withAlpha(40)
         : urgent
-            ? cs.errorContainer.withOpacity(0.3)
-            : cs.primaryContainer.withOpacity(0.3);
+            ? Colors.red.withAlpha(40)
+            : theme.themeColor.withAlpha(30);
     final label = expired
         ? 'Termin minął'
         : dni == 0
