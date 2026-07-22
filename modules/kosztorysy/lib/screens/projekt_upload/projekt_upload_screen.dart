@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:core/theme/apptheme.dart';
 import 'package:core/shell/manager/bar_manager.dart';
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
+import '../../data/models/projekt_model.dart';
 import '../../data/providers/projekt_provider.dart';
 import '../projekt_review/projekt_review_screen.dart';
 

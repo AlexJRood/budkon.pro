@@ -7,6 +7,7 @@ import 'package:core/platform/navigation_service.dart';
 import '../../data/models/projekt_model.dart';
 import '../../data/providers/projekt_provider.dart';
 import '../../data/providers/kosztorysy_provider.dart';
+import '../../data/services/kosztorysy_api.dart';
 import '../../widgets/floor_plan/floor_plan_widget.dart';
 
 class ProjektReviewScreen extends ConsumerStatefulWidget {
@@ -457,7 +458,7 @@ class _ProjektReviewScreenState extends ConsumerState<ProjektReviewScreen>
             ],
           ],
         ),
-        trailing: Text(
+        secondary: Text(
           _formatPrice(p.wartoscSzacunkowa),
           style: TextStyle(
               color: theme.themeColor,
