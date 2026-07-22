@@ -27,7 +27,7 @@ class GanttBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     final totalDays =
         projectEnd.difference(projectStart).inDays.clamp(1, 9999).toDouble();
 
@@ -107,4 +107,5 @@ class GanttBar extends ConsumerWidget {
     });
   }
 }
+
 

@@ -61,7 +61,7 @@ class _BzpSzukajScreenState extends ConsumerState<BzpSzukajScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     final state = ref.watch(bzpSzukajProvider);
 
     return BarManager(
@@ -528,4 +528,5 @@ class _TerminChip extends StatelessWidget {
     );
   }
 }
+
 

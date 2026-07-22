@@ -9,7 +9,7 @@ class WartoscChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: large ? 14 : 10,
@@ -36,4 +36,5 @@ class WartoscChip extends ConsumerWidget {
     return '${v.toStringAsFixed(2)} zĹ‚';
   }
 }
+
 

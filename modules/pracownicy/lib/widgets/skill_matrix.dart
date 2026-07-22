@@ -15,7 +15,7 @@ class SkillMatrix extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
 
     if (umiejetnosci.isEmpty) {
       return _EmptyMatrix(onDodaj: onDodaj, theme: theme);
@@ -214,7 +214,7 @@ class SkillChips extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     final visible = specjalizacje.take(max).toList();
     final rest = specjalizacje.length - max;
 
@@ -277,4 +277,5 @@ class _MiniChip extends StatelessWidget {
         ),
       );
 }
+
 

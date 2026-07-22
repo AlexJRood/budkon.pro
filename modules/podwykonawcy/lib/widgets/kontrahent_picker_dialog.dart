@@ -218,7 +218,7 @@ class _PickExistingBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(kontrahentPickerProvider);
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
 
     return Column(
       children: [
@@ -444,4 +444,5 @@ class _KontrahentAvatar extends StatelessWidget {
     );
   }
 }
+
 

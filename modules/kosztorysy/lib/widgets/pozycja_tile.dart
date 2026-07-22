@@ -50,7 +50,7 @@ class _PozycjaTileState extends ConsumerState<PozycjaTile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     final hasAiSuggestion = widget.pozycja.aiSuggestedPrice != null;
 
     return Card(
@@ -210,4 +210,5 @@ class _NumField extends StatelessWidget {
     );
   }
 }
+
 

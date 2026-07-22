@@ -22,7 +22,7 @@ class MilestoneChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
     final color = _parseColor();
 
     return Container(
@@ -61,4 +61,5 @@ class MilestoneChip extends ConsumerWidget {
     );
   }
 }
+
 

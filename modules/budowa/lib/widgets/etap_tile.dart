@@ -10,7 +10,7 @@ class EtapTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
 
     return Card(
       elevation: 0,
@@ -105,4 +105,5 @@ class _StatusMenu extends StatelessWidget {
     );
   }
 }
+
 

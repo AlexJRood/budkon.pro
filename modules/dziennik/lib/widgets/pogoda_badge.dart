@@ -18,7 +18,7 @@ class PogodaBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (pogoda == null) return const SizedBox.shrink();
-    final theme = ref.watch(themeColorsProvider);
+    final theme = ref.read(themeColorsProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -50,4 +50,5 @@ class PogodaBadge extends ConsumerWidget {
     );
   }
 }
+
 
