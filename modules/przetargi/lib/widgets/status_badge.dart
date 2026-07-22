@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../data/models/przetarg_model.dart';
 
 class PrzetargStatusBadge extends StatelessWidget {
@@ -7,21 +6,19 @@ class PrzetargStatusBadge extends StatelessWidget {
 
   const PrzetargStatusBadge(this.status, {super.key});
 
-  (Color, Color) _colors(ColorScheme cs) => switch (status) {
-        StatusPrzetargu.nowy => (cs.onSecondaryContainer, cs.secondaryContainer),
-        StatusPrzetargu.analizowany => (cs.onTertiaryContainer, cs.tertiaryContainer),
-        StatusPrzetargu.kosztorysGotowy =>
-          (cs.onPrimaryContainer, cs.primaryContainer),
-        StatusPrzetargu.zlozony => (Colors.blue.shade800, Colors.blue.shade100),
-        StatusPrzetargu.wygrany => (Colors.green.shade800, Colors.green.shade100),
-        StatusPrzetargu.przegrany => (Colors.red.shade800, Colors.red.shade100),
-        StatusPrzetargu.pominiety => (cs.onSurfaceVariant, cs.surfaceContainerHighest),
-      };
+  (Color, Color) _colors() => switch (status) {
+    StatusPrzetargu.nowy           => (Colors.white, const Color(0xFF1A5276)),
+    StatusPrzetargu.analizowany    => (Colors.white, const Color(0xFF7B5E00)),
+    StatusPrzetargu.kosztorysGotowy => (Colors.white, const Color(0xFF69212A)),
+    StatusPrzetargu.zlozony        => (Colors.white, const Color(0xFF1A4A7A)),
+    StatusPrzetargu.wygrany        => (Colors.white, const Color(0xFF1E7A3A)),
+    StatusPrzetargu.przegrany      => (Colors.white, const Color(0xFF7B1F1F)),
+    StatusPrzetargu.pominiety      => (const Color(0xFFBBBBBB), const Color(0xFF3A3A3A)),
+  };
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final (fg, bg) = _colors(cs);
+    final (fg, bg) = _colors();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(

@@ -8,7 +8,7 @@ class BudowaStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, bg) = _colors(context, status);
+    final (fg, bg) = _colors(status);
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: small ? 6 : 10,
@@ -23,21 +23,18 @@ class BudowaStatusBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: small ? 10 : 12,
           fontWeight: FontWeight.w600,
-          color: color,
+          color: fg,
           letterSpacing: 0.2,
         ),
       ),
     );
   }
 
-  (Color, Color) _colors(BuildContext context, StatusBudowy s) {
-    final cs = Theme.of(context).colorScheme;
-    return switch (s) {
-      StatusBudowy.oferta => (cs.onTertiaryContainer, cs.tertiaryContainer),
-      StatusBudowy.umowa => (cs.onSecondaryContainer, cs.secondaryContainer),
-      StatusBudowy.wToku => (cs.onPrimaryContainer, cs.primaryContainer),
-      StatusBudowy.zakonczona => (Colors.green.shade800, Colors.green.shade100),
-      StatusBudowy.anulowana => (cs.onErrorContainer, cs.errorContainer),
-    };
-  }
+  (Color, Color) _colors(StatusBudowy s) => switch (s) {
+    StatusBudowy.oferta    => (Colors.white, const Color(0xFF7B5E00)),
+    StatusBudowy.umowa     => (Colors.white, const Color(0xFF1A5276)),
+    StatusBudowy.wToku     => (Colors.white, const Color(0xFF69212A)),
+    StatusBudowy.zakonczona => (Colors.white, const Color(0xFF1E7A3A)),
+    StatusBudowy.anulowana => (Colors.white, const Color(0xFF7B1F1F)),
+  };
 }

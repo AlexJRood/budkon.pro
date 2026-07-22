@@ -7,11 +7,10 @@ class KosztorysStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final (fg, bg) = switch (status) {
-      StatusKosztorysu.roboczy => (cs.onSurfaceVariant, cs.surfaceContainerHighest),
-      StatusKosztorysu.oferta => (cs.onTertiaryContainer, cs.tertiaryContainer),
-      StatusKosztorysu.zatwierdzony => (Colors.green.shade800, Colors.green.shade100),
+      StatusKosztorysu.roboczy      => (const Color(0xFFBBBBBB), const Color(0xFF3A3A3A)),
+      StatusKosztorysu.oferta       => (Colors.white, const Color(0xFF7B5E00)),
+      StatusKosztorysu.zatwierdzony => (Colors.white, const Color(0xFF1E7A3A)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
