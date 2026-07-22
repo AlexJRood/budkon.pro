@@ -1,6 +1,8 @@
 ﻿import 'package:core/platform/budkon_api_client.dart';
 import 'package:dio/dio.dart';
 
+import '../models/bzp_wynik_model.dart';
+
 class PrzetargiApi {
   final Dio _dio = budkonDio(receiveTimeout: const Duration(seconds: 30));
 
@@ -102,4 +104,39 @@ class PrzetargiApi {
 
   Future<void> deleteSubskrypcja(int id) =>
       _dio.delete('/przetargi-subskrypcje/$id/');
+
+  // ------------------------------------------------------------------ //
+  // BZP na żywo                                                         //
+  // ------------------------------------------------------------------ //
+
+  Future<(List<BzpWynikModel>, int)> szukajBzp({
+    String? fraza,
+    String? cpv,
+    int dniWstecz = 30,
+    int strona = 1,
+    int naStronie = 20,
+  }) async {
+    final params = <String, dynamic>{
+      'na_stronie': naStronie,
+      'strona': strona,
+      'dni_wstecz': dniWstecz,
+    };
+    if (fraza != null && fraza.isNotEmpty) params['q'] = fraza;
+    if (cpv != null && cpv.isNotEmpty) params['cpv'] = cpv;
+
+    final resp = await _dio.get(
+      '/przetargi/szukaj-bzp/',
+      queryParameters: params,
+      options: Options(receiveTimeout: const Duration(seconds: 60)),
+    );
+
+    final data = resp.data as Map<String, dynamic>;
+    final total = data['count'] as int? ?? 0;
+    final raw = (data['results'] as List?) ?? [];
+    final wyniki = raw
+        .cast<Map<String, dynamic>>()
+        .map(BzpWynikModel.fromJson)
+        .toList();
+    return (wyniki, total);
+  }
 }

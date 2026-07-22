@@ -5,7 +5,6 @@ import 'package:core/ui/side_menu/slide_rotate_menu.dart';
 import 'package:core/shell/manager/bar_manager.dart';
 import 'package:core/platform/navigation_service.dart';
 
-import '../../data/models/przetarg_model.dart';
 import '../../data/providers/emma_inbox_provider.dart';
 import '../../data/providers/przetargi_provider.dart';
 import '../../data/services/przetargi_api.dart';
@@ -132,6 +131,11 @@ class _PrzetargiListScreenState extends ConsumerState<PrzetargiListScreen> {
             icon: Icon(Icons.tune_outlined, color: theme.textColor),
             tooltip: 'Subskrypcje',
             onPressed: () => ref.read(navigationService).pushNamedScreen('/przetargi/subskrypcje'),
+          ),
+          IconButton(
+            icon: Icon(Icons.travel_explore, color: theme.textColor),
+            tooltip: 'Przeglądaj BZP',
+            onPressed: () => ref.read(navigationService).pushNamedScreen('/przetargi/bzp-szukaj'),
           ),
           _FetchButton(fetchState: fetchState),
         ],
