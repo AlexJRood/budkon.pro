@@ -1,0 +1,30 @@
+name: floor_plan
+description: "Floor plan editor — canvas with walls, doors, windows, room labels"
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  core:
+    path: ../../core
+
+  beamer: ^1.7.0
+  dio: ^5.7.0
+  file_picker: ^9.2.0
+  file_saver: ^0.3.1
+  get: ^4.6.6
+  image: ^4.1.7
+  pdf: ^3.6.1
+  web_socket_channel: ^3.0.1
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
