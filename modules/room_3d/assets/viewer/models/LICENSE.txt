@@ -1,0 +1,20 @@
+Furniture models in this directory (sofa_01.glb, bed_01.glb, table_01.glb,
+chair_01.glb, kitchen_01.glb, wardrobe_01.glb, bathroom_01.glb,
+lighting_01.glb) are derived from Kenney's "Furniture Kit" (v2.0),
+https://kenney.nl/assets/furniture-kit
+
+License: Creative Commons Zero (CC0) — https://creativecommons.org/publicdomain/zero/1.0/
+Free to use in personal, educational, and commercial projects. Attribution
+is not required, but Kenney (www.kenney.nl) is credited here anyway.
+
+Renamed from Kenney's original filenames to match this project's dev
+furniture_catalog item ids (see furniture_catalog/lib/data/dev_catalog.dart):
+  sofa_01.glb      <- loungeSofa.glb
+  bed_01.glb       <- bedDouble.glb
+  table_01.glb     <- table.glb
+  chair_01.glb     <- chair.glb
+  kitchen_01.glb   <- kitchenCabinet.glb
+  wardrobe_01.glb  <- bookcaseClosedDoors.glb (closest available stand-in;
+                      the kit has no dedicated wardrobe model)
+  bathroom_01.glb  <- bathroomSink.glb
+  lighting_01.glb  <- lampRoundFloor.glb

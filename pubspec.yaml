@@ -23,6 +23,7 @@ dependencies:
   path_provider: ^2.1.4
   image_picker: ^1.2.1
   file_picker: ^9.2.0
+  desktop_drop: ^0.6.0
   file_saver: ^0.3.1
   sentry_flutter: ^9.16.1
   flutter_cache_manager: ^3.4.1
@@ -32,12 +33,26 @@ dependencies:
   get: any
   sqflite: ^2.4.2
   sqflite_common_ffi: ^2.3.7+1
+  dio: ^5.7.0
+  image: ^4.1.7
+  pdf: ^3.6.1
+  web_socket_channel: ^3.0.1
+  collection: ^1.18.0
+  flutter_inappwebview: ^6.1.5
 
   firebase_analytics: ^11.3.0
   firebase_core: ^3.15.1
   firebase_messaging: ^15.2.5
 
   # Budkon modules
+  floor_plan:
+    path: modules/floor_plan
+  room_3d:
+    path: modules/room_3d
+  furniture_catalog:
+    path: modules/furniture_catalog
+  surface_materials:
+    path: modules/surface_materials
   faktury:
     path: modules/faktury
   kontakty:
@@ -50,6 +65,8 @@ dependencies:
     path: modules/budowa
   kosztorysy:
     path: modules/kosztorysy
+  projekty:
+    path: modules/projekty
   oferty:
     path: modules/oferty
   harmonogram:
@@ -139,6 +156,7 @@ flutter:
 
   assets:
     - assets/images/
+    - packages/room_3d/assets/viewer/
     - assets/countries.json
     - assets/icons/
     - assets/logo/

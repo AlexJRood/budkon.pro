@@ -1,0 +1,49 @@
+name: room_3d
+description: "3D room viewer/editor ('tryb Simsów') — furniture placement, wall/floor materials, WebView+three.js bridge."
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  core:
+    path: ../../core
+  flutter:
+    sdk: flutter
+
+  # The ONLY module room_3d needs a 2D-geometry source from on day one.
+  # Kept to a single adapter file (model/room_scene_builder.dart) — see
+  # docs/sims_mode/ARCHITECTURE.md section 1.
+  floor_plan:
+    path: ../floor_plan
+
+  furniture_catalog:
+    path: ../furniture_catalog
+  surface_materials:
+    path: ../surface_materials
+
+  flutter_riverpod: ^2.4.10
+  # NOT webview_flutter — it has no Windows/Linux desktop platform
+  # implementation (only Android/iOS/macOS/Web), which crashes immediately
+  # on Windows ("WebViewPlatform.instance != null"). flutter_inappwebview
+  # officially supports Windows (via flutter_inappwebview_windows) and is
+  # already the project's convention for webviews elsewhere (floor_plan,
+  # mail's html_email_view.dart, network_monitoring) — matched here.
+  flutter_inappwebview: ^6.1.5
+  beamer: ^1.7.0
+  dio: ^5.4.1
+  # "Zrzut ekranu" (viewport screenshot, FINAL_VISION.md §7.4) — already a
+  # root pubspec.yaml dependency, same Windows "Save As" dialog flow as
+  # floor_plan/floor_plan_export_service.dart and cloud/download_image.dart.
+  file_saver: ^0.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  assets:
+    - assets/viewer/

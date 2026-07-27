@@ -1,4 +1,6 @@
 import 'package:core/kernel/kernel.dart';
+import 'package:floor_plan/core/module.dart';
+import 'package:room_3d/core/module.dart';
 
 import 'package:faktury/core/module.dart';
 import 'package:kontakty/core/module.dart';
@@ -6,6 +8,7 @@ import 'package:pracownicy/core/module.dart';
 import 'package:przetargi/core/module.dart';
 import 'package:budowa/core/module.dart';
 import 'package:kosztorysy/core/module.dart';
+import 'package:projekty/core/module.dart';
 import 'package:oferty/core/module.dart';
 import 'package:harmonogram/core/module.dart';
 import 'package:materialy/core/module.dart';
@@ -38,12 +41,15 @@ import 'package:articles/core/module.dart';
 void registerAppModules() {
   moduleRegistry.registerAll([
     // Budkon-specific
+    FloorPlanModule(),
+    Room3dModule(),
     FakturyModule(),
     KontaktyModule(),
     PracownicyModule(),
     PrzetargiModule(),
     BudowaModule(),
     KosztorysyModule(),
+    ProjektyModule(),
     OfertyModule(),
     HarmonogramModule(),
     MaterialyModule(),
