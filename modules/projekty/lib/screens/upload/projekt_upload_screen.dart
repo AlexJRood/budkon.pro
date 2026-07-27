@@ -11,6 +11,7 @@ import 'package:core/ui/side_menu/slide_rotate_menu.dart';
 import 'package:core/platform/navigation_service.dart';
 import '../../data/models/pipeline_model.dart';
 import '../../data/providers/pipeline_provider.dart';
+import '../../ui/pipeline_bubble.dart';
 
 class ProjektUploadScreen extends ConsumerStatefulWidget {
   const ProjektUploadScreen({super.key});
@@ -48,7 +49,14 @@ class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
       appModule: AppModule.budkon,
       childPc: Column(
         children: [
-          _Header(theme: theme),
+          _Header(
+            theme: theme,
+            canMinimize: isProcessing,
+            onMinimize: () {
+              showPipelineBubble(context, ref);
+              Navigator.of(context).maybePop();
+            },
+          ),
           Expanded(
             child: isProcessing || state.isDone || state.isFailed
                 ? _PipelineView(state: state, theme: theme,
@@ -111,8 +119,14 @@ class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
 // ── Header ────────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.theme});
+  const _Header({
+    required this.theme,
+    this.canMinimize = false,
+    this.onMinimize,
+  });
   final ThemeColors theme;
+  final bool canMinimize;
+  final VoidCallback? onMinimize;
 
   @override
   Widget build(BuildContext context) {
@@ -136,10 +150,23 @@ class _Header extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Text(
-            'PDF, DOC, DOCX, JPG, PNG',
-            style: TextStyle(color: theme.textColor.withAlpha(120), fontSize: 12),
-          ),
+          if (canMinimize)
+            TextButton.icon(
+              icon: Icon(Icons.minimize_rounded,
+                  size: 16, color: theme.themeColor),
+              label: Text('Minimalizuj',
+                  style: TextStyle(fontSize: 12, color: theme.themeColor)),
+              onPressed: onMinimize,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              ),
+            )
+          else
+            Text(
+              'PDF, DOC, DOCX, JPG, PNG',
+              style: TextStyle(
+                  color: theme.textColor.withAlpha(120), fontSize: 12),
+            ),
         ],
       ),
     );
