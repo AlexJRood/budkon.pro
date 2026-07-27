@@ -1,0 +1,496 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "id": "stare-brynki-2024",
+    "nazwa": "Adaptacja typowego projektu budowlanego EXTERA – Stare Brynki",
+    "typ": "adaptacja_projektu_typowego",
+    "projekt_typowy": "EXTERA",
+    "nr_projektu": "AB/01/2024",
+    "kategoria_obiektu": "I",
+    "okres_budowy_od": "2024-09-01",
+    "okres_budowy_do": "2026-02-28",
+    "biuro_projektowe": "AB Studio Projektowe S.C.",
+    "adres_biura": "ul. Królowej Jadwigi 23/11a, 70-262 Szczecin",
+    "glowny_architekt": {
+      "imie_nazwisko": "mgr inż. arch. Marek Antoszczyszyn",
+      "nr_uprawnien": "ZP-0106"
+    },
+    "inwestor": {
+      "nazwa": "Hubert Sobieraj",
+      "adres": "ul. Lutniana 35, 71-425 Szczecin"
+    },
+    "dzialka": {
+      "nr_ewidencyjny": "213/6",
+      "obreb": "Czepino",
+      "gmina": "Gryfino",
+      "powiat": "Gryfino",
+      "wojewodztwo": "zachodniopomorskie",
+      "miejscowosc": "Stare Brynki"
+    },
+    "status": "projekt_adaptacji",
+    "uwagi": [
+      "Adaptacja projektu typowego dla konkretnej działki i warunków gruntowych",
+      "Projekt zasilania opracował: Piotr Majchrzak (ZAP/0125/POOE/13)",
+      "Wymiary pomieszczeń do weryfikacji z rysunkami technicznymi (Adaptacja - rysunki.pdf)"
+    ]
+  },
+
+  "geometria_budynku": {
+    "powierzchnia_zabudowy_m2": 112.5,
+    "powierzchnia_uzytkowa_m2": 114.4,
+    "powierzchnia_calkowita_m2": 130.2,
+    "kubatura_m3": 612.0,
+    "liczba_kondygnacji": 2,
+    "liczba_kondygnacji_nadziemnych": 2,
+    "liczba_kondygnacji_podziemnych": 0,
+    "wysokosc_budynku_m": 8.2,
+    "wymiary_zewnetrzne_m": { "dlugosc": 10.5, "szerokosc": 9.8 },
+    "dach": {
+      "typ": "dwuspadowy_z_naczolkami",
+      "nachylenie_polaci_deg": 40,
+      "material_pokrycia": "dachówka ceramiczna",
+      "kolor": "ceglasty",
+      "powierzchnia_polaci_m2": 145.0,
+      "okapy_szerokosc_m": 0.5
+    }
+  },
+
+  "kondygnacje": [
+    {
+      "id": "parter",
+      "index": 0,
+      "label": "Parter",
+      "wysokosc_kondygnacji_m": 3.0,
+      "wysokosc_w_swietle_m": 2.65,
+      "pomieszczenia": [
+        {
+          "id": "wiatrolap",
+          "nazwa": "Wiatrołap",
+          "typ": "komunikacja",
+          "powierzchnia_m2": 5.5,
+          "wymiary_m": { "a": 2.5, "b": 2.2 },
+          "material_podlogi": "gres_antyposlizczny",
+          "material_sufitu": "tynk_gladz",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_wejsciowe", "typ": "zewnetrzne", "szerokosc_m": 0.9, "wysokosc_m": 2.1, "kierunek": "lewe" }
+          ],
+          "okna": []
+        },
+        {
+          "id": "salon",
+          "nazwa": "Salon z jadalnią",
+          "typ": "dzienny",
+          "powierzchnia_m2": 28.0,
+          "wymiary_m": { "a": 7.0, "b": 4.0 },
+          "material_podlogi": "panel_podlogowy_ac5",
+          "material_sufitu": "tynk_gladz",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_salon_kuchnia", "typ": "wewnetrzne", "szerokosc_m": 0.9, "wysokosc_m": 2.0, "kierunek": "lewe" },
+            { "id": "d_salon_wc", "typ": "wewnetrzne", "szerokosc_m": 0.8, "wysokosc_m": 2.0, "kierunek": "prawe" }
+          ],
+          "okna": [
+            { "id": "o_salon_front", "typ": "PCV_trzyszybowe", "szerokosc_m": 1.8, "wysokosc_m": 1.5, "parapet_m": 0.9 },
+            { "id": "o_salon_taras", "typ": "drzwi_tarasowe_HST", "szerokosc_m": 2.4, "wysokosc_m": 2.2, "parapet_m": 0.0 }
+          ],
+          "uwagi": "Przestrzeń otwarta połączona z jadalnią"
+        },
+        {
+          "id": "kuchnia",
+          "nazwa": "Kuchnia",
+          "typ": "kuchnia",
+          "powierzchnia_m2": 10.5,
+          "wymiary_m": { "a": 3.5, "b": 3.0 },
+          "material_podlogi": "gres_mat",
+          "material_sufitu": "tynk_gladz",
+          "sciany_wykonczenie": "plytkowanie_do_150cm_pozostale_tynk",
+          "drzwi": [],
+          "okna": [
+            { "id": "o_kuchnia", "typ": "PCV_trzyszybowe", "szerokosc_m": 1.5, "wysokosc_m": 1.2, "parapet_m": 1.0 }
+          ]
+        },
+        {
+          "id": "wc_parter",
+          "nazwa": "WC",
+          "typ": "lazienka",
+          "powierzchnia_m2": 2.5,
+          "wymiary_m": { "a": 1.5, "b": 1.7 },
+          "material_podlogi": "gres_antyposlizczny",
+          "material_sufitu": "tynk_gladz_wilgocioodporny",
+          "sciany_wykonczenie": "plytkowanie_do_220cm",
+          "wyposazenie": ["toaleta_wisząca", "umywalka_60cm", "lustro"],
+          "drzwi": [
+            { "id": "d_wc_p", "typ": "wewnetrzne", "szerokosc_m": 0.7, "wysokosc_m": 2.0, "kierunek": "lewe" }
+          ],
+          "okna": []
+        },
+        {
+          "id": "kotlownia",
+          "nazwa": "Kotłownia / Pralnia",
+          "typ": "techniczny",
+          "powierzchnia_m2": 8.0,
+          "wymiary_m": { "a": 2.5, "b": 3.2 },
+          "material_podlogi": "gres_mat",
+          "material_sufitu": "tynk_cementowo_wapienny",
+          "sciany_wykonczenie": "tynk_malowany",
+          "instalacje": ["pompa_ciepla_powietrzna", "zasobnik_cwu_200L", "rozdzielacz_ogrzewania"],
+          "drzwi": [
+            { "id": "d_kotlownia", "typ": "wewnetrzne_EI30", "szerokosc_m": 0.9, "wysokosc_m": 2.0, "kierunek": "prawe" }
+          ],
+          "okna": [
+            { "id": "o_kotlownia", "typ": "PCV_dwuszybowe", "szerokosc_m": 0.6, "wysokosc_m": 0.6, "parapet_m": 1.6 }
+          ]
+        },
+        {
+          "id": "korytarz_parter",
+          "nazwa": "Korytarz / Hall",
+          "typ": "komunikacja",
+          "powierzchnia_m2": 8.4,
+          "wymiary_m": { "a": 2.0, "b": 4.2 },
+          "material_podlogi": "gres_mat",
+          "material_sufitu": "tynk_gladz",
+          "sciany_wykonczenie": "tynk_malowany",
+          "schody": {
+            "typ": "dywanowe_drewniane",
+            "szerokosc_m": 0.9,
+            "liczba_stopni": 18,
+            "balustrada": "stalowa_malowana"
+          },
+          "drzwi": [],
+          "okna": []
+        },
+        {
+          "id": "garaz",
+          "nazwa": "Garaż",
+          "typ": "garaz",
+          "powierzchnia_m2": 19.0,
+          "wymiary_m": { "a": 5.0, "b": 3.8 },
+          "material_podlogi": "posadzka_betonowa_zatarta",
+          "material_sufitu": "tynk_cementowo_wapienny",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_garaz_dom", "typ": "wewnetrzne_EI30", "szerokosc_m": 0.9, "wysokosc_m": 2.0 },
+            { "id": "brama_garazowa", "typ": "brama_segmentowa", "szerokosc_m": 2.5, "wysokosc_m": 2.2 }
+          ],
+          "okna": []
+        }
+      ],
+      "suma_powierzchni_m2": 62.4
+    },
+    {
+      "id": "pietro",
+      "index": 1,
+      "label": "Piętro",
+      "wysokosc_kondygnacji_m": 3.0,
+      "wysokosc_w_swietle_m": 2.5,
+      "uwagi": "Poddasze użytkowe ze skosami – pełna wys. tylko w części centralnej",
+      "pomieszczenia": [
+        {
+          "id": "sypialnia_glowna",
+          "nazwa": "Sypialnia główna",
+          "typ": "sypialnia",
+          "powierzchnia_m2": 18.0,
+          "wymiary_m": { "a": 4.5, "b": 4.0 },
+          "material_podlogi": "panel_podlogowy_ac5",
+          "material_sufitu": "plyta_GK_skosna",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_sypg", "typ": "wewnetrzne", "szerokosc_m": 0.9, "wysokosc_m": 2.0 }
+          ],
+          "okna": [
+            { "id": "o_sypg_1", "typ": "PCV_trzyszybowe", "szerokosc_m": 1.5, "wysokosc_m": 1.2, "parapet_m": 0.9 },
+            { "id": "o_sypg_dach", "typ": "okno_dachowe_VELUX", "szerokosc_m": 0.78, "wysokosc_m": 1.18 }
+          ]
+        },
+        {
+          "id": "sypialnia_2",
+          "nazwa": "Sypialnia 2",
+          "typ": "sypialnia",
+          "powierzchnia_m2": 12.0,
+          "wymiary_m": { "a": 3.5, "b": 3.4 },
+          "material_podlogi": "panel_podlogowy_ac5",
+          "material_sufitu": "plyta_GK_skosna",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_syp2", "typ": "wewnetrzne", "szerokosc_m": 0.9, "wysokosc_m": 2.0 }
+          ],
+          "okna": [
+            { "id": "o_syp2", "typ": "PCV_trzyszybowe", "szerokosc_m": 1.2, "wysokosc_m": 1.2, "parapet_m": 0.9 }
+          ]
+        },
+        {
+          "id": "sypialnia_3",
+          "nazwa": "Sypialnia 3",
+          "typ": "sypialnia",
+          "powierzchnia_m2": 10.5,
+          "wymiary_m": { "a": 3.0, "b": 3.5 },
+          "material_podlogi": "panel_podlogowy_ac5",
+          "material_sufitu": "plyta_GK_skosna",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [
+            { "id": "d_syp3", "typ": "wewnetrzne", "szerokosc_m": 0.9, "wysokosc_m": 2.0 }
+          ],
+          "okna": [
+            { "id": "o_syp3", "typ": "PCV_trzyszybowe", "szerokosc_m": 1.2, "wysokosc_m": 1.2, "parapet_m": 0.9 }
+          ]
+        },
+        {
+          "id": "lazienka_pietro",
+          "nazwa": "Łazienka",
+          "typ": "lazienka",
+          "powierzchnia_m2": 7.5,
+          "wymiary_m": { "a": 2.5, "b": 3.0 },
+          "material_podlogi": "gres_antyposlizczny",
+          "material_sufitu": "plyta_GK_wilgocioodporna",
+          "sciany_wykonczenie": "plytkowanie_do_220cm",
+          "wyposazenie": ["wanna_160cm", "prysznic_90x90", "toaleta_wisząca", "umywalka_60cm", "szafka_podumywalkowa"],
+          "drzwi": [
+            { "id": "d_laz_p", "typ": "wewnetrzne", "szerokosc_m": 0.8, "wysokosc_m": 2.0 }
+          ],
+          "okna": [
+            { "id": "o_laz_p_dach", "typ": "okno_dachowe_VELUX", "szerokosc_m": 0.55, "wysokosc_m": 0.78 }
+          ]
+        },
+        {
+          "id": "korytarz_pietro",
+          "nazwa": "Korytarz piętro",
+          "typ": "komunikacja",
+          "powierzchnia_m2": 6.0,
+          "wymiary_m": { "a": 2.0, "b": 3.0 },
+          "material_podlogi": "panel_podlogowy_ac5",
+          "material_sufitu": "plyta_GK_skosna",
+          "sciany_wykonczenie": "tynk_malowany",
+          "drzwi": [],
+          "okna": []
+        }
+      ],
+      "suma_powierzchni_m2": 54.0
+    }
+  ],
+
+  "elementy_konstrukcyjne": {
+    "fundament": {
+      "typ": "lawicowy_betonowy",
+      "material": "beton_C16_20",
+      "szerokosc_lawicy_cm": 70,
+      "wysokosc_lawicy_cm": 30,
+      "glebokos_posadowienia_m": 1.0,
+      "izolacja_przeciwwilgociowa": "papa_termozgrzewalna_2x",
+      "izolacja_termiczna": "styrodur_10cm",
+      "sciana_fundamentowa": {
+        "material": "beton_C16_20",
+        "grubosc_cm": 25,
+        "wysokosc_m": 0.8
+      },
+      "dlugosc_calkowita_m": 44.0
+    },
+    "sciany_zewnetrzne": {
+      "warianty": [
+        {
+          "id": "sciana_zew_gl",
+          "opis": "Ściana zewnętrzna główna",
+          "warstwy": [
+            { "material": "cegla_ceramiczna_POROTHERM_25", "grubosc_cm": 25 },
+            { "material": "styropian_EPS_100_lambda_032", "grubosc_cm": 15 },
+            { "material": "tynk_cienkowarstwowy_silikonowy", "grubosc_cm": 0.5 }
+          ],
+          "grubosc_calkowita_cm": 40.5,
+          "wspolczynnik_U": 0.18,
+          "powierzchnia_brutto_m2": 238.0,
+          "powierzchnia_netto_m2": 185.0
+        }
+      ]
+    },
+    "sciany_wewnetrzne": [
+      {
+        "id": "sciana_nosna_wew",
+        "opis": "Ściana nośna wewnętrzna",
+        "material": "POROTHERM_25",
+        "grubosc_cm": 25,
+        "powierzchnia_m2": 48.0
+      },
+      {
+        "id": "dzialowa_12",
+        "opis": "Ściana działowa",
+        "material": "gazobeton_B2_12cm",
+        "grubosc_cm": 12,
+        "powierzchnia_m2": 78.0
+      },
+      {
+        "id": "plyta_gk",
+        "opis": "Ścianka karton-gips",
+        "material": "plyta_GK_na_ruszcie_stalowym",
+        "grubosc_cm": 10,
+        "powierzchnia_m2": 35.0
+      }
+    ],
+    "stropy": [
+      {
+        "id": "strop_parter",
+        "opis": "Strop nad parterem",
+        "typ": "Teriva_4_0_1",
+        "rozpietos_m": 5.1,
+        "powierzchnia_m2": 112.5,
+        "nosnosc_kNm2": 4.0,
+        "wylewka_betonowa_cm": 4
+      }
+    ],
+    "schody": {
+      "typ": "drewniane_dywanowe",
+      "material_konstrukcja": "drewno_sosnowe",
+      "material_stopnice": "dab_olejowany",
+      "szerokosc_m": 0.9,
+      "liczba_stopni": 18,
+      "balustrada": "stalowa_proszkowana_czarna"
+    },
+    "wieniec": {
+      "material": "beton_C20_25_zbrojony",
+      "szerokosc_cm": 25,
+      "wysokosc_cm": 25,
+      "zbrojenie": "4x12_strzemiona_6_co_20cm"
+    },
+    "dach": {
+      "typ_konstrukcji": "krokwiowo_platwiowa",
+      "material_nosny": "drewno_C24_impregnowane",
+      "krokiew": { "przekroj_cm": "8x18", "rozstaw_cm": 80 },
+      "platew": { "przekroj_cm": "14x16" },
+      "lega": { "przekroj_cm": "6x14", "rozstaw_cm": 80 },
+      "membrana_wiatroizolacja": "folia_dachowa_Sd_015",
+      "kontrlatwie": "4x4cm",
+      "latwie": "4x5cm",
+      "izolacja_termiczna": [
+        { "material": "welna_mineralna_miedzy_krokvie", "grubosc_cm": 18 },
+        { "material": "welna_mineralna_pod_krokvie", "grubosc_cm": 10 }
+      ],
+      "pokrycie": "dachowka_ceramiczna_karpiowka",
+      "rynny": "PVC_fi125mm",
+      "rury_spustowe": "PVC_fi90mm_4szt"
+    }
+  },
+
+  "instalacje": {
+    "elektryczna": {
+      "moc_zamowiona_kW": 14,
+      "napiecie_V": "3x400_230",
+      "czestotliwosc_Hz": 50,
+      "uklad": "TN_CS",
+      "zasilanie": {
+        "zrodlo": "ZKP_nr_70695_na_dz_213_2",
+        "kabel_zasilajacy": "YKY_4x16mm2",
+        "dlugosc_kabla_m": 32,
+        "zabezpieczenie_przedlicznikowe": "FR303_63A"
+      },
+      "tablice": [
+        {
+          "id": "RG",
+          "opis": "Rozdzielnica główna",
+          "lokalizacja": "kotlownia",
+          "typ": "RKi10.0",
+          "zabezpieczenie_glowne": "63A",
+          "cos_phi": 0.93,
+          "delta_U_procent": 0.32
+        }
+      ],
+      "instalacje_dodatkowe": [
+        { "opis": "Zasilanie bramy garażowej", "kabel": "YKYżo_5x2.5mm2" },
+        { "opis": "Czujnik poziomu wody / przepompownia", "kabel": "YKYżo_4x1mm2" },
+        { "opis": "Pompa ciepła", "kabel": "YKYżo_5x6mm2" },
+        { "opis": "Domofon / interkom", "kabel": "FTPw_4x2x0.5mm2" }
+      ],
+      "projektant": "Piotr Majchrzak",
+      "nr_uprawnien_el": "ZAP/0125/POOE/13",
+      "nr_projektu_el": "23247"
+    },
+    "sanitarna": {
+      "ogrzewanie": {
+        "typ": "podlogowe_z_pompa_ciepla",
+        "pompa_ciepla": {
+          "typ": "powietrzna_monoblok",
+          "moc_grzewcza_kW": 8,
+          "cop": 4.2
+        },
+        "zasobnik_cwu_L": 200,
+        "rozdzielacz": "6_obwodow",
+        "rura_ogrzewania": "PEX_16x2mm",
+        "rozstaw_rury_cm": 15
+      },
+      "woda": {
+        "podlaczenie": "wodociag_gminny",
+        "srednica_przylacza_DN": 32,
+        "wodomierz": "DN32",
+        "instalacja_wewnetrzna": "PP_RC_STABI"
+      },
+      "kanalizacja": {
+        "podlaczenie": "szambo_lub_kanalizacja_gminna",
+        "rury_pionowe": "PVC_fi110mm",
+        "rury_poziome": "PVC_fi110_160mm",
+        "wentylacja_pionow": "wyprowadzona_ponad_dach"
+      },
+      "wentylacja": {
+        "typ": "mechaniczna_z_odzyskiem_ciepla_HRV",
+        "sprawnosc_odzysku_procent": 90,
+        "wydajnosc_m3h": 300
+      }
+    }
+  },
+
+  "stolarka": {
+    "okna": {
+      "typ_profilu": "PVC_szesciokamorowy",
+      "szyby": "trzyszybowe_Ug_06",
+      "kolor": "bialy_zewn_antracyt_wewn",
+      "wspolczynnik_U_okna": 0.8,
+      "powierzchnia_calkowita_m2": 28.5,
+      "producent_sugerowany": "Internorm_lub_Drutex"
+    },
+    "drzwi_zewnetrzne": {
+      "typ": "stalowe_antywlamaniowe_klasa_RC2",
+      "wymiary": "900x2100mm",
+      "wspolczynnik_U": 1.1,
+      "kolor": "antracyt"
+    },
+    "brama_garazowa": {
+      "typ": "segmentowa_z_napędem",
+      "wymiary": "2500x2200mm",
+      "kolor": "antracyt",
+      "sterownik": "bezprzewodowy",
+      "kabel_zasilajacy": "YKYzo_5x2.5mm2"
+    },
+    "drzwi_wewnetrzne": {
+      "typ": "plytowe_HDF",
+      "wysokosc_mm": 2000,
+      "szerokosc_standard_mm": 900,
+      "liczba_sztuk": 8,
+      "osciez": "regulowana_100_140mm"
+    }
+  },
+
+  "wykonczenie": {
+    "elewacja": {
+      "tynk_silikonowy": { "kolor": "jasny_szary_RAL7035", "powierzchnia_m2": 185.0 },
+      "cokolnik": { "material": "plytki_klinkierowe", "wysokosc_cm": 40 },
+      "parapet_zewnetrzny": { "material": "blacha_stalowa_powlekana", "szerokosc_cm": 25 }
+    },
+    "tarasy": [
+      {
+        "id": "taras_ogrodowy",
+        "powierzchnia_m2": 16.0,
+        "material": "deska_kompozytowa",
+        "konstrukcja": "wspornikowa_stalowa"
+      }
+    ],
+    "wjazd_chodnik": {
+      "powierzchnia_m2": 48.0,
+      "material": "kostka_betonowa_grafitowa_6cm"
+    }
+  },
+
+  "uwagi_do_weryfikacji": [
+    "Wymiary pomieszczeń szacowane na podstawie projektu typowego EXTERA – wymagają weryfikacji z rysunkami (Adaptacja - rysunki.pdf)",
+    "Powierzchnie okien szacowane – weryfikacja z zestawieniem stolarki",
+    "Typ i głębokość fundamentów wymaga adaptacji do warunków gruntowych dz. 213/6",
+    "Instalacja kanalizacyjna: podłączenie do kanalizacji gminnej lub szamba – wymaga ustalenia z gminą Gryfino",
+    "Projekt sanitarny i rzuty kondygnacji: plik 'sanitarne mapa.pdf' wymaga pełnego odczytu"
+  ]
+}

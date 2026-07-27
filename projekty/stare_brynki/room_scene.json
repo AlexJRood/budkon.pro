@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "source_kind": "projekt_budowlany",
+  "source_id": "stare-brynki-2024",
+  "units": "meters",
+  "notes": "Scena 3D dla projektu EXTERA – Stare Brynki. Współrzędne wyznaczone z szacunkowych wymiarów projektu typowego. Do weryfikacji po odczycie rysunków Adaptacja-rysunki.pdf",
+  "floors": [
+    {
+      "id": "floor_0",
+      "index": 0,
+      "label": "Parter",
+      "story_height_m": 3.0,
+      "walls": [
+        { "id": "w0_north",   "start": [0.0, 0.0],   "end": [10.5, 0.0],  "height_m": 3.0, "thickness_m": 0.405 },
+        { "id": "w0_east",    "start": [10.5, 0.0],  "end": [10.5, 9.8],  "height_m": 3.0, "thickness_m": 0.405 },
+        { "id": "w0_south",   "start": [10.5, 9.8],  "end": [0.0, 9.8],   "height_m": 3.0, "thickness_m": 0.405 },
+        { "id": "w0_west",    "start": [0.0, 9.8],   "end": [0.0, 0.0],   "height_m": 3.0, "thickness_m": 0.405 },
+        { "id": "w0_i1",      "start": [2.7, 0.0],   "end": [2.7, 4.5],   "height_m": 3.0, "thickness_m": 0.25,  "is_virtual": false },
+        { "id": "w0_i2",      "start": [2.7, 4.5],   "end": [5.5, 4.5],   "height_m": 3.0, "thickness_m": 0.25,  "is_virtual": false },
+        { "id": "w0_i3",      "start": [5.5, 0.0],   "end": [5.5, 4.5],   "height_m": 3.0, "thickness_m": 0.25,  "is_virtual": false },
+        { "id": "w0_i4",      "start": [0.0, 4.5],   "end": [5.5, 4.5],   "height_m": 3.0, "thickness_m": 0.12,  "is_virtual": false },
+        { "id": "w0_i5",      "start": [5.5, 4.5],   "end": [5.5, 9.8],   "height_m": 3.0, "thickness_m": 0.25,  "is_virtual": false },
+        { "id": "w0_i6",      "start": [5.5, 7.0],   "end": [10.5, 7.0],  "height_m": 3.0, "thickness_m": 0.12,  "is_virtual": false },
+        { "id": "w0_i7",      "start": [2.7, 4.5],   "end": [2.7, 9.8],   "height_m": 3.0, "thickness_m": 0.12,  "is_virtual": false },
+        { "id": "w0_i8",      "start": [0.0, 7.0],   "end": [2.7, 7.0],   "height_m": 3.0, "thickness_m": 0.12,  "is_virtual": false }
+      ],
+      "rooms": [
+        { "id": "r0_wiatrolap",  "name": "Wiatrołap",         "points": [[0.0,0.0],[2.7,0.0],[2.7,4.5],[0.0,4.5]],   "floor_material_id": "gres_antyposlizczny" },
+        { "id": "r0_salon",      "name": "Salon z jadalnią",  "points": [[2.7,0.0],[10.5,0.0],[10.5,4.5],[5.5,4.5],[5.5,4.5],[2.7,4.5]], "floor_material_id": "panel_podlogowy" },
+        { "id": "r0_kuchnia",    "name": "Kuchnia",           "points": [[5.5,4.5],[10.5,4.5],[10.5,7.0],[5.5,7.0]],  "floor_material_id": "gres_mat" },
+        { "id": "r0_garaz",      "name": "Garaż",             "points": [[5.5,7.0],[10.5,7.0],[10.5,9.8],[5.5,9.8]],  "floor_material_id": "posadzka_betonowa" },
+        { "id": "r0_korytarz",   "name": "Korytarz",          "points": [[0.0,4.5],[2.7,4.5],[2.7,9.8],[0.0,9.8]],    "floor_material_id": "gres_mat" },
+        { "id": "r0_wc",         "name": "WC",                "points": [[0.0,7.0],[2.7,7.0],[2.7,9.8],[0.0,9.8]],    "floor_material_id": "gres_antyposlizczny" },
+        { "id": "r0_kotlownia",  "name": "Kotłownia",         "points": [[2.7,7.0],[5.5,7.0],[5.5,9.8],[2.7,9.8]],    "floor_material_id": "gres_mat" }
+      ],
+      "openings": [
+        { "id": "op0_wej",    "wall_id": "w0_north",   "kind": "door",   "position": 0.15, "width_m": 0.9,  "sill_height_m": 0.0, "height_m": 2.1 },
+        { "id": "op0_salon1", "wall_id": "w0_north",   "kind": "window", "position": 0.55, "width_m": 1.8,  "sill_height_m": 0.9, "height_m": 1.5 },
+        { "id": "op0_taras",  "wall_id": "w0_east",    "kind": "door",   "position": 0.25, "width_m": 2.4,  "sill_height_m": 0.0, "height_m": 2.2 },
+        { "id": "op0_kuch",   "wall_id": "w0_east",    "kind": "window", "position": 0.65, "width_m": 1.5,  "sill_height_m": 1.0, "height_m": 1.2 },
+        { "id": "op0_kotl",   "wall_id": "w0_south",   "kind": "window", "position": 0.4,  "width_m": 0.6,  "sill_height_m": 1.6, "height_m": 0.6 },
+        { "id": "op0_brama",  "wall_id": "w0_south",   "kind": "garage_door", "position": 0.75, "width_m": 2.5, "sill_height_m": 0.0, "height_m": 2.2 }
+      ],
+      "stairs": [
+        { "id": "stairs_0", "start": [1.5, 4.5], "end": [2.5, 7.0], "width_m": 0.9 }
+      ],
+      "wall_surface_materials": {
+        "r0_wiatrolap":  "tynk_malowany_bialy",
+        "r0_salon":      "tynk_malowany_bialy",
+        "r0_kuchnia":    "plytkowanie_kuchnia",
+        "r0_wc":         "plytkowanie_biel",
+        "r0_kotlownia":  "tynk_malowany_bialy",
+        "r0_korytarz":   "tynk_malowany_bialy",
+        "r0_garaz":      "tynk_cementowy"
+      }
+    },
+    {
+      "id": "floor_1",
+      "index": 1,
+      "label": "Piętro",
+      "story_height_m": 3.0,
+      "walls": [
+        { "id": "w1_north",  "start": [0.0, 0.0],  "end": [10.5, 0.0],  "height_m": 2.5, "thickness_m": 0.405 },
+        { "id": "w1_east",   "start": [10.5, 0.0], "end": [10.5, 6.5],  "height_m": 2.5, "thickness_m": 0.405 },
+        { "id": "w1_south",  "start": [10.5, 6.5], "end": [0.0, 6.5],   "height_m": 2.5, "thickness_m": 0.405 },
+        { "id": "w1_west",   "start": [0.0, 6.5],  "end": [0.0, 0.0],   "height_m": 2.5, "thickness_m": 0.405 },
+        { "id": "w1_i1",     "start": [4.5, 0.0],  "end": [4.5, 6.5],   "height_m": 2.5, "thickness_m": 0.12, "is_virtual": false },
+        { "id": "w1_i2",     "start": [0.0, 3.5],  "end": [4.5, 3.5],   "height_m": 2.5, "thickness_m": 0.12, "is_virtual": false },
+        { "id": "w1_i3",     "start": [4.5, 2.5],  "end": [10.5, 2.5],  "height_m": 2.5, "thickness_m": 0.25, "is_virtual": false },
+        { "id": "w1_i4",     "start": [0.0, 5.0],  "end": [4.5, 5.0],   "height_m": 2.5, "thickness_m": 0.12, "is_virtual": false }
+      ],
+      "rooms": [
+        { "id": "r1_sypg",    "name": "Sypialnia główna",  "points": [[4.5,0.0],[10.5,0.0],[10.5,2.5],[4.5,2.5]], "floor_material_id": "panel_podlogowy" },
+        { "id": "r1_syp2",    "name": "Sypialnia 2",       "points": [[0.0,0.0],[4.5,0.0],[4.5,3.5],[0.0,3.5]], "floor_material_id": "panel_podlogowy" },
+        { "id": "r1_syp3",    "name": "Sypialnia 3",       "points": [[0.0,3.5],[4.5,3.5],[4.5,5.0],[0.0,5.0]], "floor_material_id": "panel_podlogowy" },
+        { "id": "r1_laz",     "name": "Łazienka",          "points": [[0.0,5.0],[4.5,5.0],[4.5,6.5],[0.0,6.5]], "floor_material_id": "gres_antyposlizczny" },
+        { "id": "r1_koryt",   "name": "Korytarz piętro",   "points": [[4.5,2.5],[10.5,2.5],[10.5,6.5],[4.5,6.5]], "floor_material_id": "panel_podlogowy" }
+      ],
+      "openings": [
+        { "id": "op1_sypg1",  "wall_id": "w1_north",  "kind": "window", "position": 0.65, "width_m": 1.5,  "sill_height_m": 0.9, "height_m": 1.2 },
+        { "id": "op1_syp2",   "wall_id": "w1_north",  "kind": "window", "position": 0.25, "width_m": 1.2,  "sill_height_m": 0.9, "height_m": 1.2 },
+        { "id": "op1_syp3",   "wall_id": "w1_west",   "kind": "window", "position": 0.57, "width_m": 1.2,  "sill_height_m": 0.9, "height_m": 1.2 }
+      ],
+      "stairs": [],
+      "wall_surface_materials": {
+        "r1_sypg":   "tynk_malowany_bialy",
+        "r1_syp2":   "tynk_malowany_bialy",
+        "r1_syp3":   "tynk_malowany_bialy",
+        "r1_laz":    "plytkowanie_biel",
+        "r1_koryt":  "tynk_malowany_bialy"
+      }
+    }
+  ]
+}
