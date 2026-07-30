@@ -362,10 +362,16 @@ class KosztorysPodsumowanieModel {
 class KosztorysApiModel {
   final List<KosztorysPozycjaApiModel> pozycje;
   final KosztorysPodsumowanieModel podsumowanie;
+  final bool brakKosztorysu;
 
-  const KosztorysApiModel({required this.pozycje, required this.podsumowanie});
+  const KosztorysApiModel({
+    required this.pozycje,
+    required this.podsumowanie,
+    this.brakKosztorysu = false,
+  });
 
   factory KosztorysApiModel.fromJson(Map<String, dynamic> j) => KosztorysApiModel(
+        brakKosztorysu: j['brak_kosztorysu'] == true,
         pozycje: (j['pozycje'] as List<dynamic>? ?? [])
             .map((e) => KosztorysPozycjaApiModel.fromJson(e as Map<String, dynamic>))
             .toList(),

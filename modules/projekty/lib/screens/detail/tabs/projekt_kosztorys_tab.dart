@@ -38,7 +38,9 @@ class _ProjektKosztorysTabState extends ConsumerState<ProjektKosztorysTab> {
       error: (e, _) => Center(
         child: Text('Błąd: $e', style: TextStyle(color: Colors.red)),
       ),
-      data: (kosztorys) => _KosztorysBody(
+      data: (kosztorys) => kosztorys.brakKosztorysu || kosztorys.pozycje.isEmpty
+          ? _BrakKosztorysuPlaceholder(theme: theme)
+          : _KosztorysBody(
         projektId: widget.projektId,
         kosztorys: kosztorys,
         selectedDzial: _selectedDzial,
@@ -80,6 +82,30 @@ class _ProjektKosztorysTabState extends ConsumerState<ProjektKosztorysTab> {
       _savingCeny = false;
       _editingLp.clear();
     });
+  }
+}
+
+class _BrakKosztorysuPlaceholder extends StatelessWidget {
+  const _BrakKosztorysuPlaceholder({required this.theme});
+  final dynamic theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.calculate_outlined, size: 56, color: theme.textColor.withOpacity(0.2)),
+          const SizedBox(height: 16),
+          Text('Brak kosztorysu',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.textColor.withOpacity(0.5))),
+          const SizedBox(height: 8),
+          Text('Pipeline nie wygenerował pozycji kosztorysowych dla tego projektu.',
+              style: TextStyle(fontSize: 13, color: theme.textColor.withOpacity(0.35)),
+              textAlign: TextAlign.center),
+        ],
+      ),
+    );
   }
 }
 

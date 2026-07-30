@@ -13,11 +13,11 @@ class ProjektApi {
       'plik': await MultipartFile.fromFile(filePath, filename: fileName),
     });
     final resp = await _dio.post(
-      '/kosztorysy/parse-projekt/',
+      '/projekty/parse-upload/',
       data: formData,
       options: Options(
         contentType: 'multipart/form-data',
-        receiveTimeout: const Duration(seconds: 180),
+        receiveTimeout: const Duration(minutes: 10),
       ),
     );
     return ParsedProjekt.fromJson(resp.data as Map<String, dynamic>);
@@ -31,11 +31,11 @@ class ProjektApi {
       'plik': MultipartFile.fromBytes(bytes, filename: fileName),
     });
     final resp = await _dio.post(
-      '/kosztorysy/parse-projekt/',
+      '/projekty/parse-upload/',
       data: formData,
       options: Options(
         contentType: 'multipart/form-data',
-        receiveTimeout: const Duration(seconds: 180),
+        receiveTimeout: const Duration(minutes: 10),
       ),
     );
     return ParsedProjekt.fromJson(resp.data as Map<String, dynamic>);

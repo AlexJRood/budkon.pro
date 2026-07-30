@@ -14,7 +14,7 @@ class OdbioryApi {
 
   // ---- Protokoły ----
 
-  Future<List<ProtokołOdbioruModel>> fetchProtokoly({int? budowaId}) async {
+  Future<List<ProtokolOdbioruModel>> fetchProtokoly({int? budowaId}) async {
     final resp = await _dio.get(
       '/odbiory/',
       queryParameters: {if (budowaId != null) 'budowa': budowaId},
@@ -22,35 +22,35 @@ class OdbioryApi {
     );
     final results = resp.data['results'] as List? ?? resp.data as List? ?? [];
     return results
-        .map((e) => ProtokołOdbioruModel.fromJson(e as Map<String, dynamic>))
+        .map((e) => ProtokolOdbioruModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
-  Future<ProtokołOdbioruModel> fetchProtokolOne(int id) async {
+  Future<ProtokolOdbioruModel> fetchProtokolOne(int id) async {
     final resp = await _dio.get('/odbiory/$id/', options: _opts);
-    return ProtokołOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
+    return ProtokolOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<ProtokołOdbioruModel> createProtokol(ProtokołOdbioruModel p) async {
+  Future<ProtokolOdbioruModel> createProtokol(ProtokolOdbioruModel p) async {
     final resp = await _dio.post('/odbiory/', data: jsonEncode(p.toJson()), options: _opts);
-    return ProtokołOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
+    return ProtokolOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<ProtokołOdbioruModel> updateProtokol(int id, Map<String, dynamic> patch) async {
+  Future<ProtokolOdbioruModel> updateProtokol(int id, Map<String, dynamic> patch) async {
     final resp = await _dio.patch('/odbiory/$id/', data: jsonEncode(patch), options: _opts);
-    return ProtokołOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
+    return ProtokolOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
   }
 
   Future<void> deleteProtokol(int id) => _dio.delete('/odbiory/$id/', options: _opts);
 
-  Future<ProtokołOdbioruModel> podpisz(int id, {required bool kierownik}) async {
+  Future<ProtokolOdbioruModel> podpisz(int id, {required bool kierownik}) async {
     final field = kierownik ? 'podpisany_kierownik' : 'podpisany_inwestor';
     final resp = await _dio.post(
       '/odbiory/$id/podpisz/',
       data: jsonEncode({field: true}),
       options: _opts,
     );
-    return ProtokołOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
+    return ProtokolOdbioruModel.fromJson(resp.data as Map<String, dynamic>);
   }
 
   // ---- Punkty kontrolne ----

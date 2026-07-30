@@ -250,7 +250,7 @@ class UsterkaModel {
       );
 }
 
-class ProtokołOdbioruModel {
+class ProtokolOdbioruModel {
   final int id;
   final int budowaId;
   final int? etapId;
@@ -267,7 +267,7 @@ class ProtokołOdbioruModel {
   final bool podpisanyPrzezKierownika;
   final bool podpisanyPrzezInwestora;
 
-  const ProtokołOdbioruModel({
+  const ProtokolOdbioruModel({
     required this.id,
     required this.budowaId,
     this.etapId,
@@ -287,8 +287,8 @@ class ProtokołOdbioruModel {
 
   static final _fmt = DateFormat('dd.MM.yyyy');
 
-  factory ProtokołOdbioruModel.fromJson(Map<String, dynamic> j) =>
-      ProtokołOdbioruModel(
+  factory ProtokolOdbioruModel.fromJson(Map<String, dynamic> j) =>
+      ProtokolOdbioruModel(
         id: j['id'] ?? 0,
         budowaId: j['budowa'] ?? 0,
         etapId: j['etap'],

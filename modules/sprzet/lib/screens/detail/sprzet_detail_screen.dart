@@ -14,12 +14,6 @@ class SprzetDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _SprzetDetailScreenState extends ConsumerState<SprzetDetailScreen> {
-  @override
-  void initState() {
-    super.initState();
-    ref.read(sprzetProvider(widget.sprzetId).notifier).init(widget.sprzetId);
-  }
-
   void _showWypozyczSheet(ThemeColors theme, SprzetModel sprzet) {
     final budowaCtrl = TextEditingController();
     final pracownikCtrl = TextEditingController();

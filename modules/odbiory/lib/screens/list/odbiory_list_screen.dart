@@ -139,7 +139,7 @@ class _OdbioryListScreenState extends ConsumerState<OdbioryListScreen>
     );
   }
 
-  void _openProtokol(ProtokołOdbioruModel p) {
+  void _openProtokol(ProtokolOdbioruModel p) {
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -16,13 +16,14 @@ class PozycjaState {
   const PozycjaState({required this.pozycja, required this.ruchy});
 }
 
-class PozycjaNotifier extends AutoDisposeAsyncNotifier<PozycjaState> {
+class PozycjaNotifier extends AutoDisposeFamilyAsyncNotifier<PozycjaState, int> {
   late int _id;
 
   @override
-  Future<PozycjaState> build() async => _load();
-
-  void init(int id) => _id = id;
+  Future<PozycjaState> build(int arg) async {
+    _id = arg;
+    return _load();
+  }
 
   Future<PozycjaState> _load() async {
     final api = ref.read(magazynApiProvider);

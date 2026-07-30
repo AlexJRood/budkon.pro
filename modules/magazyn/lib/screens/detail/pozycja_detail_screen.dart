@@ -17,12 +17,6 @@ class PozycjaDetailScreen extends ConsumerStatefulWidget {
 
 class _PozycjaDetailScreenState extends ConsumerState<PozycjaDetailScreen> {
   @override
-  void initState() {
-    super.initState();
-    ref.read(pozycjaProvider(widget.pozycjaId).notifier).init(widget.pozycjaId);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(pozycjaProvider(widget.pozycjaId));

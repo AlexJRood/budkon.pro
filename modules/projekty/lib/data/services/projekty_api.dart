@@ -77,10 +77,11 @@ class ProjektyApi {
   String exportExcelUrl(String projektId) =>
       '${_dio.options.baseUrl}/projekty/$projektId/export/excel/';
 
-  Future<PipelineStartResult> startPipeline(Uint8List bytes, String fileName) async {
-    final form = FormData.fromMap({
-      'plik': MultipartFile.fromBytes(bytes, filename: fileName),
-    });
+  Future<PipelineStartResult> startPipeline(List<(Uint8List, String)> files) async {
+    final form = FormData();
+    for (final (bytes, name) in files) {
+      form.files.add(MapEntry('plik', MultipartFile.fromBytes(bytes, filename: name)));
+    }
     final resp = await _dio.post(
       '/projekty-pipeline/start/',
       data: form,
@@ -92,6 +93,23 @@ class ProjektyApi {
   Future<PipelineStatusModel> fetchPipelineStatus(int pipelineId) async {
     final resp = await _dio.get('/projekty-pipeline/$pipelineId/status/');
     return PipelineStatusModel.fromJson(resp.data as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> reclassifyPage({
+    required int pipelineId,
+    required int pageGlobal,
+    required String kind,
+    String ocrText = '',
+  }) async {
+    final resp = await _dio.post(
+      '/projekty-pipeline/$pipelineId/reclassify-page/',
+      data: {
+        'page_global': pageGlobal,
+        'kind': kind,
+        'ocr_text': ocrText,
+      },
+    );
+    return resp.data as Map<String, dynamic>;
   }
 }
 

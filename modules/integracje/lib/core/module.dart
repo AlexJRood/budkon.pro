@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:core/modules/app_module.dart';
-import 'package:core/navigation/dock_item.dart';
+import 'package:core/kernel/kernel.dart';
 import '../screens/integracje_screen.dart';
 
 class IntegracjeModule extends AppModule {
@@ -8,20 +6,21 @@ class IntegracjeModule extends AppModule {
   String get id => 'integracje';
 
   @override
-  List<DockItem> dockItems() => [
-        DockItem(
-          moduleId: id,
-          label: 'Integracje',
-          icon: Icons.hub_outlined,
-          route: '/integracje',
-        ),
+  List<RouteSpec> routes() => [
+        RouteSpec('/integracje', (context, params, data) => const IntegracjeScreen()),
       ];
 
   @override
-  Map<RegExp, Widget Function(Map<String, String>)> routeMap() => {
-        RegExp(r'^/integracje$'): (_) => const IntegracjeScreen(),
-      };
-
-  @override
-  Future<void> init() async {}
+  List<DockContribution> dockItems() => [
+        const DockContribution(
+          id: 'integracje-main',
+          label: 'Integracje',
+          iconKey: 'grid',
+          route: '/integracje',
+          dock: 'budkon',
+          section: DockSection.center,
+          order: 70,
+          requiresAuth: true,
+        ),
+      ];
 }

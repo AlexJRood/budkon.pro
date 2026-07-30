@@ -10,13 +10,14 @@ final rozliczeniaStatsProvider = FutureProvider.family<BudowaRozliczeniaStats, i
   (ref, budowaId) => ref.read(rozliczeniaApiProvider).fetchStats(budowaId),
 );
 
-class FakturaNotifier extends AutoDisposeAsyncNotifier<FakturaModel> {
+class FakturaNotifier extends AutoDisposeFamilyAsyncNotifier<FakturaModel, int> {
   late int _id;
 
   @override
-  Future<FakturaModel> build() async => _load();
-
-  void init(int id) => _id = id;
+  Future<FakturaModel> build(int arg) async {
+    _id = arg;
+    return _load();
+  }
 
   Future<FakturaModel> _load() =>
       ref.read(rozliczeniaApiProvider).fetchFaktura(_id);

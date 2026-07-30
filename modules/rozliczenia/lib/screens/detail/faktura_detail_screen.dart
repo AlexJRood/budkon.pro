@@ -15,12 +15,6 @@ class FakturaDetailScreen extends ConsumerStatefulWidget {
 
 class _FakturaDetailScreenState extends ConsumerState<FakturaDetailScreen> {
   @override
-  void initState() {
-    super.initState();
-    ref.read(fakturaProvider(widget.fakturaId).notifier).init(widget.fakturaId);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeColorsProvider);
     final async = ref.watch(fakturaProvider(widget.fakturaId));

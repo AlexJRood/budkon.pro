@@ -125,6 +125,24 @@ Offset _polygonCentroid(List<Offset> points) {
   return Offset(cx, cy);
 }
 
+Rect _boundingBoxOf(List<Offset> points) {
+  if (points.isEmpty) return Rect.zero;
+
+  var minX = points.first.dx;
+  var maxX = points.first.dx;
+  var minY = points.first.dy;
+  var maxY = points.first.dy;
+
+  for (final p in points) {
+    if (p.dx < minX) minX = p.dx;
+    if (p.dx > maxX) maxX = p.dx;
+    if (p.dy < minY) minY = p.dy;
+    if (p.dy > maxY) maxY = p.dy;
+  }
+
+  return Rect.fromLTRB(minX, minY, maxX, maxY);
+}
+
 List<_CornerAngleLabelHit> _buildCornerAngleLabels(
   FloorPlanDocument document,
 ) {

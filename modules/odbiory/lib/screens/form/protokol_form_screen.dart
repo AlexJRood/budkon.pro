@@ -73,7 +73,7 @@ class _ProtokolFormScreenState extends ConsumerState<ProtokolFormScreen> {
     setState(() => _saving = true);
     try {
       final api = ref.read(odbioryApiProvider);
-      await api.createProtokol(ProtokołOdbioruModel(
+      await api.createProtokol(ProtokolOdbioruModel(
         id: 0,
         budowaId: widget.budowaId,
         etapId: widget.etapId,

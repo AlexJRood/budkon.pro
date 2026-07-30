@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:core/theme/apptheme.dart';
 import 'package:core/shell/manager/bar_manager.dart';
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
@@ -20,7 +20,7 @@ class ProjektUploadScreen extends ConsumerStatefulWidget {
 
 class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
   final _sideMenuKey = GlobalKey<SideMenuState>();
-  PlatformFile? _pickedFile;
+  final List<PlatformFile> _pickedFiles = [];
   bool _isDragOver = false;
 
   @override
@@ -81,9 +81,9 @@ class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildDropZone(theme),
-          if (_pickedFile != null) ...[
+          if (_pickedFiles.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _buildFileInfo(theme),
+            _buildFileList(theme),
             const SizedBox(height: 24),
             _buildParseButton(theme),
           ],
@@ -99,108 +99,119 @@ class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
   }
 
   Widget _buildDropZone(ThemeColors theme) {
-    return DragTarget<Object>(
-      onWillAcceptWithDetails: (d) {
-        setState(() => _isDragOver = true);
-        return true;
-      },
-      onLeave: (_) => setState(() => _isDragOver = false),
-      onAcceptWithDetails: (_) {
+    return DropTarget(
+      onDragEntered: (_) => setState(() => _isDragOver = true),
+      onDragExited: (_) => setState(() => _isDragOver = false),
+      onDragDone: (details) {
         setState(() => _isDragOver = false);
-        _pickFile();
+        final allowed = ['pdf', 'jpg', 'jpeg', 'png'];
+        final files = details.files
+            .where((f) => allowed.contains(f.name.split('.').last.toLowerCase()))
+            .map((f) => PlatformFile(
+                  name: f.name,
+                  path: f.path,
+                  size: 0,
+                ))
+            .toList();
+        if (files.isNotEmpty) setState(() => _pickedFiles.addAll(files));
       },
-      builder: (context, _, __) {
-        return GestureDetector(
-          onTap: _pickFile,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
-            decoration: BoxDecoration(
+      child: GestureDetector(
+        onTap: _pickFiles,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
+          decoration: BoxDecoration(
+            color: _isDragOver
+                ? theme.themeColor.withAlpha(30)
+                : theme.userTile.withAlpha(80),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
               color: _isDragOver
-                  ? theme.themeColor.withAlpha(30)
-                  : theme.userTile.withAlpha(80),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _isDragOver
-                    ? theme.themeColor
-                    : theme.bordercolor.withAlpha(80),
-                width: _isDragOver ? 2 : 1,
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _pickedFile != null
-                      ? Icons.check_circle_outline
-                      : Icons.upload_file_outlined,
-                  size: 56,
-                  color: _pickedFile != null
-                      ? theme.themeColor
-                      : theme.textColor.withAlpha(100),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _pickedFile != null
-                      ? 'Zmień plik'
-                      : 'Przeciągnij plik lub kliknij',
-                  style: TextStyle(
-                    color: theme.textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Obsługiwane formaty: PDF, JPG, PNG',
-                  style: TextStyle(
-                      color: theme.textColor.withAlpha(120), fontSize: 12),
-                ),
-              ],
+                  ? theme.themeColor
+                  : theme.bordercolor.withAlpha(80),
+              width: _isDragOver ? 2 : 1,
+              style: BorderStyle.solid,
             ),
           ),
-        );
-      },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _pickedFiles.isNotEmpty
+                    ? Icons.check_circle_outline
+                    : Icons.upload_file_outlined,
+                size: 56,
+                color: _pickedFiles.isNotEmpty
+                    ? theme.themeColor
+                    : theme.textColor.withAlpha(100),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _pickedFiles.isNotEmpty
+                    ? 'Dodaj kolejne pliki'
+                    : 'Przeciągnij pliki lub kliknij',
+                style: TextStyle(
+                  color: theme.textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'PDF, JPG, PNG — możesz dodać wiele plików naraz',
+                style: TextStyle(
+                    color: theme.textColor.withAlpha(120), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildFileInfo(ThemeColors theme) {
-    final file = _pickedFile!;
-    final sizeKb = (file.size / 1024).toStringAsFixed(0);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: theme.userTile,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.bordercolor.withAlpha(60)),
-      ),
-      child: Row(
-        children: [
-          Icon(_fileIcon(file.name), color: theme.themeColor, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(file.name,
-                    style: TextStyle(
-                        color: theme.textColor, fontWeight: FontWeight.w500),
-                    overflow: TextOverflow.ellipsis),
-                Text('$sizeKb KB',
-                    style: TextStyle(
-                        color: theme.textColor.withAlpha(120), fontSize: 11)),
-              ],
-            ),
+  Widget _buildFileList(ThemeColors theme) {
+    return Column(
+      children: _pickedFiles.asMap().entries.map((entry) {
+        final i = entry.key;
+        final file = entry.value;
+        final sizeKb = file.size > 0 ? '${(file.size / 1024).toStringAsFixed(0)} KB' : '';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: theme.userTile,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: theme.bordercolor.withAlpha(60)),
           ),
-          IconButton(
-            icon: Icon(Icons.close, color: theme.textColor.withAlpha(120), size: 18),
-            onPressed: () => setState(() => _pickedFile = null),
+          child: Row(
+            children: [
+              Icon(_fileIcon(file.name), color: theme.themeColor, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(file.name,
+                        style: TextStyle(
+                            color: theme.textColor, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis),
+                    if (sizeKb.isNotEmpty)
+                      Text(sizeKb,
+                          style: TextStyle(
+                              color: theme.textColor.withAlpha(120), fontSize: 11)),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, color: theme.textColor.withAlpha(120), size: 18),
+                onPressed: () => setState(() => _pickedFiles.removeAt(i)),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
@@ -327,21 +338,23 @@ class _ProjektUploadScreenState extends ConsumerState<ProjektUploadScreen> {
     };
   }
 
-  Future<void> _pickFile() async {
+  Future<void> _pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      allowMultiple: true,
       withData: kIsWeb,
     );
     if (result != null && result.files.isNotEmpty) {
-      setState(() => _pickedFile = result.files.first);
+      setState(() => _pickedFiles.addAll(result.files));
     }
   }
 
   Future<void> _startParsing() async {
-    final file = _pickedFile;
-    if (file == null) return;
+    if (_pickedFiles.isEmpty) return;
 
+    // Analizuj pierwszy plik; reszta może być dodana w kolejnych krokach
+    final file = _pickedFiles.first;
     ParsedProjekt? result;
     if (kIsWeb || file.bytes != null) {
       result = await ref

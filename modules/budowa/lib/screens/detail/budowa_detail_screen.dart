@@ -210,6 +210,12 @@ class _BudowaDetail extends ConsumerWidget {
                       data: {'budowaNazwa': budowa.nazwa},
                     ),
               ),
+              _ModulTile(
+                icon: Icons.home_work_outlined,
+                label: 'Projekt budowlany',
+                color: const Color(0xFF1565C0),
+                onTap: () => ref.read(navigationService).pushNamedScreen('/projekty'),
+              ),
             ],
           ),
         ),

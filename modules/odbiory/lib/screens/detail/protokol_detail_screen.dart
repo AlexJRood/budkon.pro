@@ -60,7 +60,7 @@ class _ProtokolDetailScreenState extends ConsumerState<ProtokolDetailScreen> {
     );
   }
 
-  void _showMenu(BuildContext context, ProtokołOdbioruModel p) {
+  void _showMenu(BuildContext context, ProtokolOdbioruModel p) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
@@ -108,7 +108,7 @@ class _ProtokolDetailScreenState extends ConsumerState<ProtokolDetailScreen> {
 }
 
 class _Body extends StatelessWidget {
-  final ProtokołOdbioruModel protokol;
+  final ProtokolOdbioruModel protokol;
   final ThemeColors theme;
   const _Body({required this.protokol, required this.theme});
 
@@ -298,7 +298,7 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _PostepBar extends StatelessWidget {
-  final ProtokołOdbioruModel protokol;
+  final ProtokolOdbioruModel protokol;
   final ThemeColors theme;
   const _PostepBar({required this.protokol, required this.theme});
 

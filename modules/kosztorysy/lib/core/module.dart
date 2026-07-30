@@ -12,7 +12,7 @@ class KosztorysyModule extends AppModule {
   String get id => 'kosztorysy';
 
   @override
-  List<DockContribution> dockItems() => kosztorysyDockItems();
+  List<DockContribution> dockItems() => [];
 
   @override
   Map<Pattern, BeamRouteBuilder> routeMap() => {

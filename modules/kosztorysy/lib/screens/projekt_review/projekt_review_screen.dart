@@ -4,10 +4,8 @@ import 'package:core/theme/apptheme.dart';
 import 'package:core/shell/manager/bar_manager.dart';
 import 'package:core/ui/side_menu/slide_rotate_menu.dart';
 import 'package:core/platform/navigation_service.dart';
+import 'package:projekty/data/services/projekty_api.dart';
 import '../../data/models/projekt_model.dart';
-import '../../data/providers/projekt_provider.dart';
-import '../../data/providers/kosztorysy_provider.dart';
-import '../../data/services/kosztorysy_api.dart';
 import '../../widgets/floor_plan/floor_plan_widget.dart';
 
 class ProjektReviewScreen extends ConsumerStatefulWidget {
@@ -499,11 +497,9 @@ class _ProjektReviewScreenState extends ConsumerState<ProjektReviewScreen>
                     height: 16,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.add_chart),
-            label: Text(widget.kosztorysId != null
-                ? 'Importuj do kosztorysu'
-                : 'Utwórz kosztorys'),
-            onPressed: _importing ? null : _importToKosztorys,
+                : const Icon(Icons.save_outlined),
+            label: const Text('Utwórz projekt'),
+            onPressed: _importing ? null : _createProjekt,
             style: FilledButton.styleFrom(
               backgroundColor: theme.themeColor,
               foregroundColor: theme.buttonTextColor,
@@ -518,42 +514,28 @@ class _ProjektReviewScreenState extends ConsumerState<ProjektReviewScreen>
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
-  Future<void> _importToKosztorys() async {
+  Future<void> _createProjekt() async {
     if (_importing) return;
     setState(() => _importing = true);
     try {
-      final api = ref.read(kosztorysyApiProvider);
-      int kosztorysId = widget.kosztorysId ?? 0;
-
-      if (kosztorysId == 0) {
-        final k = await api.create({
-          'nazwa': widget.projekt.tytul ?? 'Projekt architektoniczny',
-          'opis': 'Wygenerowano z projektu architektonicznego. '
-              'Powierzchnia: ${widget.projekt.sumaPowierzchni.toStringAsFixed(0)} m²',
-          'status': 'roboczy',
-        });
-        kosztorysId = k.id;
-      }
-
-      // Importuj zaznaczone pozycje
+      final api = ref.read(projektyApiProvider);
       final selectedList = _selectedPozycje.toList()..sort();
-      if (selectedList.isNotEmpty) {
-        // Create a default dzialu if needed – use AI generate to push items
-        await api.importProjektPozycje(
-          kosztorysId,
-          selectedList.map((i) => _pozycje[i].toJson()).toList(),
-        );
-      }
+
+      final projektId = await api.createFromParsed(
+        nazwa: widget.projekt.tytul ?? 'Projekt architektoniczny',
+        pomieszczenia: _rooms.map((r) => r.toJson()).toList(),
+        pozycje: selectedList.map((i) => _pozycje[i].toJson()).toList(),
+      );
 
       if (mounted) {
         Navigator.of(context).pop();
         Navigator.of(context).pop();
-        ref.read(navigationService).pushNamedScreen('/kosztorysy/$kosztorysId');
+        ref.read(navigationService).pushNamedScreen('/projekty/$projektId');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Błąd importu: $e'),
+          content: Text('Błąd: $e'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ));

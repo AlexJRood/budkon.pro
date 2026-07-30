@@ -69,7 +69,7 @@ class RentownoscBudowyModel {
   final int budowaId;
   final String budowaNazwa;
   final double wartoscKontraktu;
-  final double przychodyFaktury;
+  final double przychodFaktury;
   final double kosztyLacznie;
   final Map<KategoriaCosztu, double> kosztyPerKategoria;
   final double przychodyOczekiwane;

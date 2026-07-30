@@ -284,33 +284,68 @@ class FloorPlanPainter extends CustomPainter {
   }) {
     final area = room.areaM2(document.scale.pixelsPerMeter);
 
-    final lines = <String>[
+    final fullLines = <String>[
       if (showRoomLabels && room.showName) room.name,
       if (showRoomAreas && room.showArea) _formatAreaLabel(area),
     ];
+    final areaOnlyLines = <String>[
+      if (showRoomAreas && room.showArea) _formatAreaLabel(area),
+    ];
 
-    if (lines.isEmpty) return;
+    if (fullLines.isEmpty) return;
 
-    final text = lines.join('\n');
     final center = room.centroid();
 
-    final painter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          color: selected ? canvasTheme.accent : canvasTheme.labelText,
-          fontSize: selected ? 13 : 12,
-          fontWeight: FontWeight.w900,
+    // Pokój może być węższy niż etykieta (korytarz, łazienka, garderoba) —
+    // bez tego tło etykiety wylewało się poza granice pokoju i zachodziło na
+    // sąsiednie pomieszczenia. Zmniejsz czcionkę, aż etykieta zmieści się w
+    // obrysie pokoju (z marginesem); jeśli nazwa to pojedyncze długie słowo
+    // (np. "GARDEROBNA") i nawet najmniejsza czcionka się nie mieści, samo
+    // zmniejszanie nie pomaga — TextPainter nie potrafi złamać słowa bez
+    // spacji, więc tekst i tak wystaje i zostaje fizycznie przycięty przez
+    // obrys pokoju (widać wtedy tylko środek słowa, np. "RDEROB"). W takim
+    // wypadku porzuć linię z nazwą i pokaż samo pole powierzchni.
+    final bounds = _boundingBoxOf(room.offsets);
+    final maxLabelWidth = math.max(bounds.width - 12, 24.0);
+    final maxLabelHeight = math.max(bounds.height - 12, 16.0);
+
+    const fontSizes = [13.0, 12.0, 11.0, 10.0, 9.0];
+
+    TextPainter layoutFor(List<String> lines, double fontSize) {
+      return TextPainter(
+        text: TextSpan(
+          text: lines.join('\n'),
+          style: TextStyle(
+            color: selected ? canvasTheme.accent : canvasTheme.labelText,
+            fontSize: selected ? fontSize + 1 : fontSize,
+            fontWeight: FontWeight.w900,
+          ),
         ),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    )..layout();
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: maxLabelWidth);
+    }
+
+    bool fits(TextPainter p) =>
+        p.width <= maxLabelWidth && p.height <= maxLabelHeight;
+
+    late TextPainter painter;
+    for (final fontSize in fontSizes) {
+      painter = layoutFor(fullLines, fontSize);
+      if (fits(painter)) break;
+    }
+
+    if (!fits(painter) && areaOnlyLines.isNotEmpty) {
+      for (final fontSize in fontSizes) {
+        painter = layoutFor(areaOnlyLines, fontSize);
+        if (fits(painter)) break;
+      }
+    }
 
     final rect = Rect.fromCenter(
       center: center,
-      width: painter.width + 18,
-      height: painter.height + 12,
+      width: math.min(painter.width + 18, maxLabelWidth + 12),
+      height: math.min(painter.height + 12, maxLabelHeight + 12),
     );
 
     final bg = Paint()

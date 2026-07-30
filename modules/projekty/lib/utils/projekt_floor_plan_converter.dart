@@ -64,7 +64,10 @@ class ProjektFloorPlanConverter {
 
       rooms.add(FloorRoom(
         id: 'room_${r.pom.pomId}',
-        name: '${r.pom.nazwa}\n${(r.pom.powierzchniaM2 ?? r.pom.wymiarAm! * r.pom.wymiarBm!).toStringAsFixed(1)} m²',
+        // Nazwa BEZ powierzchni — FloorPlanCanvasPainter dorysowuje ją sam
+        // jako osobną linię (showRoomAreas), embedowanie jej tutaj dawało
+        // podwójny, często niespójny napis powierzchni na każdym pokoju.
+        name: r.pom.nazwa,
         points: [
           FloorPoint(x: x1, y: y1),
           FloorPoint(x: x2, y: y1),

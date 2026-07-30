@@ -18,13 +18,14 @@ final przegladAlertyProvider = Provider.family<List<SprzetModel>, List<SprzetMod
     }),
 );
 
-class SprzetNotifier extends AutoDisposeAsyncNotifier<SprzetModel> {
+class SprzetNotifier extends AutoDisposeFamilyAsyncNotifier<SprzetModel, int> {
   late int _id;
 
   @override
-  Future<SprzetModel> build() async => _load();
-
-  void init(int id) => _id = id;
+  Future<SprzetModel> build(int arg) async {
+    _id = arg;
+    return _load();
+  }
 
   Future<SprzetModel> _load() => ref.read(sprzetApiProvider).fetchSprzetOne(_id);
 
@@ -33,7 +34,7 @@ class SprzetNotifier extends AutoDisposeAsyncNotifier<SprzetModel> {
     state = AsyncData(await _load());
   }
 
-  Future<void> update(SprzetModel s) async {
+  Future<void> updateSprzet(SprzetModel s) async {
     await ref.read(sprzetApiProvider).updateSprzet(s);
     state = AsyncData(await _load());
   }

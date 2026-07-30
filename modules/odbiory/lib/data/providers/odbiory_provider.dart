@@ -4,17 +4,17 @@ import '../services/odbiory_api.dart';
 
 // ---- Lista protokołów dla budowy ----
 
-final protokolyProvider = FutureProvider.family<List<ProtokołOdbioruModel>, int>(
+final protokolyProvider = FutureProvider.family<List<ProtokolOdbioruModel>, int>(
   (ref, budowaId) => ref.watch(odbioryApiProvider).fetchProtokoly(budowaId: budowaId),
 );
 
 // ---- Szczegóły protokołu ----
 
-class ProtokolNotifier extends AutoDisposeAsyncNotifier<ProtokołOdbioruModel?> {
+class ProtokolNotifier extends AutoDisposeAsyncNotifier<ProtokolOdbioruModel?> {
   late int protokolId;
 
   @override
-  Future<ProtokołOdbioruModel?> build() async => null;
+  Future<ProtokolOdbioruModel?> build() async => null;
 
   Future<void> load(int id) async {
     protokolId = id;
@@ -34,7 +34,7 @@ class ProtokolNotifier extends AutoDisposeAsyncNotifier<ProtokołOdbioruModel?> 
       if (uwaga != null) 'uwaga': uwaga,
     });
 
-    state = AsyncData(ProtokołOdbioruModel(
+    state = AsyncData(ProtokolOdbioruModel(
       id: current.id,
       budowaId: current.budowaId,
       etapId: current.etapId,
@@ -75,7 +75,7 @@ class ProtokolNotifier extends AutoDisposeAsyncNotifier<ProtokołOdbioruModel?> 
 }
 
 final protokolProvider =
-    AsyncNotifierProvider.autoDispose<ProtokolNotifier, ProtokołOdbioruModel?>(
+    AsyncNotifierProvider.autoDispose<ProtokolNotifier, ProtokolOdbioruModel?>(
   ProtokolNotifier.new,
 );
 

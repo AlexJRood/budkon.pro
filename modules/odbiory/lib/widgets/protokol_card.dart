@@ -5,7 +5,7 @@ import '../data/models/odbiory_model.dart';
 import 'protokol_status_badge.dart';
 
 class ProtokolCard extends ConsumerWidget {
-  final ProtokołOdbioruModel protokol;
+  final ProtokolOdbioruModel protokol;
   final VoidCallback? onTap;
 
   const ProtokolCard({super.key, required this.protokol, this.onTap});
